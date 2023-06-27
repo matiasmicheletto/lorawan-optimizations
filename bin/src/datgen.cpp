@@ -1,3 +1,5 @@
+#define MANUAL "readme_datgen.txt"
+
 #include <cstring>
 
 #include "lib/util/util.h"
@@ -11,17 +13,17 @@ int main(int argc, char **argv) {
     // Program arguments
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
-            printHelp();
+            printHelp(MANUAL);
 
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--input") == 0) {
             if(i+1 < argc) 
                 l = new Instance(argv[i + 1]);
             else
-                printHelp();
+                printHelp(MANUAL);
         }        
     }
 
-    if(l == 0) printHelp();
+    if(l == 0) printHelp(MANUAL);
 
     
     std::cout << "Parameters file loaded." << std::endl;

@@ -6,7 +6,7 @@
 #include <fstream>
 
 
-void printHelp();
+void printHelp(const char* file);
 unsigned int sf2e(unsigned int sf);
 template <typename T>
 void removeRowsAndColumn(std::vector<std::vector<T>>& matrix, size_t columnIndex, const std::vector<size_t>& rowIndices);

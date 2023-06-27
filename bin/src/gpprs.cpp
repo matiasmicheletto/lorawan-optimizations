@@ -1,3 +1,5 @@
+#define MANUAL "readme_gpprs.txt"
+
 #include <cstring>
 
 #include "lib/util/util.h"
@@ -21,41 +23,41 @@ int main(int argc, char **argv) {
     // Program arguments
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
-            printHelp();
+            printHelp(MANUAL);
 
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
             if(i+1 < argc) 
                 l = new Instance(argv[i + 1]);
             else
-                printHelp();
+                printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iter") == 0) {
             if(i+1 < argc) 
                 maxIters = atoi(argv[i+1]);
             else
-                printHelp();
+                printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-alpha") == 0){
             if(i+1 < argc)
                 alpha = atof(argv[i+1]);
             else
-                printHelp();
+                printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-beta") == 0){
             if(i+1 < argc)
                 beta = atof(argv[i+1]);
             else
-                printHelp();
+                printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-gamma") == 0){
             if(i+1 < argc)
                 gamma = atof(argv[i+1]);
             else
-                printHelp();
+                printHelp(MANUAL);
         }
     }
 
-    if(l == 0) printHelp();
+    if(l == 0) printHelp(MANUAL);
 
     
     std::cout << "Input file loaded." << std::endl;

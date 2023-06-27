@@ -1,8 +1,8 @@
 #include "util.h"
 
 
-void printHelp() {    
-    std::ifstream manualFile("readme.txt");
+void printHelp(const char* file) {    
+    std::ifstream manualFile(file);
     if (manualFile.is_open()) {
         std::string line;
         while (getline(manualFile, line)) {
