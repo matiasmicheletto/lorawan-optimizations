@@ -15,6 +15,11 @@ void printHelp(const char* file) {
     }
 }
 
+double euclideanDistance(double x1, double y1, double x2, double y2) {
+    double discr = (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1);
+    return sqrt(discr);
+}
+
 template <typename T>
 void removeRowsAndColumn(std::vector<std::vector<T>>& matrix, size_t columnIndex, const std::vector<size_t>& rowIndices) {
     for (auto it = rowIndices.rbegin(); it != rowIndices.rend(); ++it)

@@ -2,7 +2,7 @@ NAME
    gpprs - GPP OPTIMIZATION
 
 SYNOPSIS
-   gpprs [OPTION]... -f [FILE]
+   gpprs [OPTIONS]... -f [FILE]
 
 DESCRIPTION:
    This program computes an optimal solution for the Gateway Placement Problem (GPP).
@@ -22,11 +22,11 @@ EXAMPLES:
    2. gpprs -f input.dat --iter 10e6
       - Execute 10M iterations.
 
-AUTHOR
-   Written by Matias J. Micheletto.
+AUTHORS
+   Code was written by Dr. Matias J. Micheletto from CIT-GSJ and supervised by Dr. Rodrigo M. Santos from DIEC-UNS and Dr. Javier Marenco from UTDT.
 
 REPORTING BUGS
-   Follow guidelines from <https://github.com/matiasmicheletto/realtime-lorawan-simulator>.
+   Guidelines will soon be available at <https://github.com/matiasmicheletto/lorawan-optimizations>.
 
 COPYRIGHT
    Copyright   ©   2023   Free   Software   Foundation,  Inc.   License  GPLv3+:  GNU  GPL  version  3  or  later <https://gnu.org/licenses/gpl.html>.

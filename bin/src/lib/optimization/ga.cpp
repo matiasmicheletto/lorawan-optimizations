@@ -112,10 +112,13 @@ void ga(Instance* l, Objective* o, const GAConfig& config) {
 	ga_obj.crossover_fraction = config.crossover;
 	ga_obj.mutation_rate = config.mutation;
     
+	// Print GA configuration
 	std::cout << "Population: " << config.popsize << std::endl;
     std::cout << "Generations: " << config.maxgen << std::endl;
 	std::cout << "Crossover rate: " << config.crossover << std::endl;
 	std::cout << "Mutation rate: " << config.mutation << std::endl;
 	std::cout << "Progress:" << std::endl;
+
+	// Start optimizer
 	ga_obj.solve();
 }
