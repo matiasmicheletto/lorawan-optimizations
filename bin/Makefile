@@ -1,5 +1,5 @@
 CPP      = g++
-CFLAGS   = -std=c++11 -Wall -lpthread
+CFLAGS   = -Wall -pthread
 SRCDIR   = src
 OBJDIR   = obj
 LIBDIR   = $(SRCDIR)/lib
@@ -29,6 +29,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	$(CPP) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJDIR) ./gpprs ./datgen
 
 .PHONY: all clean
