@@ -14,15 +14,15 @@
 
 int main(int argc, char **argv) {
     
+    srand(time(NULL));
+
     Instance *l = 0;
     double alpha = 1.0, beta = 1.0, gamma = 1.0;
     unsigned long maxIters = 1e5;
-    
-    srand(time(NULL));
 
     // Program arguments
     for(int i = 0; i < argc; i++) {    
-        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
 
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {

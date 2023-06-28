@@ -24,7 +24,7 @@ struct InstanceConfig { // This is for instance generation
     unsigned int mapSize; // Map size
     unsigned int edNumber; // Number of end devices (rows)
     unsigned int gwNumber; // Number of gateways (columns)
-    int timeRequirement; // PDF for ED periods
+    PERIODIST timeRequirement; // PDF for ED periods
     POSDIST posDistribution; // Distribution of positions
 
     InstanceConfig(  // Default configuration parameters
