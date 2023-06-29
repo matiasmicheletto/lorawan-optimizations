@@ -30,7 +30,7 @@ OPTIONS:
    -a, --alpha    Alpha tunning parameter. Default is 1.
    -b, --beta     Beta tunning parameter. Default is 1.
    -g, --gamma    Gamma tunning parameter. Default is 1.
-   -m, --method   Optimization method: 0: random, 1: improved random, 2: greedy, 3: GA. Default is 0.
+   -m, --method   Optimization method: 0: random, 1: improved random, 2: greedy, 3: GA. Default is 1 (improved random).
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
 
 EXAMPLES:

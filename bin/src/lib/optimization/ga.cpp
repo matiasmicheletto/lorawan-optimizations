@@ -80,13 +80,18 @@ double calculate_SO_total_fitness(const GA_Type::thisChromosomeType &X) { // Com
     return X.middle_costs.cost;    
 }
 
-void SO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {
+void SO_report_generation_verbose(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {
     std::cout << "Generation [" << generation_number << "], "
 		<< "Best=" << last_generation.best_total_cost << ", "
 		<< "Average cost=" << last_generation.average_cost << std::endl;
 }
 
+void SO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {}
+
 void ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
+
+	if(verbose)
+        std::cout << std::endl << "--------------- GA ---------------" << std::endl << std::endl;
 
     _l = l;
     _o = o;
@@ -102,22 +107,29 @@ void ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
 	ga_obj.verbose = false;
 	ga_obj.population = config.popsize;
 	ga_obj.generation_max = config.maxgen;
+	ga_obj.best_stall_max = config.maxgen/100;
+    ga_obj.average_stall_max = config.maxgen/100;
 	ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
 	ga_obj.init_genes = init_genes;
 	ga_obj.eval_solution = eval_solution;
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;    
-	ga_obj.SO_report_generation = SO_report_generation;
-    ga_obj.elite_count = 10;
+	if(verbose)
+		ga_obj.SO_report_generation = SO_report_generation_verbose;
+	else
+		ga_obj.SO_report_generation = SO_report_generation;
+    ga_obj.elite_count = 5;
 	ga_obj.crossover_fraction = config.crossover;
 	ga_obj.mutation_rate = config.mutation;
     
 	// Print GA configuration
-	std::cout << "Population: " << config.popsize << std::endl;
-    std::cout << "Generations: " << config.maxgen << std::endl;
-	std::cout << "Crossover rate: " << config.crossover << std::endl;
-	std::cout << "Mutation rate: " << config.mutation << std::endl;
-	std::cout << "Progress:" << std::endl;
+	if(verbose){
+		std::cout << "Population: " << config.popsize << std::endl;
+		std::cout << "Generations: " << config.maxgen << std::endl;
+		std::cout << "Crossover rate: " << config.crossover << std::endl;
+		std::cout << "Mutation rate: " << config.mutation << std::endl;
+		std::cout << "Progress:" << std::endl;
+	}
 
 	// Start optimizer
 	ga_obj.solve();

@@ -18,8 +18,9 @@ int main(int argc, char **argv) {
 
     Instance *l = 0;
     unsigned long maxIters = 1e5;
-    double alpha = 1.0, beta = 1.0, gamma = 1.0;
+    double alpha = 1.0, beta = 1.0, gamma = 1000.0;
     bool verbose = false;
+    int method = 1;
     
     // Program arguments
     for(int i = 0; i < argc; i++) {    
@@ -55,6 +56,12 @@ int main(int argc, char **argv) {
             else
                 printHelp(MANUAL);
         }
+        if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--method") == 0) {
+            if(i+1 < argc) 
+                method = atoi(argv[i+1]);
+            else
+                printHelp(MANUAL);
+        }
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0){
             verbose = true;
         }
@@ -62,35 +69,45 @@ int main(int argc, char **argv) {
 
     if(l == 0) printHelp(MANUAL);
 
-    
-    std::cout << "Input file loaded." << std::endl;
-    // l->printRawData();
-    // std::cout << std::endl;
-    std::cout << "GW Count: " << l->getGWCount() << std::endl;
-    std::cout << "ED Count: " << l->getEDCount() << std::endl; 
-    std::cout << "Tunning parameters:" << std::endl;
-    std::cout << "  Alpha: " << alpha << std::endl;
-    std::cout << "  Beta: " << beta << std::endl;
-    std::cout << "  Gamma: " << gamma << std::endl << std::endl;
-    std::cout << "Optimization method: " << "all" << std::endl;
-    std::cout << "Verbose mode: " << (verbose ? "true" : "false") << std::endl;
+    if(verbose){    
+        std::cout << "Input file loaded." << std::endl;
+        // l->printRawData();
+        // std::cout << std::endl;
+        std::cout << "GW Count: " << l->getGWCount() << std::endl;
+        std::cout << "ED Count: " << l->getEDCount() << std::endl; 
+        std::cout << "Tunning parameters:" << std::endl;
+        std::cout << "  Alpha: " << alpha << std::endl;
+        std::cout << "  Beta: " << beta << std::endl;
+        std::cout << "  Gamma: " << gamma << std::endl;
+        std::cout << "Optimization method: " << method << std::endl << std::endl;
+    }
 
 
     Objective *o = new Objective(l, {alpha, beta, gamma});
 
-    /*
-    std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
-    randomSearch(l, o, maxIters, verbose);
-    
-    std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
-    improvedRandomSearch(l, o, maxIters, verbose);
-    
-    std::cout << std::endl << "------------- Greedy -------------" << std::endl << std::endl;
-    greedy(l, o, maxIters, verbose);
-    */
-
-    std::cout << std::endl << "--------------- GA ---------------" << std::endl << std::endl;
-    ga(l, o);
+    switch (method)
+    {
+    case 0:
+        randomSearch(l, o, maxIters, verbose);    
+        break;
+    case 1:
+        improvedRandomSearch(l, o, maxIters, verbose);
+        break;
+    case 2:
+        greedy(l, o, maxIters, verbose);
+        break;
+    case 3:{
+        GAConfig gaconfig;
+        gaconfig.maxgen = maxIters/gaconfig.popsize;
+        ga(l, o, gaconfig, verbose);
+        break;
+    }
+    default:
+        if(verbose)
+            std::cout << "Unknown optimization method" << std::endl;
+        exit(1);
+        break;
+    }    
     
     delete o;
     delete l;

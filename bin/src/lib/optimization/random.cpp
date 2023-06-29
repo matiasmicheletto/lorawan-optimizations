@@ -4,6 +4,9 @@
 void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose){
     /* Fully random uniformly distributed solutions are generated */
 
+    if(verbose)
+        std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
+
     // Optimization variable
     unsigned int* gw = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
     unsigned int* sf = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
@@ -68,6 +71,9 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbos
 
 void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
+
+    if(verbose)
+        std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
 
     // Optimization variable
     unsigned int* gw = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
