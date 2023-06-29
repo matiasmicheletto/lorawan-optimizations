@@ -5,15 +5,33 @@ SYNOPSIS
    gpprs [OPTIONS]... -f [FILE]
 
 DESCRIPTION:
-   This program computes an optimal solution for the Gateway Placement Problem (GPP).
-
+   This program computes an optimal solution for the Gateway Placement Problem (GPP). Input file contains the network minimal spread factors values between end devices and gateways formatted as follows:
+      - Values are space-separated.
+      - First line contains the number of end devices "e" and the number of available gateways "g".
+      - From line 1 to "e", each column "c" from 0 to "g"-1 indicate the minimum spread factor that can be used for gateway "c"+1.
+      - When a gateway is to far away from an end device, a value greater than 12 is used as value, usually 100.
+      - Last column, this is value "g"+1, indicate the transmission period of the corresponding end device.
+   Example for the content of a generic input file:
+      10 4
+      7 8 8 10 800
+      9 9 7 8 1600
+      7 7 10 9 1600
+      7 8 8 8 800
+      11 9 9 7 800
+      7 8 8 10 800
+      9 9 7 8 1600
+      7 7 10 9 1600
+      7 8 8 8 800
+      11 9 9 7 800
 
 OPTIONS:
    -h, --help     Display this help message.
    -i, --iter     Iterations to perform. Default is 1e6.
-   --alpha        Alpha tunning parameter. Default is 1.
-   --beta         Beta tunning parameter. Default is 1.
-   --gamma        Gamma tunning parameter. Default is 1.
+   -a, --alpha    Alpha tunning parameter. Default is 1.
+   -b, --beta     Beta tunning parameter. Default is 1.
+   -g, --gamma    Gamma tunning parameter. Default is 1.
+   -m, --method   Optimization method: 0: random, 1: improved random, 2: greedy, 3: GA. Default is 0.
+   -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
 
 EXAMPLES:
    1. gpprs -f input.dat

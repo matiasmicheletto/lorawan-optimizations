@@ -9,7 +9,7 @@
 #include "../instance/instance.h"
 #include "../objective/objective.h"
 
-void randomSearch(Instance* l, Objective* o, unsigned long maxIters);
-void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters);
+void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);
+void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);
 
 #endif // RANDOMSEARCH_H

@@ -1,12 +1,8 @@
 #include "objective.h"
 
-Objective::Objective(Instance* instance) {
+Objective::Objective(Instance* instance, const TunningParameters& tp) {
     this->instance = instance;
-
-    // Tunning parameters
-    this->params[ALPHA] = 1.0;
-    this->params[BETA] = 1.0;
-    this->params[GAMMA] = 1.0;
+    this->tp = tp;
 }
 
 Objective::~Objective() {
@@ -45,9 +41,9 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
         energy += sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
 
     return // Return weighted sum of objectives
-        this->params[ALPHA] * (double)gwCount + 
-        this->params[BETA] * (double) energy + 
-        this->params[GAMMA] * totalUF;
+        this->tp.alpha * (double)gwCount + 
+        this->tp.beta * (double) energy + 
+        this->tp.gamma * totalUF;
 }
 
 void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool highlight){

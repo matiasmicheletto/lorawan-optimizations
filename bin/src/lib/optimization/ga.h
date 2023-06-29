@@ -23,6 +23,6 @@ struct GAConfig {
             mutation(mutRate) {}
 };
 
-void ga(Instance* l, Objective* o, const GAConfig& config = GAConfig());
+void ga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
 
 #endif // GA_H

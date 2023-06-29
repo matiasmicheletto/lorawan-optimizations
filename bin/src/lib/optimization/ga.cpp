@@ -86,7 +86,7 @@ void SO_report_generation(int generation_number, const EA::GenerationType<Chromo
 		<< "Average cost=" << last_generation.average_cost << std::endl;
 }
 
-void ga(Instance* l, Objective* o, const GAConfig& config) {
+void ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
 
     _l = l;
     _o = o;
@@ -121,4 +121,9 @@ void ga(Instance* l, Objective* o, const GAConfig& config) {
 
 	// Start optimizer
 	ga_obj.solve();
+
+	Chromosome best = ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes;
+
+	std::cout << std::endl;
+	o->printSolution(best.gw, best.sf, true);
 }

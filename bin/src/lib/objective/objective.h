@@ -16,17 +16,28 @@
 // UF value for a GW to be considered as "used"
 #define UFTHRES .0000001
 
-// Tunning parameter names (indexes of params)
-enum T_PARAMS {ALPHA, BETA, GAMMA, T_PARAMS_LEN}; 
+struct TunningParameters {
+    double alpha;
+    double beta;
+    double gamma;
+    TunningParameters( // Default tunning parameters
+        double alpha = 1.0,
+        double beta = 1.0,
+        double gamma = 1.0
+    ) : 
+        alpha(alpha),
+        beta(beta),
+        gamma(gamma) {}
+};
 
 
 class Objective {
     public:
-        Objective(Instance* instance);
+        Objective(Instance* instance, const TunningParameters& tp = TunningParameters());
         ~Objective();
         
         double eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &totalUF);
-        double params[T_PARAMS_LEN];
+        TunningParameters tp;
         void printSolution(unsigned int* gw, unsigned int* sf, bool highlight = false);
     private:
         Instance* instance;

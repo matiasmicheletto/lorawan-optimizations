@@ -17,14 +17,14 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     Instance *l = 0;
-    double alpha = 1.0, beta = 1.0, gamma = 1.0;
     unsigned long maxIters = 1e5;
-
+    double alpha = 1.0, beta = 1.0, gamma = 1.0;
+    bool verbose = false;
+    
     // Program arguments
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
-
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
             if(i+1 < argc) 
                 l = new Instance(argv[i + 1]);
@@ -37,23 +37,26 @@ int main(int argc, char **argv) {
             else
                 printHelp(MANUAL);
         }
-        if(strcmp(argv[i], "-alpha") == 0){
+        if(strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--alpha") == 0){
             if(i+1 < argc)
                 alpha = atof(argv[i+1]);
             else
                 printHelp(MANUAL);
         }
-        if(strcmp(argv[i], "-beta") == 0){
+        if(strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--beta") == 0){
             if(i+1 < argc)
                 beta = atof(argv[i+1]);
             else
                 printHelp(MANUAL);
         }
-        if(strcmp(argv[i], "-gamma") == 0){
+        if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gamma") == 0){
             if(i+1 < argc)
                 gamma = atof(argv[i+1]);
             else
                 printHelp(MANUAL);
+        }
+        if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0){
+            verbose = true;
         }
     }
 
@@ -69,21 +72,22 @@ int main(int argc, char **argv) {
     std::cout << "  Alpha: " << alpha << std::endl;
     std::cout << "  Beta: " << beta << std::endl;
     std::cout << "  Gamma: " << gamma << std::endl << std::endl;
+    std::cout << "Optimization method: " << "all" << std::endl;
+    std::cout << "Verbose mode: " << (verbose ? "true" : "false") << std::endl;
 
 
-    Objective *o = new Objective(l);
-    o->params[T_PARAMS::ALPHA] = alpha;
-    o->params[T_PARAMS::BETA] = beta;
-    o->params[T_PARAMS::GAMMA] = gamma;
+    Objective *o = new Objective(l, {alpha, beta, gamma});
 
+    /*
     std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
-    randomSearch(l, o, maxIters);
+    randomSearch(l, o, maxIters, verbose);
     
     std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
-    improvedRandomSearch(l, o, maxIters);
+    improvedRandomSearch(l, o, maxIters, verbose);
     
     std::cout << std::endl << "------------- Greedy -------------" << std::endl << std::endl;
-    greedy(l, o);
+    greedy(l, o, maxIters, verbose);
+    */
 
     std::cout << std::endl << "--------------- GA ---------------" << std::endl << std::endl;
     ga(l, o);

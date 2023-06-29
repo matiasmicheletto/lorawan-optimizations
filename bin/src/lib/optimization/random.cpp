@@ -1,7 +1,7 @@
 #include "random.h"
 
 
-void randomSearch(Instance* l, Objective* o, unsigned long maxIters){
+void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose){
     /* Fully random uniformly distributed solutions are generated */
 
     // Optimization variable
@@ -18,7 +18,8 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters){
     double bestQ = __DBL_MAX__; // Cost minimization
     bool found = false;
 
-    std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
+    if(verbose)
+        std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -38,19 +39,24 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters){
             found = true;
             std::copy(gw, gw + l->getEDCount(), gwBest);
             std::copy(sf, sf + l->getEDCount(), sfBest);
-            std::cout << "New best at iteration: " << k << std::endl;
-            o->printSolution(gw, sf);
-            std::cout << std::endl << std::endl;
+            if(verbose){
+                std::cout << "New best at iteration: " << k << std::endl;
+                o->printSolution(gw, sf);
+                std::cout << std::endl << std::endl;
+            }
         }
     }
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-    std::cout << "Random search finished, " << maxIters << " iterations executed in " << duration << " milliseconds." << std::endl;
-    if(found){
-        std::cout << "Result:" << std::endl;
-        o->printSolution(gwBest, sfBest, true);
-    }else{
-        std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
+        
+    if(verbose){    
+        std::cout << "Random search finished, " << maxIters << " iterations executed in " << duration << " milliseconds." << std::endl;
+        if(found){
+            std::cout << "Result:" << std::endl;
+            o->printSolution(gwBest, sfBest, true);
+        }else{
+            std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
+        }
     }
 
     // Release memory
@@ -60,7 +66,7 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters){
     free(sfBest);
 }
 
-void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters) {
+void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
 
     // Optimization variable
@@ -75,7 +81,8 @@ void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters) {
     double bestQ = __DBL_MAX__; // Cost minimization
     bool found = false;
 
-    std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
+    if(verbose)
+        std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -99,19 +106,24 @@ void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters) {
             found = true;
             std::copy(gw, gw + l->getEDCount(), gwBest);
             std::copy(sf, sf + l->getEDCount(), sfBest);
-            std::cout << "New best at iteration: " << k << std::endl;
-            o->printSolution(gw, sf);
-            std::cout << std::endl;
+            if(verbose){
+                std::cout << "New best at iteration: " << k << std::endl;
+                o->printSolution(gw, sf);
+                std::cout << std::endl;
+            }
         }
     }
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
-    std::cout << "Improved random search finished, " << maxIters << " iterations executed in " << duration << " milliseconds." << std::endl;
-    if(found){
-        std::cout << "Result:" << std::endl;
-        o->printSolution(gwBest, sfBest, true);
-    }else{
-        std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
+
+    if(verbose){
+        std::cout << "Improved random search finished, " << maxIters << " iterations executed in " << duration << " milliseconds." << std::endl;
+        if(found){
+            std::cout << "Result:" << std::endl;
+            o->printSolution(gwBest, sfBest, true);
+        }else{
+            std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
+        }
     }
 
     // Release memory
