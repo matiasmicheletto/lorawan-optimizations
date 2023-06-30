@@ -66,6 +66,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         unsigned int getMaxSF(unsigned int ed);
         double getUF(unsigned int ed, unsigned int sf);
         unsigned int getPeriod(int ed);
+        unsigned int sf2e(unsigned int sf);
         std::vector<unsigned int> getGWList(unsigned int ed);
 
     private:

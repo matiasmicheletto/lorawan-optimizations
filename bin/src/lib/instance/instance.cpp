@@ -138,7 +138,7 @@ unsigned int Instance::getMaxSF(unsigned int ed) {
 }
 
 double Instance::getUF(unsigned int ed, unsigned int sf) {
-    double pw = (double) sf2e(sf);
+    double pw = (double) this->sf2e(sf);
     return pw / ((double)this->getPeriod(ed) - pw);
 }
 
@@ -180,6 +180,11 @@ unsigned int Instance::_getMinSF(double distance) {
 
 unsigned int Instance::getPeriod(int ed){
     return this->raw[ed+1][this->gwCount];
+}
+
+unsigned int Instance::sf2e(unsigned int sf){
+    static const unsigned int arr[6] = {1, 2, 4, 8, 16, 32};
+    return arr[sf-7];
 }
 
 std::vector<unsigned int> Instance::getGWList(unsigned int ed){

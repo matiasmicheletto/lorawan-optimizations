@@ -41,8 +41,3 @@ std::vector<std::vector<T>> copyMatrix(const std::vector<std::vector<T>>& matrix
 
     return copy;
 }
-
-unsigned int sf2e(unsigned int sf){
-    static const unsigned int arr[6] = {1, 2, 4, 8, 16, 32};
-    return arr[sf-7];
-}

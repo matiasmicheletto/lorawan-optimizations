@@ -9,11 +9,11 @@ Objective::~Objective() {
 
 }
 
-double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &totalUF) {    
+double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &maxUF) {    
     // Reset objectives (if unfeasible solution, these values remain 0 and _DBL_MAX_ is returned)
     gwCount = 0;
     energy = 0;
-    totalUF = 0.0;
+    maxUF = 0.0;
 
     double gwuf[this->instance->getGWCount()];
     std::fill(gwuf, gwuf + this->instance->getGWCount(), 0.0); // Initialize all elements to 0.0
@@ -27,9 +27,10 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
 
         // Compute GW UF
         gwuf[gw[i]] += this->instance->getUF(i, sf[i]);
-        totalUF += gwuf[gw[i]];
         if(gwuf[gw[i]] > 1.0) // Unfeasibility condition: UF > 1
             return __DBL_MAX__;
+        if(gwuf[gw[i]] > maxUF) // Update max u
+            maxUF = gwuf[gw[i]];
     }
 
     // Count number of used gw
@@ -38,27 +39,27 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
 
     // Compute energy cost
     for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED
-        energy += sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
+        energy += this->instance->sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
 
     return // Return weighted sum of objectives
         this->tp.alpha * (double)gwCount + 
         this->tp.beta * (double) energy + 
-        this->tp.gamma * totalUF;
+        this->tp.gamma * maxUF;
 }
 
 void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool highlight){
     unsigned int gwCount;
     unsigned int energy;
-    double totalUF;
+    double maxUF;
 
-    const double result = this->eval(gw, sf, gwCount, energy, totalUF);
+    const double result = this->eval(gw, sf, gwCount, energy, maxUF);
 
     if(highlight) std::cout << "\033[1;31m"; // Switch to red font
 
     std::cout << "Cost=" << result 
                 << ", (GW=" << gwCount 
                 << ",E=" << energy 
-                << ",UF=" << totalUF
+                << ",U=" << maxUF
                 << ")" << std::endl;
     std::cout << "GW allocation (GW[SF]):" << std::endl;
     for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED    

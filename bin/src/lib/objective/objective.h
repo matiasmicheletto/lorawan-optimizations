@@ -10,7 +10,6 @@
 */
 
 #include <algorithm>
-#include "../util/util.h"
 #include "../instance/instance.h"
 
 // UF value for a GW to be considered as "used"
