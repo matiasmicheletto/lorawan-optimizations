@@ -37,7 +37,7 @@ class Objective {
         
         double eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &totalUF);
         TunningParameters tp;
-        void printSolution(unsigned int* gw, unsigned int* sf, bool highlight = false);
+        void printSolution(unsigned int* gw, unsigned int* sf, bool allocation = true, bool highlight = false);
     private:
         Instance* instance;
 };

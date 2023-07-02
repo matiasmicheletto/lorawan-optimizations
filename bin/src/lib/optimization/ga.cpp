@@ -137,5 +137,5 @@ void ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
 	Chromosome best = ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes;
 
 	std::cout << std::endl;
-	o->printSolution(best.gw, best.sf, true);
+	o->printSolution(best.gw, best.sf, true, true);
 }

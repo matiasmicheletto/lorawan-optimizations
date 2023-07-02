@@ -42,7 +42,7 @@ Instance::Instance(const InstanceConfig& config) {
             break;
         }
         default:
-            printf("Warning: Instance builder: Invalid position distribution");
+            std::cerr << "Warning: Instance builder: Invalid position distribution." << std::endl;
             break;
     }
 
@@ -68,7 +68,7 @@ Instance::Instance(const InstanceConfig& config) {
                 ->addValue(320, 0.25);
             break;
         default:
-            printf("Warning: Instance builder: Invalid period distribution");
+            std::cerr << "Warning: Instance builder: Invalid period distribution." << std::endl;
             break;
         break;
     }
@@ -96,6 +96,7 @@ Instance::Instance(const InstanceConfig& config) {
     // Populate instance matrix with data
     for(unsigned int i = 0; i < eds.size(); i++){
         std::vector<int> row;
+        unsigned int availableGW = 0;
         for(unsigned int j = 0; j < gws.size(); j++){
             double dist = euclideanDistance(
                 eds.at(i).pos.x,
@@ -104,7 +105,16 @@ Instance::Instance(const InstanceConfig& config) {
                 gws.at(j).y 
             );
             int minSF = this->_getMinSF(dist);
+            int maxSF = this->_getMaxSF(eds.at(i).period);
+            if(minSF <= maxSF)
+                availableGW++; // Count available gw for this ED
             row.push_back(minSF);
+        }
+        if(availableGW == 0){
+            std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+                        << "ED = " << i << std::endl
+                        << "Period = " << eds.at(i).period << std::endl;
+            exit(1);
         }
         row.push_back(eds.at(i).period); // Add period as last element
         this->raw.push_back(row); // Add row to data
@@ -122,6 +132,23 @@ void Instance::printRawData() {
             std::cout << num << " ";
         std::cout << std::endl;
     }
+}
+
+void Instance::exportRawData(char* filename) {
+    std::ofstream outputFile(filename);
+    
+    if (!outputFile.is_open()){ 
+        std::cerr << "Failed to open output file." << std::endl;
+        exit(1);
+    }
+    
+    for (const auto& row : this->raw) {
+        for (int num : row)
+            outputFile << num << " ";
+        outputFile << '\n';
+    }
+
+    outputFile.close();
 }
 
 void Instance::_parseRawData() {
@@ -194,5 +221,11 @@ std::vector<unsigned int> Instance::getGWList(unsigned int ed){
         // If SF >= maxSF -> GW is out of range for this ed
         if(this->getMinSF(ed, gw) <= maxSF) 
             gwList.push_back(gw);
+    if(gwList.size() == 0){ // No available gws for this ed
+        std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+                  << "ED = " << ed << std::endl;
+        exit(1);
+    }
     return gwList;
 }
+

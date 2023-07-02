@@ -14,13 +14,16 @@ OPTIONS:
    -r, --requirements   Real-time requirements for end-devices: 0=soft, 1=intermediate, 2=hard. Default is soft.
    -p, --positions      Placement of nodes: 0=uniform, 1=normal, 2=clouds. Default is uniform. Gateways possible positions are generated with this function too.
    -m, --map            Map size. Default is 1000.
+   -o, --oputput        Output file name. 
 
 EXAMPLES:
    1. datgen 
       - Prints instance raw data to terminal
    2. datgen > instance.dat 
       - Generates an instance file with name "instance.dat"
-   3. datgen -m 100 -e 1000 -g 50 -r 1 -p 2
+   3. datget -o instance.dat
+      - Prints raw data to file with name "instance.dat"
+   4. datgen -m 100 -e 1000 -g 50 -r 1 -p 2
       - Generate the instance for a network of 1050 nodes (1000 end devices and 50 gateways) with cloud distribution of positions over a 100x100 map. Time requirements are intermediate.
 
 AUTHORS

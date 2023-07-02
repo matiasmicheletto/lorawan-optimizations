@@ -47,7 +47,7 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
         this->tp.gamma * maxUF;
 }
 
-void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool highlight){
+void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool allocation, bool highlight){
     unsigned int gwCount;
     unsigned int energy;
     double maxUF;
@@ -61,10 +61,13 @@ void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool highlight
                 << ",E=" << energy 
                 << ",U=" << maxUF
                 << ")" << std::endl;
-    std::cout << "GW allocation (GW[SF]):" << std::endl;
-    for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED    
-        std::cout << gw[i] << "[" << sf[i] << "]  ";
-    std::cout << std::endl;
+    
+    if(allocation){
+        std::cout << "GW allocation (GW[SF]):" << std::endl;
+        for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED    
+            std::cout << gw[i] << "[" << sf[i] << "]  ";
+        std::cout << std::endl;
+    }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
 }

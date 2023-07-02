@@ -15,7 +15,7 @@ struct GAConfig {
             int popSize = 40, 
             int numGens = 1000, 
             double crossRate = 0.8, 
-            double mutRate = 0.1)
+            double mutRate = 0.3)
         : 
             popsize(popSize), 
             maxgen(numGens), 

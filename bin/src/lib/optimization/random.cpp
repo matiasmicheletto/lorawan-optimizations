@@ -44,7 +44,7 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbos
             std::copy(sf, sf + l->getEDCount(), sfBest);
             if(verbose){
                 std::cout << "New best at iteration: " << k << std::endl;
-                o->printSolution(gw, sf);
+                o->printSolution(gw, sf, false);
                 std::cout << std::endl << std::endl;
             }
         }
@@ -56,7 +56,7 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbos
         std::cout << "Random search finished, " << maxIters << " iterations executed in " << duration << " milliseconds." << std::endl;
         if(found){
             std::cout << "Result:" << std::endl;
-            o->printSolution(gwBest, sfBest, true);
+            o->printSolution(gwBest, sfBest, true, true);
         }else{
             std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
         }
@@ -114,7 +114,7 @@ void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, boo
             std::copy(sf, sf + l->getEDCount(), sfBest);
             if(verbose){
                 std::cout << "New best at iteration: " << k << std::endl;
-                o->printSolution(gw, sf);
+                o->printSolution(gw, sf, false);
                 std::cout << std::endl;
             }
         }
@@ -126,7 +126,7 @@ void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, boo
         std::cout << "Improved random search finished, " << maxIters << " iterations executed in " << duration << " milliseconds." << std::endl;
         if(found){
             std::cout << "Result:" << std::endl;
-            o->printSolution(gwBest, sfBest, true);
+            o->printSolution(gwBest, sfBest, true, true);
         }else{
             std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
         }

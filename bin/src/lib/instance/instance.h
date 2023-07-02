@@ -59,6 +59,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         ~Instance();
         
         void printRawData();
+        void exportRawData(char* filename);
         
         inline unsigned int getGWCount(){return this->gwCount;}
         inline unsigned int getEDCount(){return this->edCount;}
