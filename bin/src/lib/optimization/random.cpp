@@ -4,6 +4,8 @@
 void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose){
     /* Fully random uniformly distributed solutions are generated */
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     if(verbose)
         std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
 
@@ -23,8 +25,6 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbos
 
     if(verbose)
         std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
-
-    auto start = std::chrono::high_resolution_clock::now();
 
     for(unsigned int k = 0; k < maxIters; k++){ // For each iteration
         // Generate a random solution (candidate)
@@ -71,6 +71,7 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbos
 
 void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
+    auto start = std::chrono::high_resolution_clock::now();
 
     if(verbose)
         std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
@@ -89,8 +90,6 @@ void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, boo
 
     if(verbose)
         std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
-
-    auto start = std::chrono::high_resolution_clock::now();
 
     for(unsigned int k = 0; k < maxIters; k++){ // For each iteration
         // Generate a random solution (candidate)

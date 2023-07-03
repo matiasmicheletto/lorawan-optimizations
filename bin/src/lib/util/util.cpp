@@ -1,6 +1,5 @@
 #include "util.h"
 
-
 void printHelp(const char* file) {    
     std::ifstream manualFile(file);
     if (manualFile.is_open()) {
@@ -20,8 +19,7 @@ double euclideanDistance(double x1, double y1, double x2, double y2) {
     return sqrt(discr);
 }
 
-template <typename T>
-void removeRowsAndColumn(std::vector<std::vector<T>>& matrix, size_t columnIndex, const std::vector<size_t>& rowIndices) {
+void removeRowsAndColumn(std::vector<std::vector<unsigned int>>& matrix, unsigned int columnIndex, const std::vector<unsigned int>& rowIndices) {
     for (auto it = rowIndices.rbegin(); it != rowIndices.rend(); ++it)
         if (*it < matrix.size())
             matrix.erase(matrix.begin() + *it);
@@ -31,13 +29,21 @@ void removeRowsAndColumn(std::vector<std::vector<T>>& matrix, size_t columnIndex
             row.erase(row.begin() + columnIndex);
 }
 
-template <typename T>
-std::vector<std::vector<T>> copyMatrix(const std::vector<std::vector<T>>& matrix) {
-    std::vector<std::vector<T>> copy;
-    copy.reserve(matrix.size());
+void copyMatrix(const std::vector<std::vector<unsigned int>>& source, std::vector<std::vector<unsigned int>>&destination) {
+    destination.reserve(source.size());
+    for (const auto& row : source)
+        destination.push_back(row);
+}
 
-    for (const auto& row : matrix)
-        copy.push_back(row);
+void copyMatrix(const std::vector<std::vector<unsigned int>>& source, std::vector<std::vector<unsigned int>>& destination, unsigned int startRow, unsigned int endRow, unsigned int startCol, unsigned int endCol) {
+    unsigned int numRows = endRow - startRow + 1;
+    unsigned int numCols = endCol - startCol + 1;
 
-    return copy;
+    destination.resize(numRows);
+    for (int i = 0; i < numRows; i++) {
+        destination[i].resize(numCols);
+        for (int j = 0; j < numCols; j++) {
+            destination[i][j] = source[startRow + i][startCol + j];
+        }
+    }
 }

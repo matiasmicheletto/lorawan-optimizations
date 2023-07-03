@@ -2,3 +2,4 @@ bin/obj/
 bin/gpprs
 bin/datgen
 dat/
+.vscode

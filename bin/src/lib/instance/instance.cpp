@@ -9,7 +9,7 @@ Instance::Instance(char* filename) {
 
     std::string line;
     while (std::getline(file, line)) {
-        std::vector<int> row;
+        std::vector<unsigned int> row;
         std::stringstream ss(line);
         int number;
         while (ss >> number)
@@ -18,16 +18,16 @@ Instance::Instance(char* filename) {
     }
     file.close();
 
-    this->_parseRawData();
+    this->edCount = this->raw[0][0];
+    this->gwCount = this->raw[0][1];
 }
 
 Instance::Instance(const InstanceConfig& config) {
 
     // Header of raw data contains number of nodes
-    std::vector<int>header = {(int)config.edNumber, (int)config.gwNumber};
+    std::vector<unsigned int>header = {config.edNumber, config.gwNumber};
     this->raw.push_back(header);
-
-
+    
     // Create the random generator functions
     Random* posGenerator;
     switch (config.posDistribution) {
@@ -47,7 +47,7 @@ Instance::Instance(const InstanceConfig& config) {
     }
 
     CustomDist::Builder distBuilder = CustomDist::Builder();
-    switch (config.timeRequirement){
+    switch (config.timeRequirement) {
         case SOFT:
             distBuilder.addValue(16000, 0.25)
                 ->addValue(8000, 0.25)
@@ -94,10 +94,10 @@ Instance::Instance(const InstanceConfig& config) {
     }
     
     // Populate instance matrix with data
-    for(unsigned int i = 0; i < eds.size(); i++){
-        std::vector<int> row;
+    for(unsigned int i = 0; i < eds.size(); i++) {
+        std::vector<unsigned int> row;
         unsigned int availableGW = 0;
-        for(unsigned int j = 0; j < gws.size(); j++){
+        for(unsigned int j = 0; j < gws.size(); j++) {
             double dist = euclideanDistance(
                 eds.at(i).pos.x,
                 eds.at(i).pos.y, 
@@ -110,7 +110,7 @@ Instance::Instance(const InstanceConfig& config) {
                 availableGW++; // Count available gw for this ED
             row.push_back(minSF);
         }
-        if(availableGW == 0){
+        if(availableGW == 0) {
             std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
                         << "ED = " << i << std::endl
                         << "Period = " << eds.at(i).period << std::endl;
@@ -118,8 +118,10 @@ Instance::Instance(const InstanceConfig& config) {
         }
         row.push_back(eds.at(i).period); // Add period as last element
         this->raw.push_back(row); // Add row to data
-    }
-    // Raw data is ready to export
+    } // Raw data is ready to export (or use)
+    // Set attributes (in case of using config to generate an instance to solve)
+    this->edCount = config.edNumber;
+    this->gwCount = config.gwNumber;
 }
 
 Instance::~Instance() {
@@ -137,7 +139,7 @@ void Instance::printRawData() {
 void Instance::exportRawData(char* filename) {
     std::ofstream outputFile(filename);
     
-    if (!outputFile.is_open()){ 
+    if (!outputFile.is_open()) { 
         std::cerr << "Failed to open output file." << std::endl;
         exit(1);
     }
@@ -151,12 +153,12 @@ void Instance::exportRawData(char* filename) {
     outputFile.close();
 }
 
-void Instance::_parseRawData() {
-    this->edCount = (unsigned int) this->raw[0][0];
-    this->gwCount = (unsigned int) this->raw[0][1];
+void Instance::copySFDataTo(std::vector<std::vector<unsigned int>>& destination) {
+    // Make a copy of the raw data, only sf values
+    copyMatrix(this->raw, destination, 1, this->getEDCount()+1, 0, this->getGWCount());
 }
 
-unsigned int Instance::getMinSF(unsigned int ed, unsigned int gw){
+unsigned int Instance::getMinSF(unsigned int ed, unsigned int gw) {
     return this->raw[ed+1][gw];
 }
 
@@ -205,23 +207,26 @@ unsigned int Instance::_getMinSF(double distance) {
         return 100;
 }
 
-unsigned int Instance::getPeriod(int ed){
-    return this->raw[ed+1][this->gwCount];
+unsigned int Instance::getPeriod(int ed) {
+    return this->raw[ed+1][this->gwCount]; // Last column of raw data
 }
 
-unsigned int Instance::sf2e(unsigned int sf){
+unsigned int Instance::sf2e(unsigned int sf) {
     static const unsigned int arr[6] = {1, 2, 4, 8, 16, 32};
     return arr[sf-7];
 }
 
-std::vector<unsigned int> Instance::getGWList(unsigned int ed){
+std::vector<unsigned int> Instance::getGWList(unsigned int ed) {
+    // Returns all GW that can be connected to ED
     std::vector<unsigned int> gwList;
     const unsigned int maxSF = getMaxSF(ed);
-    for(unsigned int gw = 0; gw < this->gwCount; gw++)
+    for(unsigned int gw = 0; gw < this->gwCount; gw++){
         // If SF >= maxSF -> GW is out of range for this ed
-        if(this->getMinSF(ed, gw) <= maxSF) 
+        const unsigned int minSF = this->getMinSF(ed, gw);
+        if(minSF <= maxSF) 
             gwList.push_back(gw);
-    if(gwList.size() == 0){ // No available gws for this ed
+    }
+    if(gwList.size() == 0) { // No available gws for this ed
         std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
                   << "ED = " << ed << std::endl;
         exit(1);
@@ -229,3 +234,16 @@ std::vector<unsigned int> Instance::getGWList(unsigned int ed){
     return gwList;
 }
 
+std::vector<unsigned int> Instance::getEDList(unsigned int gw) {
+    // Get all EDs that can be associated with current gw, WITHOUT taking into account the total UF.
+    std::vector<unsigned int> edList;
+    for(unsigned int i = 0; i < this->edCount; i++) {
+        const unsigned int minSF = this->getMinSF(i, gw);
+        const unsigned int maxSF = this->getMaxSF(i);
+        if(minSF <= maxSF)
+            edList.push_back(i);
+    }
+    // List of ED may be empty if there is no feasible EDs for this GW
+    // Total UF of all ed returned for this gw, may be greater than 1.0
+    return edList;
+}

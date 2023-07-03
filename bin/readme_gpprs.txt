@@ -11,7 +11,7 @@ DESCRIPTION:
       - From line 1 to "e", each column "c" from 0 to "g"-1 indicate the minimum spread factor that can be used for gateway "c"+1.
       - When a gateway is to far away from an end device, a value greater than 12 is used as value, usually 100.
       - Last column, this is value "g"+1, indicate the transmission period of the corresponding end device.
-   Example for the content of a generic input file:
+   Example for the content of a generic input file (10 end-devices and 4 gateways):
       10 4
       7 8 8 10 800
       9 9 7 8 1600
@@ -28,8 +28,8 @@ OPTIONS:
    -h, --help     Display this help message.
    -i, --iter     Iterations to perform. Default is 1e6.
    -a, --alpha    Alpha tunning parameter. Default is 1.
-   -b, --beta     Beta tunning parameter. Default is 1.
-   -g, --gamma    Gamma tunning parameter. Default is 1.
+   -b, --beta     Beta tunning parameter. Default is 0.1.
+   -g, --gamma    Gamma tunning parameter. Default is 1000.
    -m, --method   Optimization method: 0: random, 1: improved random, 2: greedy, 3: GA. Default is 1 (improved random).
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
 

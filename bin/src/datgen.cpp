@@ -1,7 +1,6 @@
 #define MANUAL "readme_datgen.txt"
 
 #include <cstring>
-
 #include "lib/util/util.h"
 #include "lib/instance/instance.h"
 

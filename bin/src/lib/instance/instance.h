@@ -60,6 +60,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         
         void printRawData();
         void exportRawData(char* filename);
+        void copySFDataTo(std::vector<std::vector<unsigned int>>& destination);
         
         inline unsigned int getGWCount(){return this->gwCount;}
         inline unsigned int getEDCount(){return this->edCount;}
@@ -69,12 +70,12 @@ class Instance { // Provides attributes and funcions related to problem formulat
         unsigned int getPeriod(int ed);
         unsigned int sf2e(unsigned int sf);
         std::vector<unsigned int> getGWList(unsigned int ed);
+        std::vector<unsigned int> getEDList(unsigned int gw);
 
     private:
-        std::vector<std::vector<int>> raw;
+        std::vector<std::vector<unsigned int>> raw;
         unsigned int gwCount, edCount;
 
-        void _parseRawData();
         unsigned int _getMaxSF(unsigned int period);
         unsigned int _getMinSF(double distance);
 };
