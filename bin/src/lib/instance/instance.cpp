@@ -9,7 +9,7 @@ Instance::Instance(char* filename) {
 
     std::string line;
     while (std::getline(file, line)) {
-        std::vector<unsigned int> row;
+        std::vector<uint> row;
         std::stringstream ss(line);
         int number;
         while (ss >> number)
@@ -25,7 +25,7 @@ Instance::Instance(char* filename) {
 Instance::Instance(const InstanceConfig& config) {
 
     // Header of raw data contains number of nodes
-    std::vector<unsigned int>header = {config.edNumber, config.gwNumber};
+    std::vector<uint>header = {config.edNumber, config.gwNumber};
     this->raw.push_back(header);
     
     // Create the random generator functions
@@ -77,7 +77,7 @@ Instance::Instance(const InstanceConfig& config) {
     // Generate network nodes
     std::vector<EndDevice> eds;
     std::vector<Position> gws;
-    for (unsigned int i = 0; i < config.edNumber; i++) {
+    for (uint i = 0; i < config.edNumber; i++) {
         // End device position
         double x, y; 
         posGenerator->setRandom(x, y);        
@@ -86,7 +86,7 @@ Instance::Instance(const InstanceConfig& config) {
         eds.push_back({{x, y}, period});
     }
 
-    for(unsigned int i = 0; i < config.gwNumber; i++) {
+    for(uint i = 0; i < config.gwNumber; i++) {
         // Gateway position
         double x, y; 
         posGenerator->setRandom(x, y);
@@ -94,10 +94,10 @@ Instance::Instance(const InstanceConfig& config) {
     }
     
     // Populate instance matrix with data
-    for(unsigned int i = 0; i < eds.size(); i++) {
-        std::vector<unsigned int> row;
-        unsigned int availableGW = 0;
-        for(unsigned int j = 0; j < gws.size(); j++) {
+    for(uint i = 0; i < eds.size(); i++) {
+        std::vector<uint> row;
+        uint availableGW = 0;
+        for(uint j = 0; j < gws.size(); j++) {
             double dist = euclideanDistance(
                 eds.at(i).pos.x,
                 eds.at(i).pos.y, 
@@ -153,25 +153,25 @@ void Instance::exportRawData(char* filename) {
     outputFile.close();
 }
 
-void Instance::copySFDataTo(std::vector<std::vector<unsigned int>>& destination) {
+void Instance::copySFDataTo(std::vector<std::vector<uint>>& destination) {
     // Make a copy of the raw data, only sf values
     copyMatrix(this->raw, destination, 1, this->getEDCount()+1, 0, this->getGWCount());
 }
 
-unsigned int Instance::getMinSF(unsigned int ed, unsigned int gw) {
+uint Instance::getMinSF(uint ed, uint gw) {
     return this->raw[ed+1][gw];
 }
 
-unsigned int Instance::getMaxSF(unsigned int ed) {
+uint Instance::getMaxSF(uint ed) {
     return this->_getMaxSF(this->getPeriod(ed));
 }
 
-double Instance::getUF(unsigned int ed, unsigned int sf) {
+double Instance::getUF(uint ed, uint sf) {
     double pw = (double) this->sf2e(sf);
     return pw / ((double)this->getPeriod(ed) - pw);
 }
 
-unsigned int Instance::_getMaxSF(unsigned int period) {
+uint Instance::_getMaxSF(uint period) {
     // max Sf = (log(T)-2)/log(2) + 7;
 
     if(period >= 3200)
@@ -190,7 +190,7 @@ unsigned int Instance::_getMaxSF(unsigned int period) {
         return 0;
 }
 
-unsigned int Instance::_getMinSF(double distance) {
+uint Instance::_getMinSF(double distance) {
     if(distance < 62.5)
         return 7;
     else if(distance < 125)
@@ -207,22 +207,22 @@ unsigned int Instance::_getMinSF(double distance) {
         return 100;
 }
 
-unsigned int Instance::getPeriod(int ed) {
+uint Instance::getPeriod(int ed) {
     return this->raw[ed+1][this->gwCount]; // Last column of raw data
 }
 
-unsigned int Instance::sf2e(unsigned int sf) {
-    static const unsigned int arr[6] = {1, 2, 4, 8, 16, 32};
+uint Instance::sf2e(uint sf) {
+    static const uint arr[6] = {1, 2, 4, 8, 16, 32};
     return arr[sf-7];
 }
 
-std::vector<unsigned int> Instance::getGWList(unsigned int ed) {
+std::vector<uint> Instance::getGWList(uint ed) {
     // Returns all GW that can be connected to ED
-    std::vector<unsigned int> gwList;
-    const unsigned int maxSF = getMaxSF(ed);
-    for(unsigned int gw = 0; gw < this->gwCount; gw++){
+    std::vector<uint> gwList;
+    const uint maxSF = getMaxSF(ed);
+    for(uint gw = 0; gw < this->gwCount; gw++){
         // If SF >= maxSF -> GW is out of range for this ed
-        const unsigned int minSF = this->getMinSF(ed, gw);
+        const uint minSF = this->getMinSF(ed, gw);
         if(minSF <= maxSF) 
             gwList.push_back(gw);
     }
@@ -234,12 +234,12 @@ std::vector<unsigned int> Instance::getGWList(unsigned int ed) {
     return gwList;
 }
 
-std::vector<unsigned int> Instance::getEDList(unsigned int gw) {
+std::vector<uint> Instance::getEDList(uint gw) {
     // Get all EDs that can be associated with current gw, WITHOUT taking into account the total UF.
-    std::vector<unsigned int> edList;
-    for(unsigned int i = 0; i < this->edCount; i++) {
-        const unsigned int minSF = this->getMinSF(i, gw);
-        const unsigned int maxSF = this->getMaxSF(i);
+    std::vector<uint> edList;
+    for(uint i = 0; i < this->edCount; i++) {
+        const uint minSF = this->getMinSF(i, gw);
+        const uint maxSF = this->getMaxSF(i);
         if(minSF <= maxSF)
             edList.push_back(i);
     }

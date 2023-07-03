@@ -19,7 +19,7 @@ double euclideanDistance(double x1, double y1, double x2, double y2) {
     return sqrt(discr);
 }
 
-void removeRowsAndColumn(std::vector<std::vector<unsigned int>>& matrix, unsigned int columnIndex, const std::vector<unsigned int>& rowIndices) {
+void removeRowsAndColumn(std::vector<std::vector<uint>>& matrix, uint columnIndex, const std::vector<uint>& rowIndices) {
     for (auto it = rowIndices.rbegin(); it != rowIndices.rend(); ++it)
         if (*it < matrix.size())
             matrix.erase(matrix.begin() + *it);
@@ -29,20 +29,20 @@ void removeRowsAndColumn(std::vector<std::vector<unsigned int>>& matrix, unsigne
             row.erase(row.begin() + columnIndex);
 }
 
-void copyMatrix(const std::vector<std::vector<unsigned int>>& source, std::vector<std::vector<unsigned int>>&destination) {
+void copyMatrix(const std::vector<std::vector<uint>>& source, std::vector<std::vector<uint>>&destination) {
     destination.reserve(source.size());
     for (const auto& row : source)
         destination.push_back(row);
 }
 
-void copyMatrix(const std::vector<std::vector<unsigned int>>& source, std::vector<std::vector<unsigned int>>& destination, unsigned int startRow, unsigned int endRow, unsigned int startCol, unsigned int endCol) {
-    unsigned int numRows = endRow - startRow + 1;
-    unsigned int numCols = endCol - startCol + 1;
+void copyMatrix(const std::vector<std::vector<uint>>& source, std::vector<std::vector<uint>>& destination, uint startRow, uint endRow, uint startCol, uint endCol) {
+    uint numRows = endRow - startRow + 1;
+    uint numCols = endCol - startCol + 1;
 
     destination.resize(numRows);
-    for (int i = 0; i < numRows; i++) {
+    for (uint i = 0; i < numRows; i++) {
         destination[i].resize(numCols);
-        for (int j = 0; j < numCols; j++) {
+        for (uint j = 0; j < numCols; j++) {
             destination[i][j] = source[startRow + i][startCol + j];
         }
     }

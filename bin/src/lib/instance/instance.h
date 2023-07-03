@@ -21,16 +21,16 @@ enum POSDIST {UNIFORM, NORMAL, CLOUDS};
 enum PERIODIST {SOFT, MEDIUM, HARD};
 
 struct InstanceConfig { // This is for instance generation
-    unsigned int mapSize; // Map size
-    unsigned int edNumber; // Number of end devices (rows)
-    unsigned int gwNumber; // Number of gateways (columns)
+    uint mapSize; // Map size
+    uint edNumber; // Number of end devices (rows)
+    uint gwNumber; // Number of gateways (columns)
     PERIODIST timeRequirement; // PDF for ED periods
     POSDIST posDistribution; // Distribution of positions
 
     InstanceConfig(  // Default configuration parameters
-        unsigned int mapSize = 1000,
-        unsigned int edNumber = 1000,
-        unsigned int gwNumber = 100,
+        uint mapSize = 1000,
+        uint edNumber = 1000,
+        uint gwNumber = 100,
         PERIODIST timeRequirement = SOFT,
         POSDIST posDistribution = UNIFORM
     ) : 
@@ -60,24 +60,24 @@ class Instance { // Provides attributes and funcions related to problem formulat
         
         void printRawData();
         void exportRawData(char* filename);
-        void copySFDataTo(std::vector<std::vector<unsigned int>>& destination);
+        void copySFDataTo(std::vector<std::vector<uint>>& destination);
         
-        inline unsigned int getGWCount(){return this->gwCount;}
-        inline unsigned int getEDCount(){return this->edCount;}
-        unsigned int getMinSF(unsigned int ed, unsigned int gw);
-        unsigned int getMaxSF(unsigned int ed);
-        double getUF(unsigned int ed, unsigned int sf);
-        unsigned int getPeriod(int ed);
-        unsigned int sf2e(unsigned int sf);
-        std::vector<unsigned int> getGWList(unsigned int ed);
-        std::vector<unsigned int> getEDList(unsigned int gw);
+        inline uint getGWCount(){return this->gwCount;}
+        inline uint getEDCount(){return this->edCount;}
+        uint getMinSF(uint ed, uint gw);
+        uint getMaxSF(uint ed);
+        double getUF(uint ed, uint sf);
+        uint getPeriod(int ed);
+        uint sf2e(uint sf);
+        std::vector<uint> getGWList(uint ed);
+        std::vector<uint> getEDList(uint gw);
 
     private:
-        std::vector<std::vector<unsigned int>> raw;
-        unsigned int gwCount, edCount;
+        std::vector<std::vector<uint>> raw;
+        uint gwCount, edCount;
 
-        unsigned int _getMaxSF(unsigned int period);
-        unsigned int _getMinSF(double distance);
+        uint _getMaxSF(uint period);
+        uint _getMinSF(double distance);
 };
 
 #endif // INSTANCE_H
