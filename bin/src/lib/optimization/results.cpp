@@ -1,24 +1,19 @@
 #include "results.h"
 
-void logResultsToCSV(OptimizationResults results, const char* csvfilename) {
-    std::ofstream csvFile;
-    csvFile.open(csvfilename, std::ios::app); // Open append mode
-    bool fileExists = csvFile.is_open();
+void logResultsToCSV(const OptimizationResults results, const char* csvfilename) {
+    std::ofstream csvFile(csvfilename, std::ios::app); // Open file in append mode
 
-    if (!csvFile.is_open()) 
-        csvFile.open(csvfilename); // Open in write mode (first time)
-
-    if (!csvFile.is_open()) { // Failed to open
+    if (!csvFile) {
         std::cerr << "Error: Unable to open CSV file." << std::endl;
         return;
     }
 
-    if (!fileExists) 
-        csvFile << "Instance Name,Method,Execution Time (ms),Cost,GW,Energy,UF,Alpha,Beta,Gamma" << std::endl;
-
-    // Write the values to the CSV file
+    if (csvFile.tellp() == 0) { // File is empty, write the header
+        csvFile << "Instance Name,Solver,Execution Time (ms),Cost,GW Used,Energy,UF,Alpha,Beta,Gamma" << std::endl;
+    }
+    
     csvFile << results.instanceName << ","
-            << results.solver << ","
+            << results.solverName << ","
             << results.execTime << ","
             << results.cost << ","
             << results.gwUsed << ","
@@ -28,6 +23,9 @@ void logResultsToCSV(OptimizationResults results, const char* csvfilename) {
             << results.tp.beta << ","
             << results.tp.gamma << std::endl;
 
-    // Close the file
+    csvFile.flush();
     csvFile.close();
+
+    free(results.solverName);
+    //free(results.instanceName); // This pointer is freed in instance destructor
 }

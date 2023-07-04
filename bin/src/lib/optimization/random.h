@@ -8,8 +8,9 @@
 #include "../random/uniform.h"
 #include "../instance/instance.h"
 #include "../objective/objective.h"
+#include "results.h"
 
-void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);
-void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);
+OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);
+OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);
 
 #endif // RANDOMSEARCH_H

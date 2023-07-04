@@ -3,6 +3,7 @@
 
 #include "../instance/instance.h"
 #include "../objective/objective.h"
+#include "results.h"
 
 
 struct GAConfig {
@@ -23,6 +24,6 @@ struct GAConfig {
             mutation(mutRate) {}
 };
 
-void ga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
+OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
 
 #endif // GA_H

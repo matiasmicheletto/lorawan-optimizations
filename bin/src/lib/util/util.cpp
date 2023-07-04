@@ -1,6 +1,6 @@
 #include "util.h"
 
-void printHelp(const char* file) {    
+void printHelp(const char* file) { // Open readme file with manual and print on terminal   
     std::ifstream manualFile(file);
     if (manualFile.is_open()) {
         std::string line;
@@ -12,6 +12,26 @@ void printHelp(const char* file) {
     } else {
         std::cerr << "Error: Unable to open manual file." << std::endl;
     }
+}
+
+char* extractFileName(const char* path) { // Remove path from full file name
+    const char* fileNameStart = strrchr(path, '/'); // Find the last occurrence of '/'
+    if (fileNameStart == nullptr) {
+        fileNameStart = strrchr(path, '\\'); // If '/' is not found, try '\' for Windows paths
+        if (fileNameStart == nullptr) {
+            fileNameStart = path; // If neither '/' nor '\' is found, assume the whole path is the file name
+        } else {
+            fileNameStart++; // Move past the '\' character
+        }
+    } else {
+        fileNameStart++; // Move past the '/' character
+    }
+
+    // Create a new string to hold the extracted file name
+    char* fileName = new char[strlen(fileNameStart) + 1];
+    strcpy(fileName, fileNameStart); // Copy the file name to the new string
+
+    return fileName;
 }
 
 double euclideanDistance(double x1, double y1, double x2, double y2) {

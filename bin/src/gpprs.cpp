@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
-            if(i+1 < argc) 
+            if(i+1 < argc)
                 l = new Instance(argv[i + 1]);
             else
                 printHelp(MANUAL);
@@ -79,22 +79,27 @@ int main(int argc, char **argv) {
     }
 
     Objective *o = new Objective(l, tp);
-    OptimizationResults opr;
+    OptimizationResults results;
 
     switch (method) {
         case 0:
-            randomSearch(l, o, maxIters, verbose);    
+            results = randomSearch(l, o, maxIters, verbose);    
+            results.solverName = strdup("RS");
             break;
         case 1:
-            improvedRandomSearch(l, o, maxIters, verbose);
+            results = improvedRandomSearch(l, o, maxIters, verbose);
+            results.solverName = strdup("IRS");
             break;
-        case 2:
-            opr = greedy(l, o, maxIters, verbose);
+        case 2:{
+            results = greedy(l, o, maxIters, verbose);
+            results.solverName = strdup("Greedy");
             break;
+        }
         case 3:{
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
-            ga(l, o, gaconfig, verbose);
+            results = ga(l, o, gaconfig, verbose);
+            results.solverName = strdup("GA");
             break;
         }
         default:
@@ -103,9 +108,11 @@ int main(int argc, char **argv) {
             break;
     }
     
-    if(opr.withResults)
-        logResultsToCSV(opr, LOGFILE);
-
+    if(results.ready){
+        results.instanceName = l->getInstanceFileName();
+        logResultsToCSV(results, LOGFILE);
+    }
+    
     delete o;
     delete l;
     l = 0; 

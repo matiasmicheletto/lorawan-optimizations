@@ -20,6 +20,8 @@ Instance::Instance(char* filename) {
 
     this->edCount = this->raw[0][0];
     this->gwCount = this->raw[0][1];
+    this->instanceFileName = new char[strlen(filename) + 1];
+    strcpy(this->instanceFileName, extractFileName(filename));
 }
 
 Instance::Instance(const InstanceConfig& config) {
@@ -125,7 +127,7 @@ Instance::Instance(const InstanceConfig& config) {
 }
 
 Instance::~Instance() {
-
+    delete[] this->instanceFileName;
 }
 
 void Instance::printRawData() {
@@ -155,7 +157,7 @@ void Instance::exportRawData(char* filename) {
 
 void Instance::copySFDataTo(std::vector<std::vector<uint>>& destination) {
     // Make a copy of the raw data, only sf values
-    copyMatrix(this->raw, destination, 1, this->getEDCount()+1, 0, this->getGWCount());
+    copyMatrix(this->raw, destination, 1, this->getEDCount(), 0, this->getGWCount()-1);
 }
 
 uint Instance::getMinSF(uint ed, uint gw) {
@@ -232,18 +234,4 @@ std::vector<uint> Instance::getGWList(uint ed) {
         exit(1);
     }
     return gwList;
-}
-
-std::vector<uint> Instance::getEDList(uint gw) {
-    // Get all EDs that can be associated with current gw, WITHOUT taking into account the total UF.
-    std::vector<uint> edList;
-    for(uint i = 0; i < this->edCount; i++) {
-        const uint minSF = this->getMinSF(i, gw);
-        const uint maxSF = this->getMaxSF(i);
-        if(minSF <= maxSF)
-            edList.push_back(i);
-    }
-    // List of ED may be empty if there is no feasible EDs for this GW
-    // Total UF of all ed returned for this gw, may be greater than 1.0
-    return edList;
 }

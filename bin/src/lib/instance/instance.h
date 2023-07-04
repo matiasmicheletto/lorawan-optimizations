@@ -9,6 +9,7 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <cstring>
 
 #include "../util/util.h"
 #include "../random/random.h"
@@ -64,17 +65,18 @@ class Instance { // Provides attributes and funcions related to problem formulat
         
         inline uint getGWCount(){return this->gwCount;}
         inline uint getEDCount(){return this->edCount;}
+        inline char* getInstanceFileName(){return this->instanceFileName;}
         uint getMinSF(uint ed, uint gw);
         uint getMaxSF(uint ed);
         double getUF(uint ed, uint sf);
         uint getPeriod(int ed);
         uint sf2e(uint sf);
         std::vector<uint> getGWList(uint ed);
-        std::vector<uint> getEDList(uint gw);
 
     private:
         std::vector<std::vector<uint>> raw;
         uint gwCount, edCount;
+        char* instanceFileName;
 
         uint _getMaxSF(uint period);
         uint _getMinSF(double distance);

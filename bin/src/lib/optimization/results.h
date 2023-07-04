@@ -5,9 +5,9 @@
 #include "../objective/objective.h"
 
 struct OptimizationResults {
-    bool withResults; // Valid content flag
+    bool ready; // Valid content flag
     char* instanceName; // Instance input file name
-    char* solver; // Optimization method used (name)
+    char* solverName; // Optimization method used
     double execTime; // Total computing time in ms
     double cost; // Optimal solution cost
     unsigned int gwUsed; // Optimal number of used gw
@@ -16,6 +16,6 @@ struct OptimizationResults {
     TunningParameters tp; // alpha, beta, gamma
 };
 
-void logResultsToCSV(OptimizationResults results, const char* csvfilename);
+void logResultsToCSV(const OptimizationResults results, const char* csvfilename);
 
 #endif // RESULTS_H

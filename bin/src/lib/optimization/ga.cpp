@@ -88,7 +88,7 @@ void SO_report_generation_verbose(int generation_number, const EA::GenerationTyp
 
 void SO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {}
 
-void ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
+OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
 
 	if(verbose)
         std::cout << std::endl << "--------------- GA ---------------" << std::endl << std::endl;
@@ -131,11 +131,22 @@ void ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
 		std::cout << "Progress:" << std::endl;
 	}
 
-	// Start optimizer
-	ga_obj.solve();
+	ga_obj.solve(); // Start optimizer
 
+	// Extract optimum
 	Chromosome best = ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes;
 
-	std::cout << std::endl;
-	o->printSolution(best.gw, best.sf, true, true);
+	// Print and return results
+	if(verbose){
+		std::cout << "Result:" << std::endl;
+		o->printSolution(best.gw, best.sf, true, true);
+	}
+
+	OptimizationResults results;
+    results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf);
+    results.tp = o->tp;
+    results.execTime = timer.toc();
+    results.ready = true; // Set export flag to ready
+
+	return results;
 }

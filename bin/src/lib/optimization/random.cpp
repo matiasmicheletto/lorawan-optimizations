@@ -1,7 +1,7 @@
 #include "random.h"
 
 
-void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose){
+OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose){
     /* Fully random uniformly distributed solutions are generated */
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -62,14 +62,24 @@ void randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbos
         }
     }
 
+	OptimizationResults results;
+    results.ready = found; // Set export flag to ready if solution was found
+    if(found){
+        results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf);
+        results.execTime = duration;
+        results.tp = o->tp;
+    }
+
     // Release memory
     free(gw);
     free(sf);
     free(gwBest);
     free(sfBest);
+
+    return results;
 }
 
-void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose) {
+OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -131,9 +141,19 @@ void improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, boo
         }
     }
 
+    OptimizationResults results;
+    results.ready = found; // Set export flag to ready if solution was found
+    if(found){
+        results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf);
+        results.execTime = duration;
+        results.tp = o->tp;
+    }
+
     // Release memory
     free(gw);
     free(sf);
     free(gwBest);
     free(sfBest);
+
+    return results;
 }
