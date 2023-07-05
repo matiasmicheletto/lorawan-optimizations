@@ -10,6 +10,6 @@
 #include "../objective/objective.h"
 #include "results.h"
 
-OptimizationResults greedy(Instance* l, Objective* o, uint maxIters, bool verbose = false);
+OptimizationResults greedy(Instance* l, Objective* o, bool verbose = false);
 
 #endif // GREEDY_H

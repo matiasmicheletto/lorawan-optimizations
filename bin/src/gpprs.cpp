@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
             results.solverName = strdup("IRS");
             break;
         case 2:{
-            results = greedy(l, o, maxIters, verbose);
+            results = greedy(l, o, verbose);
             results.solverName = strdup("Greedy");
             break;
         }
