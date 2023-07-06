@@ -15,8 +15,8 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
     energy = 0;
     maxUF = 0.0;
 
-    double gwuf[this->instance->getGWCount()];
-    std::fill(gwuf, gwuf + this->instance->getGWCount(), 0.0); // Initialize all elements to 0.0
+    UtilizationFactor gwuf[this->instance->getGWCount()]; // Array of UF objects
+    std::fill(gwuf, gwuf + this->instance->getGWCount(), UtilizationFactor()); // Initialize all elements to 0.0 (all SF from 7 to 12)
 
     for(unsigned int i = 0; i < this->instance->getEDCount(); i++){ // For each ED    
         // Check if feasible SF
@@ -27,15 +27,16 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
 
         // Compute GW UF
         gwuf[gw[i]] += this->instance->getUF(i, sf[i]);
-        if(gwuf[gw[i]] > 1.0) // Unfeasibility condition: UF > 1
+        if(gwuf[gw[i]].isFull()) // Unfeasibility condition: UF > 1 for some SF
             return __DBL_MAX__;
-        if(gwuf[gw[i]] > maxUF) // Update max u
-            maxUF = gwuf[gw[i]];
+        double maxUFTemp = gwuf[gw[i]].getMax(); // Max UF value between all SF
+        if(maxUFTemp > maxUF) // Update max UF
+            maxUF = maxUFTemp;
     }
 
     // Count number of used gw
     for(unsigned int j = 0; j < this->instance->getGWCount(); j++)
-        if(gwuf[j] > UFTHRES) gwCount++;
+        if(gwuf[j].isUsed()) gwCount++;
 
     // Compute energy cost
     for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED

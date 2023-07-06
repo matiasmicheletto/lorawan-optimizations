@@ -1,8 +1,8 @@
 #ifndef GA_H
 #define GA_H
 
-#include "../instance/instance.h"
-#include "../objective/objective.h"
+#include "../model/instance.h"
+#include "../model/objective.h"
 #include "results.h"
 
 

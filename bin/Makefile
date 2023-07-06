@@ -11,7 +11,7 @@ GPPRS_OBJECTS   = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GPPRS_SOURCES))
 DATGEN_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(DATGEN_SOURCES))
 HEADERS         = $(wildcard $(LIBDIR)/**/*.h)
 
-INCLUDES = -I$(LIBDIR) -I$(LIBDIR)/util -I$(LIBDIR)/instance -I$(LIBDIR)/objective -I$(LIBDIR)/optimization
+INCLUDES = -I$(LIBDIR) -I$(LIBDIR)/util -I$(LIBDIR)/model -I$(LIBDIR)/optimization
 
 all: $(TARGETS)
 

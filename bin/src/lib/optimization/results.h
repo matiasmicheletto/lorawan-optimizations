@@ -2,7 +2,7 @@
 #define RESULTS_H
 
 #include <fstream>
-#include "../objective/objective.h"
+#include "../model/objective.h"
 
 struct OptimizationResults {
     bool ready; // Valid content flag

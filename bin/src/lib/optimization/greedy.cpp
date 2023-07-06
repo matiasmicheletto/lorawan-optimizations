@@ -23,15 +23,15 @@ OptimizationResults greedy(Instance* l, Objective* o, bool verbose){
         std::vector<uint> edsOfSelectedGW; // Larger list of EDs associated to a GW
         for(uint j = 0; j < gwStack.size(); j++) { // For each available GW, get attribute (in this case, feasible EDs)
             uint gwToTest = gwStack[j]; // Count eds for each GW in stack
-            double gwToTestUF = 0.0; // UF of GW to test
+            UtilizationFactor gwToTestUF; // UF of GW to test
             std::vector<uint> tempEDList; // List of EDs for current GW to test (is initially empty)
             for(uint i = 0; i < edStack.size(); i++){ // For each unallocated ED, check if feasible to GW to test
                 uint edToTest = edStack[i];
                 // Get range of possible SF and compute potential UF
                 const uint minSF = l->getMinSF(edToTest, gwToTest);
                 const uint maxSF = l->getMaxSF(edToTest);
-                double edToTestUF = l->getUF(edToTest, minSF); // TODO: using always min SF ?? or max SF ??
-                if(minSF <= maxSF && (edToTestUF + gwToTestUF) < 1.0){ // Feasibility condition for testint ED and GW
+                UtilizationFactor edToTestUF = l->getUF(edToTest, minSF); // TODO: using always min SF ?? or max SF ??
+                if(minSF <= maxSF && !((edToTestUF + gwToTestUF).isFull())){ // Feasibility condition for testint ED and GW
                     tempEDList.push_back(edToTest);
                     gwToTestUF += edToTestUF; 
                 }

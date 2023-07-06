@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cstring>
 
+#include "uf.h"
 #include "../util/util.h"
 #include "../random/random.h"
 #include "../random/uniform.h"
@@ -68,7 +69,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         inline char* getInstanceFileName(){return this->instanceFileName;}
         uint getMinSF(uint ed, uint gw);
         uint getMaxSF(uint ed);
-        double getUF(uint ed, uint sf);
+        UtilizationFactor getUF(uint ed, uint sf);
         uint getPeriod(int ed);
         uint sf2e(uint sf);
         std::vector<uint> getGWList(uint ed);

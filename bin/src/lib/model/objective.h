@@ -10,10 +10,8 @@
 */
 
 #include <algorithm>
-#include "../instance/instance.h"
-
-// UF value for a GW to be considered as "used"
-#define UFTHRES .0000001
+#include "uf.h"
+#include "instance.h"
 
 struct TunningParameters {
     double alpha;

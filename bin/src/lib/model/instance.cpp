@@ -168,9 +168,11 @@ uint Instance::getMaxSF(uint ed) {
     return this->_getMaxSF(this->getPeriod(ed));
 }
 
-double Instance::getUF(uint ed, uint sf) {
+UtilizationFactor Instance::getUF(uint ed, uint sf) {
     double pw = (double) this->sf2e(sf);
-    return pw / ((double)this->getPeriod(ed) - pw);
+    double ufValue = pw / ((double)this->getPeriod(ed) - pw);
+    UtilizationFactor uf(sf, ufValue);
+    return uf;
 }
 
 uint Instance::_getMaxSF(uint period) {

@@ -6,8 +6,8 @@
 #include <math.h>
 #include "../util/util.h"
 #include "../random/uniform.h"
-#include "../instance/instance.h"
-#include "../objective/objective.h"
+#include "../model/instance.h"
+#include "../model/objective.h"
 #include "results.h"
 
 OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose = false);

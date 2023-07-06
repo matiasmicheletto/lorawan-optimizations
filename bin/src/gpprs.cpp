@@ -3,8 +3,8 @@
 
 #include <cstring>
 #include "lib/util/util.h"
-#include "lib/instance/instance.h"
-#include "lib/objective/objective.h"
+#include "lib/model/instance.h"
+#include "lib/model/objective.h"
 #include "lib/optimization/random.h"
 #include "lib/optimization/greedy.h"
 #include "lib/optimization/ga.h"

@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include "lib/util/util.h"
-#include "lib/instance/instance.h"
+#include "lib/model/instance.h"
 
 
 int main(int argc, char **argv) {

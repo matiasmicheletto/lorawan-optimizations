@@ -6,8 +6,8 @@
 #include <chrono>
 #include <numeric>
 #include "../util/util.h"
-#include "../instance/instance.h"
-#include "../objective/objective.h"
+#include "../model/instance.h"
+#include "../model/objective.h"
 #include "results.h"
 
 OptimizationResults greedy(Instance* l, Objective* o, bool verbose = false);
