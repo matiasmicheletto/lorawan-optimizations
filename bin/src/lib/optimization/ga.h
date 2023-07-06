@@ -13,9 +13,9 @@ struct GAConfig {
     double mutation;
     
     GAConfig(
-            int popSize = 40, 
+            int popSize = 50, 
             int numGens = 1000, 
-            double crossRate = 0.8, 
+            double crossRate = 0.7, 
             double mutRate = 0.3)
         : 
             popsize(popSize), 

@@ -36,7 +36,8 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
 
     // Count number of used gw
     for(unsigned int j = 0; j < this->instance->getGWCount(); j++)
-        if(gwuf[j].isUsed()) gwCount++;
+        if(gwuf[j].isUsed()) 
+            gwCount++;
 
     // Compute energy cost
     for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED

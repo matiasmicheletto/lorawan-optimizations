@@ -29,6 +29,8 @@ public:
     bool operator>(const UtilizationFactor& other) const;
     bool operator>=(const UtilizationFactor& other) const;
 
+    inline double getUFValue(uint sf){ return this->ufValues[sf-7]; };
+
 private:
     double ufValues[SF_NUM];
 };

@@ -107,38 +107,53 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	ga_obj.verbose = false;
 	ga_obj.population = config.popsize;
 	ga_obj.generation_max = config.maxgen;
-	ga_obj.best_stall_max = config.maxgen/100;
-    ga_obj.average_stall_max = config.maxgen/100;
+	ga_obj.tol_stall_average = 1e-6;
+	ga_obj.tol_stall_best = 1e-6;
+	ga_obj.best_stall_max = config.maxgen/10;
+    ga_obj.average_stall_max = config.maxgen/10;
 	ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
 	ga_obj.init_genes = init_genes;
 	ga_obj.eval_solution = eval_solution;
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;    
-	if(verbose)
-		ga_obj.SO_report_generation = SO_report_generation_verbose;
-	else
-		ga_obj.SO_report_generation = SO_report_generation;
+	ga_obj.SO_report_generation = verbose ? SO_report_generation_verbose : SO_report_generation;
     ga_obj.elite_count = 5;
 	ga_obj.crossover_fraction = config.crossover;
 	ga_obj.mutation_rate = config.mutation;
     
 	// Print GA configuration
-	if(verbose){
-		std::cout << "Population: " << config.popsize << std::endl;
-		std::cout << "Generations: " << config.maxgen << std::endl;
-		std::cout << "Crossover rate: " << config.crossover << std::endl;
-		std::cout << "Mutation rate: " << config.mutation << std::endl;
+	if(verbose) {
+		std::cout << "Population: " << ga_obj.population << std::endl;
+		std::cout << "Generations: " << ga_obj.generation_max << std::endl;
+		std::cout << "Best stall max.: " << ga_obj.best_stall_max << std::endl;
+		std::cout << "Avg stall max.: " << ga_obj.average_stall_max << std::endl;
+		std::cout << "Crossover fraction: " << ga_obj.crossover_fraction << std::endl;
+		std::cout << "Mutation rate: " << ga_obj.mutation_rate << std::endl;
 		std::cout << "Progress:" << std::endl;
 	}
 
-	ga_obj.solve(); // Start optimizer
+	EA::StopReason res = ga_obj.solve(); // Start optimizer
 
 	// Extract optimum
 	Chromosome best = ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes;
 
 	// Print and return results
 	if(verbose){
-		std::cout << "Result:" << std::endl;
+		std::cout << "Exit condition: ";
+		switch (res) {
+			case EA::StopReason::MaxGenerations:
+				std::cout << " Max. generations";
+				break;
+			case EA::StopReason::StallAverage:
+				std::cout << " Average stall";
+				break;
+			case EA::StopReason::StallBest:
+				std::cout << " Best stall";
+				break;
+			default:
+				break;
+		}
+		std::cout << std::endl << "Optimal result:" << std::endl;
 		o->printSolution(best.gw, best.sf, true, true);
 	}
 

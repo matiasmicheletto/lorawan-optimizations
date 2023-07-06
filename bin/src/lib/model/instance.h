@@ -64,20 +64,21 @@ class Instance { // Provides attributes and funcions related to problem formulat
         void exportRawData(char* filename);
         void copySFDataTo(std::vector<std::vector<uint>>& destination);
         
-        inline uint getGWCount(){return this->gwCount;}
-        inline uint getEDCount(){return this->edCount;}
-        inline char* getInstanceFileName(){return this->instanceFileName;}
+        inline uint getGWCount(){return this->gwCount;};
+        inline uint getEDCount(){return this->edCount;};
+        inline char* getInstanceFileName(){return this->instanceFileName;};
+        inline uint sf2e(uint sf) {return this->pw[sf-7];};
         uint getMinSF(uint ed, uint gw);
         uint getMaxSF(uint ed);
         UtilizationFactor getUF(uint ed, uint sf);
         uint getPeriod(int ed);
-        uint sf2e(uint sf);
         std::vector<uint> getGWList(uint ed);
 
     private:
         std::vector<std::vector<uint>> raw;
         uint gwCount, edCount;
         char* instanceFileName;
+        static const uint pw[6];
 
         uint _getMaxSF(uint period);
         uint _getMinSF(double distance);

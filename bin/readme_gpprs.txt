@@ -23,6 +23,7 @@ DESCRIPTION:
       7 7 10 9 1600
       7 8 8 8 800
       11 9 9 7 800
+   The summarized output will be appended to a file under name "summary.csv". Complete output will print to terminal if option "-v" is used when calling the binary.
 
 OPTIONS:
    -h, --help     Display this help message.
@@ -30,15 +31,24 @@ OPTIONS:
    -a, --alpha    Alpha tunning parameter. Default is 1.
    -b, --beta     Beta tunning parameter. Default is 0.1.
    -g, --gamma    Gamma tunning parameter. Default is 1000.
-   -m, --method   Optimization method: 0: random, 1: improved random, 2: greedy, 3: GA. Default is 1 (improved random).
+   -m, --method   Optimization method: Default is RS (random).
+                     RS: Random Search
+                     IRS: Improved Random Search
+                     GA: Genetic Algorithms
+                     GGW: Greedy method to minimize GW 
+                     GE: Greedy method to minimize E 
+                     GU: Greedy method to minimize U
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
 
 EXAMPLES:
    1. gpprs -f input.dat
       - Run the program using the default options.
 
-   2. gpprs -f input.dat --iter 10e6
-      - Execute 10M iterations.
+   2. gpprs -f input.dat --iter 1000 -a 1 -b 0.1 -g 1000
+      - Execute 1 thousand iterations using 1, 0.1 and 1000 for alpha, beta and gamma parameters.
+
+   3. gpprs -f input.dat -m GA -v >> outputs.log 
+      - Run the program using the GA method with default configurations and append complete results to "outputs.log" text file. Text may contain terminal formatting escape characters, so it is recommended to show results using the "cat" program instead of "less".
 
 AUTHORS
    Code was written by Dr. Matias J. Micheletto from CIT-GSJ and supervised by Dr. Rodrigo M. Santos from DIEC-UNS and Dr. Javier Marenco from UTDT.

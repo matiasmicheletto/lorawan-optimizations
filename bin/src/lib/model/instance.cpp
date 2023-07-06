@@ -1,5 +1,7 @@
 #include "instance.h"
 
+const uint Instance::pw[6] = {1, 2, 4, 8, 16, 32}; // Time window values for spread factors
+
 Instance::Instance(char* filename) {
     std::ifstream file(filename);
     if (!file) {
@@ -213,11 +215,6 @@ uint Instance::_getMinSF(double distance) {
 
 uint Instance::getPeriod(int ed) {
     return this->raw[ed+1][this->gwCount]; // Last column of raw data
-}
-
-uint Instance::sf2e(uint sf) {
-    static const uint arr[6] = {1, 2, 4, 8, 16, 32};
-    return arr[sf-7];
 }
 
 std::vector<uint> Instance::getGWList(uint ed) {

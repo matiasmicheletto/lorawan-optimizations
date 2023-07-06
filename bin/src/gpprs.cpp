@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     unsigned long maxIters = 1e5;
     TunningParameters tp; // alpha, beta and gamma
     bool verbose = false; // Disable printing to terminal
-    int method = 1; // Default is improved random search
+    int method = 0; // Default is random search
     
     // Program arguments
     for(int i = 0; i < argc; i++) {    
@@ -55,9 +55,22 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--method") == 0) {
-            if(i+1 < argc) 
-                method = atoi(argv[i+1]);
-            else
+            if(i+1 < argc) {
+                if(std::strcmp(argv[i+1], "RS") == 0)
+                    method = 0;
+                else if(std::strcmp(argv[i+1], "IRS") == 0)
+                    method = 1;
+                else if(std::strcmp(argv[i+1], "GA") == 0)
+                    method = 2;
+                else if(std::strcmp(argv[i+1], "GGW") == 0)
+                    method = 3;
+                else if(std::strcmp(argv[i+1], "GE") == 0)
+                    method = 4;
+                else if(std::strcmp(argv[i+1], "GU") == 0)
+                    method = 5;
+                else 
+                    std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
+            }else
                 printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0){
@@ -82,33 +95,47 @@ int main(int argc, char **argv) {
     OptimizationResults results;
 
     switch (method) {
-        case 0:
+        case 0: {
             results = randomSearch(l, o, maxIters, verbose);    
-            results.solverName = strdup("RS");
-            break;
-        case 1:
-            results = improvedRandomSearch(l, o, maxIters, verbose);
-            results.solverName = strdup("IRS");
-            break;
-        case 2:{
-            results = greedy(l, o, verbose);
-            results.solverName = strdup("Greedy");
+            results.solverName = strdup("Random Search");
             break;
         }
-        case 3:{
+        case 1: {
+            results = improvedRandomSearch(l, o, maxIters, verbose);
+            results.solverName = strdup("Improved Random Search");
+            break;
+        }
+        case 2: {
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
             results = ga(l, o, gaconfig, verbose);
-            results.solverName = strdup("GA");
+            results.solverName = strdup("Genetic Algorithm");
             break;
         }
-        default:
-            if(verbose)
-                std::cout << "Unknown optimization method" << std::endl;
+        case 3: {
+            results = greedy(l, o, MIN::GW, verbose);
+            results.solverName = strdup("Greedy GW Minimization");
             break;
+        }
+        case 4: {
+            results = greedy(l, o, MIN::E, verbose);
+            results.solverName = strdup("Greedy E Minimization");
+            break;
+        }
+        case 5: {
+            results = greedy(l, o, MIN::UF, verbose);
+            results.solverName = strdup("Greedy UF Minimization");
+            break;
+        }
+        default: {
+            if(verbose)
+                std::cerr << "Error: Unknown optimization method." << std::endl;
+            exit(1);
+            break;
+        }
     }
     
-    if(results.ready){
+    if(results.ready) {
         results.instanceName = l->getInstanceFileName();
         logResultsToCSV(results, LOGFILE);
     }
