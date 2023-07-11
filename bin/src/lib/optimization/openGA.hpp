@@ -313,7 +313,7 @@ public:
 	function<double(const thisChromosomeType&)> calculate_SO_total_fitness;
 	function<vector<double>(thisChromosomeType&)> calculate_MO_objectives;
 	function<vector<double>(const vector<double>&)> distribution_objective_reductions;
-	function<void(GeneType&,const function<double(void)> &rnd01)> init_genes;
+	function<void(GeneType&,const function<double(void)> &rnd01, const bool &setValues)> init_genes;
 	function<bool(const GeneType&,MiddleCostType&)> eval_solution;
 	function<bool(const GeneType&,MiddleCostType&,const thisGenerationType&)> eval_solution_IGA;
 	function<GeneType(const GeneType&,const function<double(void)> &rnd01,double shrink_scale)> mutate;
@@ -1315,7 +1315,7 @@ protected:
 			while(!accepted)
 			{
 				thisChromosomeType X;
-				init_genes(X.genes,[this](){return random01();});
+				init_genes(X.genes,[this](){return random01();},true);
 				accepted = init_population_try(*p_generation0,X,index);
 				(*attemps)++;
 			}

@@ -35,7 +35,8 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
         // Test generated solution
         unsigned int gwCount, energy;
         double totalUF;
-        const double q = o->eval(gw, sf, gwCount, energy, totalUF);
+        bool feasible;
+        const double q = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
 
         if(q < bestQ){ // New optimum
             bestQ = q;
@@ -65,7 +66,7 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
 	OptimizationResults results;
     results.ready = found; // Set export flag to ready if solution was found
     if(found){
-        results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf);
+        results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible);
         results.execTime = duration;
         results.tp = o->tp;
     }
@@ -114,7 +115,8 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
         // Test generated solution
         unsigned int gwCount, energy;
         double totalUF;
-        const double q = o->eval(gw, sf, gwCount, energy, totalUF);
+        bool feasible;
+        const double q = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
 
         if(q < bestQ){ // New optimum
             bestQ = q;
@@ -144,7 +146,7 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
     OptimizationResults results;
     results.ready = found; // Set export flag to ready if solution was found
     if(found){
-        results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf);
+        results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible);
         results.execTime = duration;
         results.tp = o->tp;
     }

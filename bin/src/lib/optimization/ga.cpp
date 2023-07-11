@@ -9,6 +9,12 @@ Objective* _o;
 struct Chromosome {
 	unsigned int* gw;
 	unsigned int* sf;
+	/*
+	~Chromosome() {
+		if(gw) free(gw);
+		if(sf) free(sf);
+	}
+	*/
 	void print() const { 
         _o->printSolution(gw, sf);
 	}
@@ -36,27 +42,29 @@ void randomize_gene(const Chromosome& p, unsigned int index, const std::function
 	p.sf[index] = (unsigned int)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);
 }
 
-void init_genes(Chromosome& p, const std::function<double(void)> &rnd01) {
+void init_genes(Chromosome& p, const std::function<double(void)> &rnd01, bool setValues = true) {
 	// Random gene initialization
 	p.gw = (unsigned int*) malloc( sizeof(unsigned int) * _l->getEDCount());
 	p.sf = (unsigned int*) malloc( sizeof(unsigned int) * _l->getEDCount());
-    for(unsigned int i = 0; i < _l->getEDCount(); i++)
-        randomize_gene(p, i, rnd01);
+	if(setValues)
+		for(unsigned int i = 0; i < _l->getEDCount(); i++)
+			randomize_gene(p, i, rnd01);
 }
 
 Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &rnd01, double shrink_scale) {
 	Chromosome X_new;
-    init_genes(X_new, rnd01);
+    init_genes(X_new, rnd01, false);
     copy_genes(X_base, X_new);
+	const double chances = 1.0 / (double)_l->getEDCount();
 	for(unsigned int i = 0; i < _l->getEDCount(); i++)
-		if(rnd01() < 1.0 / (double)_l->getEDCount()) // Mutate a single gene
+		if(rnd01() < chances) // Mutate a single gene
 			randomize_gene(X_new, i, rnd01);
 	return X_new;
 }
 
 Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::function<double(void)> &rnd01) {
 	Chromosome X_new;
-    init_genes(X_new, rnd01);
+    init_genes(X_new, rnd01, false);
 	unsigned int x_point = (unsigned int) (rnd01()*(double)_l->getEDCount()); // Crossover point
     for(unsigned int i = 0; i < x_point; i++){
         X_new.gw[i] = X1.gw[i];
@@ -72,8 +80,9 @@ Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::func
 bool eval_solution(const Chromosome& p, MiddleCost &c) { // Compute costs
     unsigned int gwCount, energy;
     double totalUF;
-    c.cost = _o->eval(p.gw, p.sf, gwCount, energy, totalUF);
-	return c.cost < __DBL_MAX__; // Reject if not feasible solution
+	bool feasible;
+    c.cost = _o->eval(p.gw, p.sf, gwCount, energy, totalUF, feasible);
+	return feasible; // Reject if not feasible solution ?
 }
 
 double calculate_SO_total_fitness(const GA_Type::thisChromosomeType &X) { // Compute fitness value
@@ -84,6 +93,8 @@ void SO_report_generation_verbose(int generation_number, const EA::GenerationTyp
     std::cout << "Generation [" << generation_number << "], "
 		<< "Best=" << last_generation.best_total_cost << ", "
 		<< "Average cost=" << last_generation.average_cost << std::endl;
+
+	//last_generation.chromosomes[last_generation.best_chromosome_index].genes.print();
 }
 
 void SO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {}
@@ -158,7 +169,7 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	}
 
 	OptimizationResults results;
-    results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf);
+    results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = o->tp;
     results.execTime = timer.toc();
     results.ready = true; // Set export flag to ready

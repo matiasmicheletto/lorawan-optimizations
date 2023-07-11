@@ -9,19 +9,20 @@ void logResultsToCSV(const OptimizationResults results, const char* csvfilename)
     }
 
     if (csvFile.tellp() == 0) { // File is empty, write the header
-        csvFile << "Instance Name,Solver,Execution Time (ms),Cost,GW Used,Energy,UF,Alpha,Beta,Gamma" << std::endl;
+        csvFile << "Instance Name,Alpha,Beta,Gamma,Solver,Execution Time (ms),Cost,Feasible,GW Used,Energy,UF" << std::endl;
     }
     
     csvFile << results.instanceName << ","
+            << results.tp.alpha << ","
+            << results.tp.beta << ","
+            << results.tp.gamma << ","
             << results.solverName << ","
             << results.execTime << ","
             << results.cost << ","
+            << (results.feasible ? "Yes,":"No,")
             << results.gwUsed << ","
             << results.energy << ","
-            << results.uf << ","
-            << results.tp.alpha << ","
-            << results.tp.beta << ","
-            << results.tp.gamma << std::endl;
+            << results.uf << std::endl;
 
     csvFile.flush();
     csvFile.close();

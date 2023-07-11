@@ -12,6 +12,7 @@ struct OptimizationResults {
     double cost; // Optimal solution cost
     unsigned int gwUsed; // Optimal number of used gw
     unsigned int energy; // Energy of solution
+    bool feasible; // Feasible solution
     double uf; // Max. utilization factor of solution
     TunningParameters tp; // alpha, beta, gamma
 };

@@ -121,7 +121,7 @@ OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose
 
     // Evaluate GW and SF pair of vectors with objective function and return results
     OptimizationResults results;
-    results.cost = o->eval(gw, sf, results.gwUsed, results.energy, results.uf);
+    results.cost = o->eval(gw, sf, results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true; // Set export flag to ready

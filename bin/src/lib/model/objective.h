@@ -33,11 +33,12 @@ class Objective {
         Objective(Instance* instance, const TunningParameters& tp = TunningParameters());
         ~Objective();
         
-        double eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &totalUF);
+        double eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &totalUF, bool &feasible);
         TunningParameters tp;
         void printSolution(unsigned int* gw, unsigned int* sf, bool allocation = true, bool highlight = false);
     private:
         Instance* instance;
+        static const uint unfeasibleIncrement;
 };
 
 #endif // OBJECTIVE_H
