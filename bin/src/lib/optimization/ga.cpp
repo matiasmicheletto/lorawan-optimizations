@@ -171,7 +171,7 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	OptimizationResults results;
     results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = o->tp;
-    results.execTime = timer.toc();
+    results.execTime = timer.toc()*1000;
     results.ready = true; // Set export flag to ready
 
 	return results;
