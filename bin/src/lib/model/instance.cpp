@@ -103,13 +103,13 @@ Instance::Instance(const InstanceConfig& config) {
         uint availableGW = 0;
         for(uint j = 0; j < gws.size(); j++) {
             double dist = euclideanDistance(
-                eds.at(i).pos.x,
-                eds.at(i).pos.y, 
-                gws.at(j).x,
-                gws.at(j).y 
+                eds[i].pos.x,
+                eds[i].pos.y, 
+                gws[j].x,
+                gws[j].y 
             );
             int minSF = this->_getMinSF(dist);
-            int maxSF = this->_getMaxSF(eds.at(i).period);
+            int maxSF = this->_getMaxSF(eds[i].period);
             if(minSF <= maxSF)
                 availableGW++; // Count available gw for this ED
             row.push_back(minSF);
@@ -117,10 +117,10 @@ Instance::Instance(const InstanceConfig& config) {
         if(availableGW == 0) {
             std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
                         << "ED = " << i << std::endl
-                        << "Period = " << eds.at(i).period << std::endl;
+                        << "Period = " << eds[i].period << std::endl;
             exit(1);
         }
-        row.push_back(eds.at(i).period); // Add period as last element
+        row.push_back(eds[i].period); // Add period as last element
         this->raw.push_back(row); // Add row to data
     } // Raw data is ready to export (or use)
     // Set attributes (in case of using config to generate an instance to solve)
@@ -213,7 +213,7 @@ uint Instance::_getMinSF(double distance) {
         return 100;
 }
 
-uint Instance::getPeriod(int ed) {
+uint Instance::getPeriod(uint ed) {
     return this->raw[ed+1][this->gwCount]; // Last column of raw data
 }
 

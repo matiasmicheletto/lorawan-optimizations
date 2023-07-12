@@ -106,7 +106,7 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
         // Generate a random solution (candidate)
         for(unsigned int i = 0; i < l->getEDCount(); i++){
             std::vector<unsigned int> gwList = l->getGWList(i); // Valid gw for this ed
-            gw[i] = gwList.at((unsigned int)floor(uniform.random()*gwList.size())); // Pick random gw
+            gw[i] = gwList[(unsigned int)floor(uniform.random()*gwList.size())]; // Pick random gw
             // Pick random SF from valid range
             const unsigned int minSF = l->getMinSF(i, gw[i]);
             const unsigned int maxSF = l->getMaxSF(i);

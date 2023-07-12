@@ -32,6 +32,13 @@ using std::runtime_error;
 using std::unique_ptr;
 using std::vector;
 
+#ifdef OPENGA_EXTERN_LOCAL_VARS
+extern std::mutex mtx_rand;
+#else
+std::mutex mtx_rand;
+#endif
+
+
 enum class GA_MODE
 {
 	SOGA,
@@ -262,8 +269,6 @@ public:
 
 };
 
-std::mutex mtx_rand;
-
 template<typename GeneType,typename MiddleCostType>
 class Genetic
 {
@@ -313,7 +318,7 @@ public:
 	function<double(const thisChromosomeType&)> calculate_SO_total_fitness;
 	function<vector<double>(thisChromosomeType&)> calculate_MO_objectives;
 	function<vector<double>(const vector<double>&)> distribution_objective_reductions;
-	function<void(GeneType&,const function<double(void)> &rnd01, const bool &setValues)> init_genes;
+	function<void(GeneType&,const function<double(void)> &rnd01)> init_genes;
 	function<bool(const GeneType&,MiddleCostType&)> eval_solution;
 	function<bool(const GeneType&,MiddleCostType&,const thisGenerationType&)> eval_solution_IGA;
 	function<GeneType(const GeneType&,const function<double(void)> &rnd01,double shrink_scale)> mutate;
@@ -481,8 +486,9 @@ public:
 			generations_so_abs.push_back(thisGenSOAbs(new_generation));
 			report_generation(new_generation);
 		}
-		last_generation=new_generation;
-
+		if (!new_generation.fronts.empty())
+                	last_generation = new_generation;
+		
 		return stop_critera();
 	}
 
@@ -1315,7 +1321,7 @@ protected:
 			while(!accepted)
 			{
 				thisChromosomeType X;
-				init_genes(X.genes,[this](){return random01();},true);
+				init_genes(X.genes,[this](){return random01();});
 				accepted = init_population_try(*p_generation0,X,index);
 				(*attemps)++;
 			}

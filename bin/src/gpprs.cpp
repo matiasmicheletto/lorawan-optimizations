@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if(l == 0) printHelp(MANUAL);
+    if(l == nullptr) printHelp(MANUAL);
 
     if(verbose) {    
         std::cout << "Input file loaded." << std::endl;

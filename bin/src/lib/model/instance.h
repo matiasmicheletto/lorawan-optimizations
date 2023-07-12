@@ -71,7 +71,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         uint getMinSF(uint ed, uint gw);
         uint getMaxSF(uint ed);
         UtilizationFactor getUF(uint ed, uint sf);
-        uint getPeriod(int ed);
+        uint getPeriod(uint ed);
         std::vector<uint> getGWList(uint ed);
 
     private:

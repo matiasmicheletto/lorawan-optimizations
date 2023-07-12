@@ -7,7 +7,8 @@
 #include <cstring>
 #include <math.h>
 
-using uint = unsigned int; // Just for shorten the code
+//using uint = unsigned int; // Just for shorten the code
+#define uint unsigned int
 
 void printHelp(const char* file);
 char* extractFileName(const char* path);

@@ -9,7 +9,9 @@
         -- x[i][1]: SF used by ED i.
 */
 
+
 #include <algorithm>
+#include "../util/util.h"
 #include "uf.h"
 #include "instance.h"
 
@@ -33,9 +35,9 @@ class Objective {
         Objective(Instance* instance, const TunningParameters& tp = TunningParameters());
         ~Objective();
         
-        double eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &totalUF, bool &feasible);
+        double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
         TunningParameters tp;
-        void printSolution(unsigned int* gw, unsigned int* sf, bool allocation = true, bool highlight = false);
+        void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false);
     private:
         Instance* instance;
         static const uint unfeasibleIncrement;

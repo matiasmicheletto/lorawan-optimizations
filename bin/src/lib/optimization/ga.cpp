@@ -7,14 +7,22 @@ Objective* _o;
 
 // Chromosome model
 struct Chromosome {
-	unsigned int* gw;
-	unsigned int* sf;
-	/*
-	~Chromosome() {
-		if(gw) free(gw);
-		if(sf) free(sf);
+	uint* gw;
+	uint* sf;
+	Chromosome() {
+		gw = (uint*) malloc( sizeof(uint) * _l->getEDCount());
+		sf = (uint*) malloc( sizeof(uint) * _l->getEDCount());
+		//std::cout << "Created new chromosome:" << this << std::endl;
 	}
-	*/
+	~Chromosome() { // This should work, however, it doesnt (double free error)
+		//std::cout << "Tryied to delete:" << this << std::endl;
+		/*
+		if(gw != nullptr) 
+			free(gw);
+		if(sf != nullptr) 
+			free(sf);
+		*/
+	}
 	void print() const { 
         _o->printSolution(gw, sf);
 	}
@@ -28,49 +36,47 @@ typedef EA::Genetic<Chromosome,MiddleCost> GA_Type;
 typedef EA::GenerationType<Chromosome,MiddleCost> Generation_Type;
 
 void copy_genes(const Chromosome& from, Chromosome& to) {
-	std::copy(from.gw, from.gw + _l->getEDCount(), to.gw);
-	std::copy(from.sf, from.sf + _l->getEDCount(), to.sf);
+	for(uint i = 0; i < _l->getEDCount(); i++){
+		to.gw[i] = from.gw[i];
+		to.sf[i] = from.sf[i];
+	}
 }
 
-void randomize_gene(const Chromosome& p, unsigned int index, const std::function<double(void)> &rnd01) {
+void randomize_gene(const Chromosome& p, const uint index, const std::function<double(void)> &rnd01) {
 	// Randomly modify GW and SF allocation for gene number "index"
-	std::vector<unsigned int> gwList = _l->getGWList(index); // Valid gws for this ED
-	p.gw[index] = gwList.at((unsigned int)floor(rnd01()*gwList.size())); // Pick random GW from list
+	std::vector<uint> gwList = _l->getGWList(index); // Valid gws for this ED
+	p.gw[index] = gwList[(uint)floor(rnd01()*gwList.size())]; // Pick random GW from list
 	// Next, select a valid SF given ED period and selected GW
-	unsigned int minSF = _l->getMinSF(index, p.gw[index]);
-	unsigned int maxSF = _l->getMaxSF(index);
-	p.sf[index] = (unsigned int)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);
+	uint minSF = _l->getMinSF(index, p.gw[index]);
+	uint maxSF = _l->getMaxSF(index);
+	p.sf[index] = (uint)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);
 }
 
-void init_genes(Chromosome& p, const std::function<double(void)> &rnd01, bool setValues = true) {
-	// Random gene initialization
-	p.gw = (unsigned int*) malloc( sizeof(unsigned int) * _l->getEDCount());
-	p.sf = (unsigned int*) malloc( sizeof(unsigned int) * _l->getEDCount());
-	if(setValues)
-		for(unsigned int i = 0; i < _l->getEDCount(); i++)
-			randomize_gene(p, i, rnd01);
+void init_genes(Chromosome& p, const std::function<double(void)> &rnd01) {
+	// Random gene memory allocation and initialization
+	//std::cout << "init_genes() " << &p << std::endl;
+	for(uint i = 0; i < _l->getEDCount(); i++)
+		randomize_gene(p, i, rnd01);
 }
 
 Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &rnd01, double shrink_scale) {
-	Chromosome X_new;
-    init_genes(X_new, rnd01, false);
-    copy_genes(X_base, X_new);
+	//Chromosome X_new;
+    //copy_genes(X_base, X_new);
 	const double chances = 1.0 / (double)_l->getEDCount();
-	for(unsigned int i = 0; i < _l->getEDCount(); i++)
+	for(uint i = 0; i < _l->getEDCount(); i++)
 		if(rnd01() < chances) // Mutate a single gene
-			randomize_gene(X_new, i, rnd01);
-	return X_new;
+			randomize_gene(X_base, i, rnd01);
+	return X_base;
 }
 
 Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::function<double(void)> &rnd01) {
 	Chromosome X_new;
-    init_genes(X_new, rnd01, false);
-	unsigned int x_point = (unsigned int) (rnd01()*(double)_l->getEDCount()); // Crossover point
-    for(unsigned int i = 0; i < x_point; i++){
+	uint x_point = (uint) floor(rnd01()*(double)_l->getEDCount()); // Crossover point
+    for(uint i = 0; i < x_point; i++){
         X_new.gw[i] = X1.gw[i];
 		X_new.sf[i] = X1.sf[i];
 	}
-    for(unsigned int i = x_point; i < _l->getEDCount(); i++){
+    for(uint i = x_point; i < _l->getEDCount(); i++){
         X_new.gw[i] = X2.gw[i];
 		X_new.sf[i] = X1.sf[i];
 	}
@@ -78,7 +84,7 @@ Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::func
 }
 
 bool eval_solution(const Chromosome& p, MiddleCost &c) { // Compute costs
-    unsigned int gwCount, energy;
+    uint gwCount, energy;
     double totalUF;
 	bool feasible;
     c.cost = _o->eval(p.gw, p.sf, gwCount, energy, totalUF, feasible);
@@ -113,9 +119,9 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	// Set GA configuration
 	GA_Type ga_obj;
 	ga_obj.problem_mode = EA::GA_MODE::SOGA;
-	ga_obj.multi_threading = true;
+	ga_obj.multi_threading = false; // TODO
 	ga_obj.idle_delay_us = 1; // switch between threads quickly
-	ga_obj.verbose = false;
+	ga_obj.verbose = false; // prints too much data
 	ga_obj.population = config.popsize;
 	ga_obj.generation_max = config.maxgen;
 	ga_obj.tol_stall_average = 1e-6;
@@ -146,7 +152,8 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	EA::StopReason res = ga_obj.solve(); // Start optimizer
 
 	// Extract optimum
-	Chromosome best = ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes;
+	Chromosome best;
+	copy_genes(ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes, best);
 
 	// Print and return results
 	if(verbose){

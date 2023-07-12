@@ -11,7 +11,7 @@ Objective::~Objective() {
 
 const uint Objective::unfeasibleIncrement = 1000000;
 
-double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount, unsigned int &energy, double &maxUF, bool &feasible) {    
+double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &maxUF, bool &feasible) {    
     // Reset objectives (if unfeasible solution, these values remain 0 and _DBL_MAX_ is returned)
     gwCount = 0;
     energy = 0;
@@ -22,10 +22,10 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
     UtilizationFactor gwuf[this->instance->getGWCount()]; // Array of UF objects
     std::fill(gwuf, gwuf + this->instance->getGWCount(), UtilizationFactor()); // Initialize all elements to 0.0 (all SF from 7 to 12)
 
-    for(unsigned int i = 0; i < this->instance->getEDCount(); i++){ // For each ED    
+    for(uint i = 0; i < this->instance->getEDCount(); i++){ // For each ED    
         // Check if feasible SF
-        unsigned int minSF = this->instance->getMinSF(i, gw[i]);
-        unsigned int maxSF = this->instance->getMaxSF(i);
+        uint minSF = this->instance->getMinSF(i, gw[i]);
+        uint maxSF = this->instance->getMaxSF(i);
         if(sf[i] > maxSF || sf[i] < minSF){ // Unfeasibility condition: not valid SF available for this GW
             feasible = false;
             cost += unfeasibleIncrement;
@@ -43,12 +43,12 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
     }
 
     // Count number of used gw
-    for(unsigned int j = 0; j < this->instance->getGWCount(); j++)
+    for(uint j = 0; j < this->instance->getGWCount(); j++)
         if(gwuf[j].isUsed()) 
             gwCount++;
 
     // Compute energy cost
-    for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED
+    for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED
         energy += this->instance->sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
 
     // If solution is feasible, at this point, cost should equal 0.0
@@ -59,9 +59,9 @@ double Objective::eval(unsigned int* gw, unsigned int* sf, unsigned int &gwCount
     return cost; 
 }
 
-void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool allocation, bool highlight){
-    unsigned int gwCount;
-    unsigned int energy;
+void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight){
+    uint gwCount;
+    uint energy;
     double maxUF;
     bool feasible;
 
@@ -78,7 +78,7 @@ void Objective::printSolution(unsigned int* gw, unsigned int* sf, bool allocatio
     
     if(allocation){
         std::cout << "GW allocation (GW[SF]):" << std::endl;
-        for(unsigned int i = 0; i < this->instance->getEDCount(); i++) // For each ED    
+        for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED    
             std::cout << gw[i] << "[" << sf[i] << "]  ";
         std::cout << std::endl;
     }
