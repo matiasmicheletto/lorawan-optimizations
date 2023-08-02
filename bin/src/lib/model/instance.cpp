@@ -234,3 +234,30 @@ std::vector<uint> Instance::getGWList(uint ed) {
     }
     return gwList;
 }
+
+std::vector<uint> Instance::getSortedGWList(uint ed) {
+    // Returns all GW that can be connected to ED
+    std::vector<uint> gwList;
+    const uint maxSF = getMaxSF(ed);
+    uint frontSF = maxSF;
+    //uint backSF = maxSF;
+    for(uint gw = 0; gw < this->gwCount; gw++){
+        // If SF >= maxSF -> GW is out of range for this ed
+        const uint minSF = this->getMinSF(ed, gw);
+        if(minSF <= maxSF){ 
+            if(minSF < frontSF){
+                gwList.insert(gwList.begin(), gw);
+                frontSF = minSF;
+            }else{
+                gwList.push_back(gw);
+                //backSF = minSF;
+            }
+        }
+    }
+    if(gwList.size() == 0) { // No available gws for this ed
+        std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+                  << "ED = " << ed << std::endl;
+        exit(1);
+    }
+    return gwList;
+}

@@ -73,6 +73,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         UtilizationFactor getUF(uint ed, uint sf);
         uint getPeriod(uint ed);
         std::vector<uint> getGWList(uint ed);
+        std::vector<uint> getSortedGWList(uint ed);
 
     private:
         std::vector<std::vector<uint>> raw;

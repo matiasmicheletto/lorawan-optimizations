@@ -10,11 +10,11 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
         std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
 
     // Optimization variable
-    unsigned int* gw = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
-    unsigned int* sf = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
+    uint* gw = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* sf = (uint*) malloc( sizeof(uint) * l->getEDCount());
     // Best
-    unsigned int* gwBest = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
-    unsigned int* sfBest = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
+    uint* gwBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* sfBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
 
     // Random generators use uniform distribution
     Uniform gwGenerator = Uniform(0, l->getGWCount());
@@ -26,19 +26,19 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
     if(verbose)
         std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
 
-    for(unsigned int k = 0; k < maxIters; k++){ // For each iteration
+    for(uint k = 0; k < maxIters; k++){ // For each iteration
         // Generate a random solution (candidate)
-        for(unsigned int i = 0; i < l->getEDCount(); i++){
+        for(uint i = 0; i < l->getEDCount(); i++){
             gw[i] = gwGenerator.random();
             sf[i] = sfGenerator.random();
         }
         // Test generated solution
-        unsigned int gwCount, energy;
+        uint gwCount, energy;
         double totalUF;
         bool feasible;
         const double q = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
 
-        if(q < bestQ){ // New optimum
+        if(feasible && q < bestQ){ // New optimum
             bestQ = q;
             found = true;
             std::copy(gw, gw + l->getEDCount(), gwBest);
@@ -88,11 +88,11 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
         std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
 
     // Optimization variable
-    unsigned int* gw = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
-    unsigned int* sf = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
+    uint* gw = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* sf = (uint*) malloc( sizeof(uint) * l->getEDCount());
     // Best
-    unsigned int* gwBest = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
-    unsigned int* sfBest = (unsigned int*) malloc( sizeof(unsigned int) * l->getEDCount());
+    uint* gwBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* sfBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
 
     Uniform uniform = Uniform(0.0, 1.0);
 
@@ -102,23 +102,23 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
     if(verbose)
         std::cout << "Running " << maxIters << " iterations..." << std::endl << std::endl;
 
-    for(unsigned int k = 0; k < maxIters; k++){ // For each iteration
+    for(uint k = 0; k < maxIters; k++){ // For each iteration
         // Generate a random solution (candidate)
-        for(unsigned int i = 0; i < l->getEDCount(); i++){
-            std::vector<unsigned int> gwList = l->getGWList(i); // Valid gw for this ed
-            gw[i] = gwList[(unsigned int)floor(uniform.random()*gwList.size())]; // Pick random gw
+        for(uint i = 0; i < l->getEDCount(); i++){
+            std::vector<uint> gwList = l->getGWList(i); // Valid gw for this ed
+            gw[i] = gwList[(uint)floor(uniform.random()*gwList.size())]; // Pick random gw
             // Pick random SF from valid range
-            const unsigned int minSF = l->getMinSF(i, gw[i]);
-            const unsigned int maxSF = l->getMaxSF(i);
+            const uint minSF = l->getMinSF(i, gw[i]);
+            const uint maxSF = l->getMaxSF(i);
             sf[i] = uniform.random()*(maxSF - minSF) + minSF;
         }
         // Test generated solution
-        unsigned int gwCount, energy;
+        uint gwCount, energy;
         double totalUF;
         bool feasible;
         const double q = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
 
-        if(q < bestQ){ // New optimum
+        if(feasible && q < bestQ){ // New optimum
             bestQ = q;
             found = true;
             std::copy(gw, gw + l->getEDCount(), gwBest);
