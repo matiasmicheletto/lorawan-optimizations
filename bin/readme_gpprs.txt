@@ -32,12 +32,13 @@ OPTIONS:
    -b, --beta     Beta tunning parameter. Default is 0.1.
    -g, --gamma    Gamma tunning parameter. Default is 1000.
    -m, --method   Optimization method: Default is RS (random).
-                     RS: Random Search
-                     IRS: Improved Random Search
-                     GA: Genetic Algorithms
-                     GGW: Greedy method to minimize GW 
-                     GE: Greedy method to minimize E 
-                     GU: Greedy method to minimize U
+                     RS: Random Search  
+                     IRS: Improved Random Search  
+                     GA: Genetic Algorithms  
+                     GGW: Greedy method to minimize GW  
+                     GE: Greedy method to minimize E  
+                     GU: Greedy method to minimize U  
+                     G2: Greedy method (version 2)  
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
 
 EXAMPLES:
@@ -51,7 +52,7 @@ EXAMPLES:
       - Run the program using the GA method with default configurations and append complete results to "outputs.log" text file. Text may contain terminal formatting escape characters, so it is recommended to show results using the "cat" program instead of "less".
 
 AUTHORS
-   Code was written by Dr. Matias J. Micheletto from CIT-GSJ and supervised by Dr. Rodrigo M. Santos from DIEC-UNS and Dr. Javier Marenco from UTDT.
+   Code was written by Dr. Matias J. Micheletto from CIT-GSJ (CONICET) and supervised by Dr. Rodrigo M. Santos from DIEC (UNS) - ICIC (CONICET) and Dr. Javier Marenco from UTDT.
 
 REPORTING BUGS
    Guidelines will soon be available at <https://github.com/matiasmicheletto/lorawan-optimizations>.

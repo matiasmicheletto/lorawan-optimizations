@@ -3,4 +3,5 @@ bin/gpprs
 bin/datgen
 bin/summary.csv
 dat/
+python/venv/
 .vscode
