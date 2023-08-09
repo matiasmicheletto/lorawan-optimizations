@@ -74,6 +74,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         uint getPeriod(uint ed);
         std::vector<uint> getGWList(uint ed);
         std::vector<uint> getSortedGWList(uint ed);
+        std::vector<uint> getEDList(uint gw, uint sf);
 
     private:
         std::vector<std::vector<uint>> raw;

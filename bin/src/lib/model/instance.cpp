@@ -261,3 +261,15 @@ std::vector<uint> Instance::getSortedGWList(uint ed) {
     }
     return gwList;
 }
+
+std::vector<uint> Instance::getEDList(uint gw, uint sf) {
+    // Returns all ED that can be connected toGW
+    std::vector<uint> edList;     
+    for(uint ed = 0; ed < this->edCount; ed++){        
+        const uint minSF = this->getMinSF(ed, gw);
+        const uint maxSF = this->getMaxSF(ed);
+        if(minSF <= sf && sf <= maxSF)
+            edList.push_back(ed);
+    }
+    return edList;
+};
