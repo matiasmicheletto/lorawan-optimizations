@@ -35,7 +35,12 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
     for(uint s = 7; s <= 12; s++){ // For each spread factor
         for(uint e = 0; e < edCount; e++){ // Allocate end devices
             std::vector<uint> gwList = l->getSortedGWList(e); // Valid gw for this ed
-            gw[e] = gwList[0];
+            gw[e] = gwList[0]; // <-- Review this: choose another from closest GW
+            // If using another gw in order to minimize number of gw, maybe solution becomes
+            // unfeasible (because of transpassing uf of selected gw)
+            // For taking into account uf for each gw, a new data structure is needed
+            // Even using all of this, we are using a single spread factor for all system, so
+            // the solution becomes far from optimal
             sf[e] = s;
         }
         // Eval solution and update minimum
