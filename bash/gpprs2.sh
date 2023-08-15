@@ -1,12 +1,11 @@
 #!/bin/bash
 
-
-# Optimization parameters
 a_values=(1 1 1 10 100 1 1 1 10 10 10 1 1 1)
 b_values=(0.01 0.1 1 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.01 0.1 0.1 0.1)
 g_values=(1 1 1 1 1 10 100 1000 10 100 1000 10 100 1000)
 
-# Input files
+m_values=("G2" "IRS")
+
 files=("../dat/last/ihu10000_100_500.dat" 
 "../dat/last/ihu2000_10_100.dat" 
 "../dat/last/imu100_10_100.dat" 
@@ -56,16 +55,19 @@ files=("../dat/last/ihu10000_100_500.dat"
 "../dat/last/isu20000_100_500.dat" 
 )
 
-for i in "${!a_values[@]}"; do
+for k in "${!m_values[@]}"; do
   for j in "${!files[@]}"; do
-    ../bin/gpprs -v \
-        -a "${a_values[i]}" \
-        -b "${b_values[i]}" \
-        -g "${g_values[i]}" \
-        -m G2 \
-        -f "${files[j]}" &
-    pid=$!
+    for i in "${!a_values[@]}"; do
+      ../bin/gpprs -v \
+          -a "${a_values[i]}" \
+          -b "${b_values[i]}" \
+          -g "${g_values[i]}" \
+          -m "${m_values[k]}" \
+          -i 1000000 \
+          -f "${files[j]}" &
+      pid=$!
 
-    wait "$pid"
+      wait "$pid"
+    done
   done
 done &
