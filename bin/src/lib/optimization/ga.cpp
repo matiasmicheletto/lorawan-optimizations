@@ -29,7 +29,10 @@ struct Chromosome {
 };
 
 struct MiddleCost {
-	float cost;	
+	//double total_cost;
+	double gwCount;
+	double energy;
+    double totalUF;
 };
 
 typedef EA::Genetic<Chromosome,MiddleCost> GA_Type;
@@ -54,7 +57,7 @@ void randomize_gene(const Chromosome& p, const uint index, const std::function<d
 
 void init_genes(Chromosome& p, const std::function<double(void)> &rnd01) {
 	// Random gene memory allocation and initialization
-	//std::cout << "init_genes() " << &p << std::endl;
+	//std::cout << "SO_init_genes() " << &p << std::endl;
 	for(uint i = 0; i < _l->getEDCount(); i++)
 		randomize_gene(p, i, rnd01);
 }
@@ -87,13 +90,31 @@ bool eval_solution(const Chromosome& p, MiddleCost &c) { // Compute costs
     uint gwCount, energy;
     double totalUF;
 	bool feasible;
-    c.cost = _o->eval(p.gw, p.sf, gwCount, energy, totalUF, feasible);
-	return feasible; // Reject if not feasible solution ?
+    _o->eval(p.gw, p.sf, gwCount, energy, totalUF, feasible);
+	c.gwCount = (double) gwCount;
+	c.energy = (double) energy;
+	c.totalUF = totalUF;
+	//return feasible; // Reject if not feasible solution ?
+	return true;
 }
 
 double calculate_SO_total_fitness(const GA_Type::thisChromosomeType &X) { // Compute fitness value
-    return X.middle_costs.cost;    
+	uint gwCount, energy;
+    double totalUF;
+	bool feasible;
+    double total_cost = _o->eval(X.genes.gw, X.genes.sf, gwCount, energy, totalUF, feasible);
+    return total_cost;    
 }
+
+std::vector<double> calculate_MO_objectives(const GA_Type::thisChromosomeType &X) {
+	return {
+		//X.middle_costs.total_cost,
+		X.middle_costs.gwCount,
+		X.middle_costs.energy,
+		X.middle_costs.totalUF
+	};
+}
+
 
 void SO_report_generation_verbose(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {
     std::cout << "Generation [" << generation_number << "], "
@@ -104,6 +125,21 @@ void SO_report_generation_verbose(int generation_number, const EA::GenerationTyp
 }
 
 void SO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {}
+
+void MO_report_generation_verbose(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const std::vector<uint>& pareto_front) {
+    std::cout << "Generation [" << generation_number << "], "
+		<< "Best=" << last_generation.best_total_cost << ", "
+		<< "Average cost=" << last_generation.average_cost << std::endl;
+
+	std::cout << "Pareto-Front {";
+	for(uint i = 0; i < pareto_front.size(); i++){
+		std::cout << (i>0?",":"");
+		std::cout << pareto_front[i];
+	}
+	std::cout << "}" << std::endl;
+}
+
+void MO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const std::vector<uint>& pareto_front) {}
 
 OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
 
@@ -119,7 +155,7 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	// Set GA configuration
 	GA_Type ga_obj;
 	ga_obj.problem_mode = EA::GA_MODE::SOGA;
-	ga_obj.multi_threading = false; // TODO
+	ga_obj.multi_threading = true;
 	ga_obj.idle_delay_us = 1; // switch between threads quickly
 	ga_obj.verbose = false; // prints too much data
 	ga_obj.population = config.popsize;
@@ -154,6 +190,90 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	// Extract optimum
 	Chromosome best;
 	copy_genes(ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes, best);
+
+	// Print and return results
+	if(verbose){
+		std::cout << "Exit condition: ";
+		switch (res) {
+			case EA::StopReason::MaxGenerations:
+				std::cout << " Max. generations";
+				break;
+			case EA::StopReason::StallAverage:
+				std::cout << " Average stall";
+				break;
+			case EA::StopReason::StallBest:
+				std::cout << " Best stall";
+				break;
+			default:
+				break;
+		}
+		std::cout << std::endl << "Optimal result:" << std::endl;
+		o->printSolution(best.gw, best.sf, true, true);
+	}
+
+	OptimizationResults results;
+    results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf, results.feasible);
+    results.tp = o->tp;
+    results.execTime = timer.toc()*1000;
+    results.ready = true; // Set export flag to ready
+
+	return results;
+}
+
+
+OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
+
+	if(verbose)
+        std::cout << std::endl << "--------------- NSGA ---------------" << std::endl << std::endl;
+
+    _l = l;
+    _o = o;
+
+    EA::Chronometer timer;
+	timer.tic();
+
+	// Set GA configuration
+	GA_Type ga_obj;
+	ga_obj.problem_mode = EA::GA_MODE::NSGA_III;
+	ga_obj.multi_threading = true;
+	ga_obj.idle_delay_us = 1; // switch between threads quickly
+	ga_obj.verbose = false; // prints too much data
+	ga_obj.population = config.popsize;
+	ga_obj.generation_max = config.maxgen;
+	ga_obj.tol_stall_average = 1e-6;
+	ga_obj.tol_stall_best = 1e-6;
+	ga_obj.best_stall_max = config.maxgen/10;
+    ga_obj.average_stall_max = config.maxgen/10;	
+	ga_obj.calculate_MO_objectives = calculate_MO_objectives;
+	ga_obj.init_genes = init_genes;
+	ga_obj.eval_solution = eval_solution;
+	ga_obj.mutate = mutate;
+	ga_obj.crossover = crossover;    	
+	ga_obj.MO_report_generation = verbose ? MO_report_generation_verbose : MO_report_generation; 
+	ga_obj.crossover_fraction = config.crossover;
+	ga_obj.mutation_rate = config.mutation;
+    
+	// Print GA configuration
+	if(verbose) {
+		std::cout << "Population: " << ga_obj.population << std::endl;
+		std::cout << "Generations: " << ga_obj.generation_max << std::endl;
+		std::cout << "Best stall max.: " << ga_obj.best_stall_max << std::endl;
+		std::cout << "Avg stall max.: " << ga_obj.average_stall_max << std::endl;
+		std::cout << "Crossover fraction: " << ga_obj.crossover_fraction << std::endl;
+		std::cout << "Mutation rate: " << ga_obj.mutation_rate << std::endl;
+		std::cout << "Progress:" << std::endl;
+	}
+
+	EA::StopReason res = ga_obj.solve(); // Start optimizer
+
+	std::cout << "Optimization finished. Printing results..." << std::endl;
+
+
+	std::cout << ga_obj.last_generation.best_chromosome_index << std::endl;
+
+	// Extract optimum
+	Chromosome best;
+	//copy_genes(ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes, best);
 
 	// Print and return results
 	if(verbose){

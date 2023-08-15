@@ -25,5 +25,6 @@ struct GAConfig {
 };
 
 OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
+OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
 
 #endif // GA_H

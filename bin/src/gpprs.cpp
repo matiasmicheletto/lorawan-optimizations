@@ -71,6 +71,8 @@ int main(int argc, char **argv) {
                     method = 5;
                 else if(std::strcmp(argv[i+1], "G2") == 0)
                     method = 6;
+                else if(std::strcmp(argv[i+1], "NSGA") == 0)
+                    method = 7;
                 else 
                     std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
             }else
@@ -133,6 +135,13 @@ int main(int argc, char **argv) {
         case 6: {
             results = greedy2(l, o, verbose);
             results.solverName = strdup("Greedy 2");
+            break;
+        }
+        case 7: {
+            GAConfig gaconfig;
+            gaconfig.maxgen = maxIters/gaconfig.popsize;
+            results = nsga(l, o, gaconfig, verbose);
+            results.solverName = strdup("Nondominated Sorting Genetic Algorithm");
             break;
         }
         default: {
