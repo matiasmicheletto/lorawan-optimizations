@@ -81,7 +81,24 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
         for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED    
             std::cout << gw[i] << "[" << sf[i] << "]  ";
         std::cout << std::endl;
+        this->printSol(gw, sf); // Export file
     }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
+
+}
+
+void Objective::printSol(const uint* gw, const uint* sf) {
+    std::ofstream outFile("last.out", std::ios::app); 
+
+    if (!outFile) {
+        std::cerr << "Error: Unable to open CSV file." << std::endl;
+        return;
+    }
+    
+    for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED    
+        outFile << i+1 << "\t" << gw[i]+1 << "\t" << sf[i] << std::endl;
+    
+    outFile.flush();
+    outFile.close();
 }

@@ -38,6 +38,7 @@ class Objective {
         double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
         TunningParameters tp;
         void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false);
+        void printSol(const uint* gw, const uint* sf);
     private:
         Instance* instance;
         static const uint unfeasibleIncrement;

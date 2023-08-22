@@ -46,10 +46,14 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--requirements") == 0) {
-            if(i+1 < argc)
+            if(i+1 < argc){
                 config.timeRequirement = (PERIODIST) atoi(argv[i+1]);
-            else
+                if(config.timeRequirement == FIXED){
+                    config.fixedPeriod = atoi(argv[i+2]);
+                }
+            }else{
                 printHelp(MANUAL);
+            }
         }
         if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--positions") == 0) {
             if(i+1 < argc)

@@ -71,6 +71,8 @@ Instance::Instance(const InstanceConfig& config) {
                 ->addValue(400, 0.25)
                 ->addValue(320, 0.25);
             break;
+        case FIXED:
+            break;
         default:
             std::cerr << "Warning: Instance builder: Invalid period distribution." << std::endl;
             break;
@@ -86,7 +88,11 @@ Instance::Instance(const InstanceConfig& config) {
         double x, y; 
         posGenerator->setRandom(x, y);        
         // End device period
-        int period = periodGenerator->randomInt(); 
+        int period;
+        if(config.timeRequirement == FIXED)
+            period = config.fixedPeriod;
+        else 
+            period = periodGenerator->randomInt(); 
         eds.push_back({{x, y}, period});
     }
 

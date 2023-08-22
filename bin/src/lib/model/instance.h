@@ -19,8 +19,8 @@
 #include "../random/clouds.h"
 #include "../random/custom.h"
 
-enum POSDIST {UNIFORM, NORMAL, CLOUDS};
-enum PERIODIST {SOFT, MEDIUM, HARD};
+enum POSDIST {UNIFORM, NORMAL, CLOUDS}; 
+enum PERIODIST {SOFT, MEDIUM, HARD, FIXED}; 
 
 struct InstanceConfig { // This is for instance generation
     uint mapSize; // Map size
@@ -28,19 +28,22 @@ struct InstanceConfig { // This is for instance generation
     uint gwNumber; // Number of gateways (columns)
     PERIODIST timeRequirement; // PDF for ED periods
     POSDIST posDistribution; // Distribution of positions
+    uint fixedPeriod; // Fixed period (if PERIODIST == FIXED)
 
     InstanceConfig(  // Default configuration parameters
         uint mapSize = 1000,
         uint edNumber = 1000,
         uint gwNumber = 100,
         PERIODIST timeRequirement = SOFT,
-        POSDIST posDistribution = UNIFORM
+        POSDIST posDistribution = UNIFORM,
+        uint fixedPeriod = 3200
     ) : 
         mapSize(mapSize),
         edNumber(edNumber),
         gwNumber(gwNumber),
         timeRequirement(timeRequirement),
-        posDistribution(posDistribution) {}
+        posDistribution(posDistribution),
+        fixedPeriod(fixedPeriod) {}
 };
 
 // Models for the two tipes of nodes: end-devices and gateways
