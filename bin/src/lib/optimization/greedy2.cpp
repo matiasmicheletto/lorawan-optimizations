@@ -33,8 +33,8 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
     uint sfBest[edCount];
     double minimumCost = __DBL_MAX__;
     bool feasibleFound = false;
+    std::vector<uint>allocatedEDs;
     for(uint s = 7; s <= 12; s++){ // For each spread factor        
-        std::vector<uint>allocatedEDs;
         double pw = (double) l->sf2e(s);
         for(uint g = 0; g < gwCount; g++){ // Allocate end devices
             double guf = 0.0; // GW utilization factor
@@ -67,6 +67,7 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
                 feasibleFound = true;
             }
             if(verbose) std::cout << "SF: " << s << " -- " << (feasible?"Feasible":"Unfeasible") << "  Cost = " << cost << std::endl;
+            allocatedEDs.clear(); // Clear list of allocated and continue with next SFs
         }
     }
 
