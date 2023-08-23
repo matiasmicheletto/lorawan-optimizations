@@ -81,7 +81,7 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
         for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED    
             std::cout << gw[i] << "[" << sf[i] << "]  ";
         std::cout << std::endl;
-        this->printSol(gw, sf); // Export file
+        //this->printSol(gw, sf); // Export file
     }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
