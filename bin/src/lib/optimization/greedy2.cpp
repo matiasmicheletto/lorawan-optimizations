@@ -34,10 +34,11 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
     double minimumCost = __DBL_MAX__;
     bool feasibleFound = false;
     std::vector<uint>allocatedEDs;
-    for(uint s = 7; s <= 12; s++){ // For each spread factor        
-        double pw = (double) l->sf2e(s);
-        for(uint g = 0; g < gwCount; g++){ // Allocate end devices
-            double guf = 0.0; // GW utilization factor
+    
+    for(uint g = 0; g < gwCount; g++){ // Allocate end devices
+        double guf = 0.0; // GW utilization factor
+        for(uint s = 7; s <= 12; s++){ // For each spread factor        
+            double pw = (double) l->sf2e(s);    
             std::vector<uint> edList = l->getEDList(g, s);                
             for(uint e = 0; e < edList.size(); e++){
                 uint selectedED = edList[e];
@@ -54,9 +55,7 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
             }
             if(allocatedEDs.size() == edCount) break;
         }
-        if(allocatedEDs.size() < edCount){            
-            if(verbose) std::cout << "SF: " << s << " -- " << "Unfeasible (unallocated EDs)" << std::endl;
-        }else{
+        if(allocatedEDs.size() == edCount){
             // Eval solution and update minimum
             uint gwUsed, energy; double uf; bool feasible;
             const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
@@ -66,7 +65,7 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
                 std::copy(sf, sf + edCount, sfBest);
                 feasibleFound = true;
             }
-            if(verbose) std::cout << "SF: " << s << " -- " << (feasible?"Feasible":"Unfeasible") << "  Cost = " << cost << std::endl;
+            //if(verbose) std::cout << "SF: " << s << " -- " << (feasible?"Feasible":"Unfeasible") << "  Cost = " << cost << std::endl;
             allocatedEDs.clear(); // Clear list of allocated and continue with next SFs
         }
     }
