@@ -7,24 +7,15 @@ Objective* _o;
 
 // Chromosome model
 struct Chromosome {
-	uint* gw;
-	uint* sf;
+	std::vector<uint> gw;
+	std::vector<uint> sf;
 	Chromosome() {
-		gw = (uint*) malloc( sizeof(uint) * _l->getEDCount());
-		sf = (uint*) malloc( sizeof(uint) * _l->getEDCount());
-		//std::cout << "Created new chromosome:" << this << std::endl;
-	}
-	~Chromosome() { // This should work, however, it doesnt (double free error)
-		//std::cout << "Tryied to delete:" << this << std::endl;
-		/*
-		if(gw != nullptr) 
-			free(gw);
-		if(sf != nullptr) 
-			free(sf);
-		*/
+		const uint size = _l->getEDCount();
+		gw.resize(size);
+		sf.resize(size);
 	}
 	void print() const { 
-        _o->printSolution(gw, sf);
+        _o->printSolution(gw.data(), sf.data());
 	}
 };
 
@@ -38,50 +29,50 @@ struct MiddleCost {
 typedef EA::Genetic<Chromosome,MiddleCost> GA_Type;
 typedef EA::GenerationType<Chromosome,MiddleCost> Generation_Type;
 
-void copy_genes(const Chromosome& from, Chromosome& to) {
-	for(uint i = 0; i < _l->getEDCount(); i++){
-		to.gw[i] = from.gw[i];
-		to.sf[i] = from.sf[i];
-	}
+void copy_genes(const Chromosome& X_from, Chromosome& X_to) {
+    X_to.gw = X_from.gw;
+    X_to.sf = X_from.sf;
 }
 
-void randomize_gene(const Chromosome& p, const uint index, const std::function<double(void)> &rnd01) {
+void randomize_gene(Chromosome& p, const uint index, const std::function<double(void)> &rnd01) {
 	// Randomly modify GW and SF allocation for gene number "index"
 	std::vector<uint> gwList = _l->getGWList(index); // Valid gws for this ED
-	p.gw[index] = gwList[(uint)floor(rnd01()*gwList.size())]; // Pick random GW from list
-	// Next, select a valid SF given ED period and selected GW
 	uint minSF = _l->getMinSF(index, p.gw[index]);
 	uint maxSF = _l->getMaxSF(index);
+	p.gw[index] = gwList[(uint)floor(rnd01()*gwList.size())]; // Pick random GW from list
 	p.sf[index] = (uint)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);
 }
 
 void init_genes(Chromosome& p, const std::function<double(void)> &rnd01) {
-	// Random gene memory allocation and initialization
-	//std::cout << "SO_init_genes() " << &p << std::endl;
-	for(uint i = 0; i < _l->getEDCount(); i++)
+	const uint size = _l->getEDCount();
+	for(uint i = 0; i < size; i++)
 		randomize_gene(p, i, rnd01);
 }
 
 Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &rnd01, double shrink_scale) {
-	//Chromosome X_new;
-    //copy_genes(X_base, X_new);
-	const double chances = 1.0 / (double)_l->getEDCount();
-	for(uint i = 0; i < _l->getEDCount(); i++)
-		if(rnd01() < chances) // Mutate a single gene
-			randomize_gene(X_base, i, rnd01);
-	return X_base;
+	Chromosome X_new;		
+	const double pr = 1.0 / (double)_l->getEDCount();
+	for(uint i = 0; i < _l->getEDCount(); i++){
+		if(rnd01() < pr)
+			randomize_gene(X_new, i, rnd01);
+		else{
+			X_new.gw[i] = X_base.gw[i];
+			X_new.sf[i] = X_base.sf[i];
+		}
+	}
+	return X_new;
 }
 
 Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::function<double(void)> &rnd01) {
-	Chromosome X_new;
-	uint x_point = (uint) floor(rnd01()*(double)_l->getEDCount()); // Crossover point
+	Chromosome X_new;	
+	uint x_point = (uint) (rnd01()*(double)_l->getEDCount()); // Crossover point
     for(uint i = 0; i < x_point; i++){
         X_new.gw[i] = X1.gw[i];
 		X_new.sf[i] = X1.sf[i];
 	}
     for(uint i = x_point; i < _l->getEDCount(); i++){
         X_new.gw[i] = X2.gw[i];
-		X_new.sf[i] = X1.sf[i];
+		X_new.sf[i] = X2.sf[i];
 	}
 	return X_new;
 }
@@ -90,25 +81,22 @@ bool eval_solution(const Chromosome& p, MiddleCost &c) { // Compute costs
     uint gwCount, energy;
     double totalUF;
 	bool feasible;
-    _o->eval(p.gw, p.sf, gwCount, energy, totalUF, feasible);
+    _o->eval(p.gw.data(), p.sf.data(), gwCount, energy, totalUF, feasible);
 	c.gwCount = (double) gwCount;
 	c.energy = (double) energy;
 	c.totalUF = totalUF;
-	//return feasible; // Reject if not feasible solution ?
-	return true;
+	return feasible; // Reject if not feasible solution ?
+	//return true;
 }
 
 double calculate_SO_total_fitness(const GA_Type::thisChromosomeType &X) { // Compute fitness value
-	uint gwCount, energy;
-    double totalUF;
-	bool feasible;
-    double total_cost = _o->eval(X.genes.gw, X.genes.sf, gwCount, energy, totalUF, feasible);
-    return total_cost;    
+    return _o->tp.alpha * X.middle_costs.gwCount + 
+		_o->tp.beta * X.middle_costs.energy + 
+		_o->tp.gamma * X.middle_costs.totalUF;    
 }
 
 std::vector<double> calculate_MO_objectives(const GA_Type::thisChromosomeType &X) {
 	return {
-		//X.middle_costs.total_cost,
 		X.middle_costs.gwCount,
 		X.middle_costs.energy,
 		X.middle_costs.totalUF
@@ -118,8 +106,8 @@ std::vector<double> calculate_MO_objectives(const GA_Type::thisChromosomeType &X
 
 void SO_report_generation_verbose(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const Chromosome& best_genes) {
     std::cout << "Generation [" << generation_number << "], "
-		<< "Best=" << last_generation.best_total_cost << ", "
-		<< "Average cost=" << last_generation.average_cost << std::endl;
+		      << "Best total cost = " << last_generation.best_total_cost << ", "
+		      << "Average cost = " << last_generation.average_cost << std::endl;
 
 	//last_generation.chromosomes[last_generation.best_chromosome_index].genes.print();
 }
@@ -170,7 +158,7 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;    
 	ga_obj.SO_report_generation = verbose ? SO_report_generation_verbose : SO_report_generation;
-    ga_obj.elite_count = 5;
+    //ga_obj.elite_count = 10;
 	ga_obj.crossover_fraction = config.crossover;
 	ga_obj.mutation_rate = config.mutation;
     
@@ -189,7 +177,8 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 
 	// Extract optimum
 	Chromosome best;
-	copy_genes(ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes, best);
+	const int bestIndex = ga_obj.last_generation.best_chromosome_index;
+	copy_genes(ga_obj.last_generation.chromosomes[bestIndex].genes, best);
 
 	// Print and return results
 	if(verbose){
@@ -208,11 +197,11 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 				break;
 		}
 		std::cout << std::endl << "Optimal result:" << std::endl;
-		o->printSolution(best.gw, best.sf, true, true);
+		o->printSolution(best.gw.data(), best.sf.data(), true, true);
 	}
 
 	OptimizationResults results;
-    results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf, results.feasible);
+    results.cost = o->eval(best.gw.data(), best.sf.data(), results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = o->tp;
     results.execTime = timer.toc()*1000;
     results.ready = true; // Set export flag to ready
@@ -292,11 +281,11 @@ OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool
 				break;
 		}
 		std::cout << std::endl << "Optimal result:" << std::endl;
-		o->printSolution(best.gw, best.sf, true, true);
+		o->printSolution(best.gw.data(), best.sf.data(), true, true);
 	}
 
 	OptimizationResults results;
-    results.cost = o->eval(best.gw, best.sf, results.gwUsed, results.energy, results.uf, results.feasible);
+    results.cost = o->eval(best.gw.data(), best.sf.data(), results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = o->tp;
     results.execTime = timer.toc()*1000;
     results.ready = true; // Set export flag to ready

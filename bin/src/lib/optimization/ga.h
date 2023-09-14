@@ -1,6 +1,7 @@
 #ifndef GA_H
 #define GA_H
 
+#include <vector>
 #include "../model/instance.h"
 #include "../model/objective.h"
 #include "results.h"
@@ -13,10 +14,10 @@ struct GAConfig {
     double mutation;
     
     GAConfig(
-            int popSize = 50, 
+            int popSize = 30, 
             int numGens = 1000, 
-            double crossRate = 0.7, 
-            double mutRate = 0.5)
+            double crossRate = 0.8, 
+            double mutRate = 0.2)
         : 
             popsize(popSize), 
             maxgen(numGens), 

@@ -32,13 +32,6 @@ using std::runtime_error;
 using std::unique_ptr;
 using std::vector;
 
-#ifdef OPENGA_EXTERN_LOCAL_VARS
-extern std::mutex mtx_rand;
-#else
-std::mutex mtx_rand;
-#endif
-
-
 enum class GA_MODE
 {
 	SOGA,
@@ -269,6 +262,8 @@ public:
 
 };
 
+std::mutex mtx_rand;
+
 template<typename GeneType,typename MiddleCostType>
 class Genetic
 {
@@ -486,9 +481,8 @@ public:
 			generations_so_abs.push_back(thisGenSOAbs(new_generation));
 			report_generation(new_generation);
 		}
-		if (!new_generation.fronts.empty())
-                	last_generation = new_generation;
-		
+		last_generation=new_generation;
+
 		return stop_critera();
 	}
 

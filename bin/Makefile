@@ -16,13 +16,20 @@ INCLUDES = -I$(LIBDIR) -I$(LIBDIR)/util -I$(LIBDIR)/model -I$(LIBDIR)/optimizati
 all: $(TARGETS)
 
 gpprs: $(GPPRS_OBJECTS)
+	@echo "Compiling gpprs..."
 	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@
+	@echo "gpprs compiled"
+
 
 datgen: $(DATGEN_OBJECTS)
+	@echo "Compiling datgen..."
 	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@
+	@echo "datgen compiled"
+
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
+	@echo "Compiling $<..."
 	$(CPP) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
