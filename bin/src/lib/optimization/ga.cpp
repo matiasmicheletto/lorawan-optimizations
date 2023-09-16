@@ -43,15 +43,49 @@ void randomize_gene(Chromosome& p, const uint index, const std::function<double(
 	p.sf[index] = (uint)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);
 }
 
-void init_genes(Chromosome& p, const std::function<double(void)> &rnd01) {
-	const uint size = _l->getEDCount();
-	for(uint i = 0; i < size; i++)
+void init_genes_random(Chromosome& p, const std::function<double(void)> &rnd01) {	
+	for(uint i = 0; i < _l->getEDCount(); i++)
 		randomize_gene(p, i, rnd01);
+}
+
+void init_genes_greedy(Chromosome& p, const std::function<double(void)> &rnd01) {
+	const uint gwCount = _l->getGWCount();
+    const uint edCount = _l->getEDCount();        
+    
+	// Create the list of gw indexes and randomize it
+	std::vector<uint>gwList(gwCount);
+	for(uint i = 0; i < gwCount; i++)
+		gwList[i] = i;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::shuffle(gwList.begin(), gwList.end(), gen);
+
+	std::vector<uint>allocatedEDs;
+    for(uint gi = 0; gi < gwList.size(); gi++){ // Allocate end devices
+		uint g = gwList[gi];
+        UtilizationFactor guf;        
+        for(uint s = 7; s <= 12; s++){ // For each spread factor        
+            std::vector<uint> edList = _l->getEDList(g, s);                
+            for(uint e = 0; e < edList.size(); e++){
+                uint selectedED = edList[e];
+                if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not allocated                    
+                    UtilizationFactor u = _l->getUF(selectedED, s);                    
+                    if(!(guf + u).isFull()){ // If allowed to allocate (enough uf)
+                        allocatedEDs.push_back(selectedED);
+                        p.gw[selectedED] = g;
+                        p.sf[selectedED] = s;
+                        guf += u;
+                    }
+                }
+                if(allocatedEDs.size() == edCount) return;
+            }            
+        }
+    }
 }
 
 Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &rnd01, double shrink_scale) {
 	Chromosome X_new;		
-	const double pr = 1.0 / (double)_l->getEDCount();
+	const double pr = 1.5 / (double)_l->getEDCount();
 	for(uint i = 0; i < _l->getEDCount(); i++){
 		if(rnd01() < pr)
 			randomize_gene(X_new, i, rnd01);
@@ -148,12 +182,12 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	ga_obj.verbose = false; // prints too much data
 	ga_obj.population = config.popsize;
 	ga_obj.generation_max = config.maxgen;
-	ga_obj.tol_stall_average = 1e-6;
-	ga_obj.tol_stall_best = 1e-6;
-	ga_obj.best_stall_max = config.maxgen/10;
-    ga_obj.average_stall_max = config.maxgen/10;
+	ga_obj.tol_stall_average = 0.001;
+	ga_obj.tol_stall_best = 0.001;
+	ga_obj.best_stall_max = 100;
+    ga_obj.average_stall_max = 100;
 	ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
-	ga_obj.init_genes = init_genes;
+	ga_obj.init_genes = init_genes_greedy;
 	ga_obj.eval_solution = eval_solution;
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;    
@@ -229,12 +263,13 @@ OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool
 	ga_obj.verbose = false; // prints too much data
 	ga_obj.population = config.popsize;
 	ga_obj.generation_max = config.maxgen;
-	ga_obj.tol_stall_average = 1e-6;
-	ga_obj.tol_stall_best = 1e-6;
-	ga_obj.best_stall_max = config.maxgen/10;
-    ga_obj.average_stall_max = config.maxgen/10;	
+	ga_obj.tol_stall_average = 0.001;
+	ga_obj.tol_stall_best = 0.001;
+	ga_obj.best_stall_max = 100;
+    ga_obj.average_stall_max = 100;	
 	ga_obj.calculate_MO_objectives = calculate_MO_objectives;
-	ga_obj.init_genes = init_genes;
+	//ga_obj.init_genes = init_genes_random;
+	ga_obj.init_genes = init_genes_greedy;
 	ga_obj.eval_solution = eval_solution;
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;    	

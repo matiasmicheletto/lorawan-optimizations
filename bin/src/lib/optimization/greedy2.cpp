@@ -37,13 +37,17 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
     
     for(uint g = 0; g < gwCount; g++){ // Allocate end devices
         UtilizationFactor guf;
+        //double guf = 0.0;
         for(uint s = 7; s <= 12; s++){ // For each spread factor        
+            //double pw = (double) l->sf2e(s);   
             std::vector<uint> edList = l->getEDList(g, s);                
             for(uint e = 0; e < edList.size(); e++){
                 uint selectedED = edList[e];
                 if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not allocated                    
                     UtilizationFactor u = l->getUF(selectedED, s);
+                    //double u = pw / ((double)l->getPeriod(selectedED) - pw);
                     if(!(guf + u).isFull()){ // If allowed to allocate (enough uf)
+                    //if(guf+u < 1.0){
                         allocatedEDs.push_back(selectedED);
                         gw[selectedED] = g;
                         sf[selectedED] = s;
