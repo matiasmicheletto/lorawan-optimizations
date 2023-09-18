@@ -62,7 +62,7 @@ void init_genes_greedy(Chromosome& p, const std::function<double(void)> &rnd01) 
 
 	std::vector<uint>allocatedEDs;
     for(uint gi = 0; gi < gwList.size(); gi++){ // Allocate end devices
-		uint g = gwList[gi];
+		const uint g = gwList[gi];
         UtilizationFactor guf;        
         for(uint s = 7; s <= 12; s++){ // For each spread factor        
             std::vector<uint> edList = _l->getEDList(g, s);                

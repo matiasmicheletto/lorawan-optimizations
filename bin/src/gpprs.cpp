@@ -7,7 +7,6 @@
 #include "lib/model/objective.h"
 #include "lib/optimization/random.h"
 #include "lib/optimization/greedy.h"
-#include "lib/optimization/greedy2.h"
 #include "lib/optimization/ga.h"
 #include "lib/optimization/results.h"
 
@@ -63,16 +62,18 @@ int main(int argc, char **argv) {
                     method = 1;
                 else if(std::strcmp(argv[i+1], "GA") == 0)
                     method = 2;
-                else if(std::strcmp(argv[i+1], "GGW") == 0)
-                    method = 3;
-                else if(std::strcmp(argv[i+1], "GE") == 0)
-                    method = 4;
-                else if(std::strcmp(argv[i+1], "GU") == 0)
-                    method = 5;
-                else if(std::strcmp(argv[i+1], "G2") == 0)
-                    method = 6;
                 else if(std::strcmp(argv[i+1], "NSGA") == 0)
+                    method = 3;
+                else if(std::strcmp(argv[i+1], "GGW") == 0)
+                    method = 4;
+                else if(std::strcmp(argv[i+1], "GE") == 0)
+                    method = 5;
+                else if(std::strcmp(argv[i+1], "GU") == 0)
+                    method = 6;
+                else if(std::strcmp(argv[i+1], "G2") == 0)
                     method = 7;
+                else if(std::strcmp(argv[i+1], "G3") == 0)
+                    method = 8;
                 else 
                     std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
             }else
@@ -118,30 +119,35 @@ int main(int argc, char **argv) {
             break;
         }
         case 3: {
-            results = greedy(l, o, MIN::GW, verbose);
-            results.solverName = strdup("Greedy GW Minimization");
-            break;
-        }
-        case 4: {
-            results = greedy(l, o, MIN::E, verbose);
-            results.solverName = strdup("Greedy E Minimization");
-            break;
-        }
-        case 5: {
-            results = greedy(l, o, MIN::UF, verbose);
-            results.solverName = strdup("Greedy UF Minimization");
-            break;
-        }
-        case 6: {
-            results = greedy2(l, o, verbose);
-            results.solverName = strdup("Greedy 2");
-            break;
-        }
-        case 7: {
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
             results = nsga(l, o, gaconfig, verbose);
             results.solverName = strdup("Nondominated Sorting Genetic Algorithm");
+            break;
+        }
+        case 4: {
+            results = greedy(l, o, MIN::GW, verbose);
+            results.solverName = strdup("Greedy GW Minimization");
+            break;
+        }
+        case 5: {
+            results = greedy(l, o, MIN::E, verbose);
+            results.solverName = strdup("Greedy E Minimization");
+            break;
+        }
+        case 6: {
+            results = greedy(l, o, MIN::UF, verbose);
+            results.solverName = strdup("Greedy UF Minimization");
+            break;
+        }
+        case 7: {
+            results = greedy2(l, o, verbose);
+            results.solverName = strdup("Greedy 2");
+            break;
+        }
+        case 8: {
+            results = greedy3(l, o, verbose);
+            results.solverName = strdup("Greedy 3");
             break;
         }
         default: {

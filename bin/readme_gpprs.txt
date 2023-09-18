@@ -35,11 +35,12 @@ OPTIONS:
                      RS: Random Search  
                      IRS: Improved Random Search  
                      GA: Genetic Algorithms  
+                     NSGA: Nondominated Sorting Genetic Algorithms (NSGA-III)
                      GGW: Greedy method to minimize GW  
                      GE: Greedy method to minimize E  
                      GU: Greedy method to minimize U  
                      G2: Greedy method (version 2)  
-                     NSGA: Nondominated Sorting Genetic Algorithms (NSGA-III)
+                     G3: Greedy method (version 3)
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
 
 EXAMPLES:
