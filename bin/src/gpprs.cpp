@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
             break;
         }
         case 8: {
-            results = greedy3(l, o, verbose);
+            results = greedy3(l, o, maxIters, verbose);
             results.solverName = strdup("Greedy 3");
             break;
         }

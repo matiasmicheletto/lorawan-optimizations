@@ -15,6 +15,6 @@ enum MIN {GW, E, UF}; // Greedy minimization methods
 
 OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose = false);
 OptimizationResults greedy2(Instance* l, Objective* o, bool verbose = false);
-OptimizationResults greedy3(Instance* l, Objective* o, bool verbose = false);
+OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool verbose = false);
 
 #endif // GREEDY_H

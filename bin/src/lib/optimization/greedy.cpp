@@ -225,60 +225,68 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
     return results;
 }
 
-OptimizationResults greedy3(Instance* l, Objective* o, bool verbose){
+OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool verbose){
     auto start = std::chrono::high_resolution_clock::now();
 
     std::cout << "------------- Greedy 3 minimization -------------" << std::endl << std::endl;
     const uint gwCount = l->getGWCount();
     const uint edCount = l->getEDCount();
 
-    uint gw[edCount];
-    uint sf[edCount];
+    
+    bool feasibleFound = false;    
     uint gwBest[edCount];
     uint sfBest[edCount];
     double minimumCost = __DBL_MAX__;
-    bool feasibleFound = false;    
     
-    std::vector<uint>gwList(gwCount);
-	for(uint i = 0; i < gwCount; i++)
-		gwList[i] = i;
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::shuffle(gwList.begin(), gwList.end(), gen);
+    for(unsigned long i = 0; i < iters; i++){
+        uint gw[edCount];
+        uint sf[edCount];
+        std::vector<uint>gwList(gwCount);
+        for(uint i = 0; i < gwCount; i++)
+            gwList[i] = i;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::shuffle(gwList.begin(), gwList.end(), gen);
 
-	std::vector<uint>allocatedEDs;
-    for(uint gi = 0; gi < gwList.size(); gi++){ // Allocate end devices
-        const uint g = gwList[gi];        
-        UtilizationFactor guf;
-        for(uint s = 7; s <= 12; s++){ // For each spread factor        
-            std::vector<uint> edList = l->getEDList(g, s);                
-            for(uint e = 0; e < edList.size(); e++){
-                uint selectedED = edList[e];
-                if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not allocated                    
-                    UtilizationFactor u = l->getUF(selectedED, s);
-                    if(!(guf + u).isFull()){ // If allowed to allocate (enough uf)
-                        allocatedEDs.push_back(selectedED);
-                        gw[selectedED] = g;
-                        sf[selectedED] = s;
-                        guf += u;
+        std::vector<uint>allocatedEDs;
+        for(uint gi = 0; gi < gwList.size(); gi++){ // Allocate end devices
+            const uint g = gwList[gi];        
+            UtilizationFactor guf;
+            for(uint s = 7; s <= 12; s++){ // For each spread factor        
+                std::vector<uint> edList = l->getEDList(g, s);                
+                for(uint e = 0; e < edList.size(); e++){
+                    uint selectedED = edList[e];
+                    if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not allocated                    
+                        UtilizationFactor u = l->getUF(selectedED, s);
+                        if(!(guf + u).isFull()){ // If allowed to allocate (enough uf)
+                            allocatedEDs.push_back(selectedED);
+                            gw[selectedED] = g;
+                            sf[selectedED] = s;
+                            guf += u;
+                        }
                     }
+                    if(allocatedEDs.size() == edCount) break;
                 }
                 if(allocatedEDs.size() == edCount) break;
             }
-            if(allocatedEDs.size() == edCount) break;
-        }
-        if(allocatedEDs.size() == edCount){
-            // Eval solution and update minimum
-            uint gwUsed, energy; double uf; bool feasible;
-            const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
-            if(feasible && cost < minimumCost){ // New optimum
-                minimumCost = cost;
-                std::copy(gw, gw + edCount, gwBest);
-                std::copy(sf, sf + edCount, sfBest);
-                feasibleFound = true;
+            if(allocatedEDs.size() == edCount){
+                // Eval solution and update minimum
+                uint gwUsed, energy; double uf; bool feasible;
+                const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
+                if(feasible && cost < minimumCost){ // New optimum
+                    minimumCost = cost;
+                    std::copy(gw, gw + edCount, gwBest);
+                    std::copy(sf, sf + edCount, sfBest);
+                    feasibleFound = true;
+                    if(verbose){
+                        std::cout << "New best at iteration: " << i << std::endl;
+                        o->printSolution(gw, sf, false);
+                        std::cout << std::endl << std::endl;
+                    }
+                }
+                //if(verbose) std::cout << "SF: " << s << " -- " << (feasible?"Feasible":"Unfeasible") << "  Cost = " << cost << std::endl;
+                allocatedEDs.clear(); // Clear list of allocated and continue with next SFs
             }
-            //if(verbose) std::cout << "SF: " << s << " -- " << (feasible?"Feasible":"Unfeasible") << "  Cost = " << cost << std::endl;
-            allocatedEDs.clear(); // Clear list of allocated and continue with next SFs
         }
     }
 
