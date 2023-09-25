@@ -232,12 +232,14 @@ OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool
     const uint gwCount = l->getGWCount();
     const uint edCount = l->getEDCount();
 
-    
     bool feasibleFound = false;    
     uint gwBest[edCount];
     uint sfBest[edCount];
     double minimumCost = __DBL_MAX__;
     
+    if(verbose)
+        std::cout << "Running " << iters << " iterations..." << std::endl << std::endl;
+
     for(unsigned long i = 0; i < iters; i++){
         uint gw[edCount];
         uint sf[edCount];

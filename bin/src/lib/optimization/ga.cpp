@@ -36,11 +36,19 @@ void copy_genes(const Chromosome& X_from, Chromosome& X_to) {
 
 void randomize_gene(Chromosome& p, const uint index, const std::function<double(void)> &rnd01) {
 	// Randomly modify GW and SF allocation for gene number "index"
-	std::vector<uint> gwList = _l->getGWList(index); // Valid gws for this ED
-	uint minSF = _l->getMinSF(index, p.gw[index]);
+	std::vector<uint> gwList = _l->getGWList(index); // Valid gws for this ED	
+	const uint gw = gwList[(uint)floor(rnd01()*(double)gwList.size())]; // Pick random GW from list
 	uint maxSF = _l->getMaxSF(index);
-	p.gw[index] = gwList[(uint)floor(rnd01()*gwList.size())]; // Pick random GW from list
-	p.sf[index] = (uint)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);
+	uint minSF = _l->getMinSF(index, gw);
+	p.gw[index] = gw;
+	p.sf[index] = (uint)floor(rnd01()*(double)(maxSF - minSF) + (double)minSF);	
+	/*
+	if(p.sf[index] > 12){
+		std::cout << "minSF=" << minSF << std::endl;
+		std::cout << "maxSF=" << maxSF << std::endl;
+		std::cout << "SF=" << p.sf[index] << std::endl << std::endl;
+	}
+	*/
 }
 
 void init_genes_random(Chromosome& p, const std::function<double(void)> &rnd01) {	
@@ -84,12 +92,12 @@ void init_genes_greedy(Chromosome& p, const std::function<double(void)> &rnd01) 
 }
 
 Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &rnd01, double shrink_scale) {
-	Chromosome X_new;		
 	const double pr = 1.5 / (double)_l->getEDCount();
+	Chromosome X_new;		
 	for(uint i = 0; i < _l->getEDCount(); i++){
-		if(rnd01() < pr)
+		if(rnd01() < pr){			
 			randomize_gene(X_new, i, rnd01);
-		else{
+		}else{
 			X_new.gw[i] = X_base.gw[i];
 			X_new.sf[i] = X_base.sf[i];
 		}
@@ -99,7 +107,7 @@ Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &r
 
 Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::function<double(void)> &rnd01) {
 	Chromosome X_new;	
-	uint x_point = (uint) (rnd01()*(double)_l->getEDCount()); // Crossover point
+	const uint x_point = (uint) (rnd01()*((double)_l->getEDCount()-1)) + 1; // Crossover point
     for(uint i = 0; i < x_point; i++){
         X_new.gw[i] = X1.gw[i];
 		X_new.sf[i] = X1.sf[i];
@@ -187,7 +195,7 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	ga_obj.best_stall_max = 100;
     ga_obj.average_stall_max = 100;
 	ga_obj.calculate_SO_total_fitness = calculate_SO_total_fitness;
-	ga_obj.init_genes = init_genes_greedy;
+	ga_obj.init_genes = init_genes_greedy;	
 	ga_obj.eval_solution = eval_solution;
 	ga_obj.mutate = mutate;
 	ga_obj.crossover = crossover;    
