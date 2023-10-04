@@ -126,7 +126,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
                 break;
             }
         }
-        for(uint ch = 15; ch > 0; ch--){
+        for(int ch = 15; ch >= 0; ch--){
             std::cout << "    <variable name=\"w#" << g << "#" << ch 
                     << "\" index=\"" << index
                     << "\" value=\"" << (selected && ch==lastch ? 1 : 0)
