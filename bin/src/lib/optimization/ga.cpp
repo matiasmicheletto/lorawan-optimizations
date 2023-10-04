@@ -171,7 +171,7 @@ void MO_report_generation_verbose(int generation_number, const EA::GenerationTyp
 
 void MO_report_generation(int generation_number, const EA::GenerationType<Chromosome,MiddleCost> &last_generation, const std::vector<uint>& pareto_front) {}
 
-OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
+OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool verbose, bool wst) {
 
 	if(verbose)
         std::cout << std::endl << "--------------- GA ---------------" << std::endl << std::endl;
@@ -242,6 +242,8 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 		o->printSolution(best.gw.data(), best.sf.data(), true, true);
 	}
 
+	if(wst) o->exportWST(best.gw.data(), best.sf.data());
+
 	OptimizationResults results;
     results.cost = o->eval(best.gw.data(), best.sf.data(), results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = o->tp;
@@ -252,7 +254,7 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 }
 
 
-OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool verbose) {
+OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool verbose, bool wst) {
 
 	if(verbose)
         std::cout << std::endl << "--------------- NSGA ---------------" << std::endl << std::endl;
@@ -326,6 +328,8 @@ OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool
 		std::cout << std::endl << "Optimal result:" << std::endl;
 		o->printSolution(best.gw.data(), best.sf.data(), true, true);
 	}
+
+	if(wst) o->exportWST(best.gw.data(), best.sf.data());
 
 	OptimizationResults results;
     results.cost = o->eval(best.gw.data(), best.sf.data(), results.gwUsed, results.energy, results.uf, results.feasible);

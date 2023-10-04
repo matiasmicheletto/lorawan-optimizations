@@ -1,6 +1,6 @@
 #include "greedy.h"
 
-OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose){
+OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose, bool wst){
     auto start = std::chrono::high_resolution_clock::now();
     
     if(verbose){
@@ -119,6 +119,8 @@ OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose
         o->printSolution(gw, sf, true, true);
     }
 
+    if(wst) o->exportWST(gw, sf);
+
     // Evaluate GW and SF pair of vectors with objective function and return results
     OptimizationResults results;
     results.cost = o->eval(gw, sf, results.gwUsed, results.energy, results.uf, results.feasible);
@@ -133,10 +135,10 @@ OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose
     return results;
 }
 
-OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
+OptimizationResults greedy2(Instance* l, Objective* o, bool verbose, bool wst){
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::cout << "------------- Greedy 2 minimization -------------" << std::endl << std::endl;
+    if(verbose) std::cout << "------------- Greedy 2 minimization -------------" << std::endl << std::endl;
     const uint gwCount = l->getGWCount();
     const uint edCount = l->getEDCount();
 
@@ -157,7 +159,7 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
         if(verbose) std::cout << "}" << std::endl;
     }
 
-    std::cout << std::endl << "Step 2: SF eval" << std::endl;
+    if(verbose) std::cout << std::endl << "Step 2: SF eval" << std::endl;
 
     // STEP 2 
     uint gw[edCount];
@@ -215,6 +217,8 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
         }
     }
 
+    if(wst) o->exportWST(gwBest, sfBest);
+
     OptimizationResults results;
 
     results.cost = feasibleFound ? o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible) : __DBL_MAX__;
@@ -225,10 +229,10 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose){
     return results;
 }
 
-OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool verbose){
+OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool verbose, bool wst){
     auto start = std::chrono::high_resolution_clock::now();
 
-    std::cout << "------------- Greedy 3 minimization -------------" << std::endl << std::endl;
+    if(verbose) std::cout << "------------- Greedy 3 minimization -------------" << std::endl << std::endl;
     const uint gwCount = l->getGWCount();
     const uint edCount = l->getEDCount();
 
@@ -237,8 +241,7 @@ OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool
     uint sfBest[edCount];
     double minimumCost = __DBL_MAX__;
     
-    if(verbose)
-        std::cout << "Running " << iters << " iterations..." << std::endl << std::endl;
+    if(verbose) std::cout << "Running " << iters << " iterations..." << std::endl << std::endl;
 
     for(unsigned long i = 0; i < iters; i++){
         uint gw[edCount];
@@ -300,6 +303,8 @@ OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool
             std::cout << "No feasible solution was found." << std::endl;
         }
     }
+
+    if(wst) o->exportWST(gwBest, sfBest);
 
     OptimizationResults results;
 

@@ -1,7 +1,7 @@
 #include "random.h"
 
 
-OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose){
+OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose, bool wst){
     /* Fully random uniformly distributed solutions are generated */
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -63,6 +63,8 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
         }
     }
 
+    if(wst) o->exportWST(gwBest, sfBest);
+
 	OptimizationResults results;
     results.ready = found; // Set export flag to ready if solution was found
     if(found){
@@ -80,7 +82,7 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
     return results;
 }
 
-OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose) {
+OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose, bool wst) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -142,6 +144,8 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
             std::cout << "Couldn't find a feasible solution for this problem." << std::endl;
         }
     }
+
+    if(wst) o->exportWST(gwBest, sfBest);
 
     OptimizationResults results;
     results.ready = found; // Set export flag to ready if solution was found

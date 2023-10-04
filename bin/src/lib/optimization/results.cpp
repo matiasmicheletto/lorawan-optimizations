@@ -26,7 +26,4 @@ void logResultsToCSV(const OptimizationResults results, const char* csvfilename)
 
     csvFile.flush();
     csvFile.close();
-
-    free(results.solverName);
-    //free(results.instanceName); // This pointer is freed in instance destructor
 }

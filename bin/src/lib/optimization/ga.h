@@ -25,7 +25,7 @@ struct GAConfig {
             mutation(mutRate) {}
 };
 
-OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
-OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false);
+OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false, bool wst = false);
+OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config = GAConfig(), bool verbose = false, bool wst = false);
 
 #endif // GA_H

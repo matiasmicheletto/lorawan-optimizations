@@ -10,6 +10,7 @@
 #include "lib/optimization/ga.h"
 #include "lib/optimization/results.h"
 
+
 int main(int argc, char **argv) {
     
     srand(time(NULL));
@@ -18,6 +19,7 @@ int main(int argc, char **argv) {
     unsigned long maxIters = 1e5;
     TunningParameters tp; // alpha, beta and gamma
     bool verbose = false; // Disable printing to terminal
+    bool wst = false; // Disable XML wst file export
     int method = 0; // Default is random search
     
     // Program arguments
@@ -82,6 +84,9 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0){
             verbose = true;
         }
+        if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--wst") == 0){
+            wst = true;
+        }
     }
 
     if(l == nullptr) printHelp(MANUAL);
@@ -102,51 +107,51 @@ int main(int argc, char **argv) {
 
     switch (method) {
         case 0: {
-            results = randomSearch(l, o, maxIters, verbose);    
+            results = randomSearch(l, o, maxIters, verbose, wst);    
             results.solverName = strdup("Random Search");
             break;
         }
         case 1: {
-            results = improvedRandomSearch(l, o, maxIters, verbose);
+            results = improvedRandomSearch(l, o, maxIters, verbose, wst);
             results.solverName = strdup("Improved Random Search");
             break;
         }
         case 2: {
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
-            results = ga(l, o, gaconfig, verbose);
+            results = ga(l, o, gaconfig, verbose, wst);
             results.solverName = strdup("Genetic Algorithm");
             break;
         }
         case 3: {
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
-            results = nsga(l, o, gaconfig, verbose);
+            results = nsga(l, o, gaconfig, verbose, wst);
             results.solverName = strdup("Nondominated Sorting Genetic Algorithm");
             break;
         }
         case 4: {
-            results = greedy(l, o, MIN::GW, verbose);
+            results = greedy(l, o, MIN::GW, verbose, wst);
             results.solverName = strdup("Greedy GW Minimization");
             break;
         }
         case 5: {
-            results = greedy(l, o, MIN::E, verbose);
+            results = greedy(l, o, MIN::E, verbose, wst);
             results.solverName = strdup("Greedy E Minimization");
             break;
         }
         case 6: {
-            results = greedy(l, o, MIN::UF, verbose);
+            results = greedy(l, o, MIN::UF, verbose, wst);
             results.solverName = strdup("Greedy UF Minimization");
             break;
         }
         case 7: {
-            results = greedy2(l, o, verbose);
+            results = greedy2(l, o, verbose, wst);
             results.solverName = strdup("Greedy 2");
             break;
         }
         case 8: {
-            results = greedy3(l, o, maxIters, verbose);
+            results = greedy3(l, o, maxIters, verbose, wst);
             results.solverName = strdup("Greedy 3");
             break;
         }

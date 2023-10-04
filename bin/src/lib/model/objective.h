@@ -29,7 +29,6 @@ struct TunningParameters {
         gamma(gamma) {}
 };
 
-
 class Objective {
     public:
         Objective(Instance* instance, const TunningParameters& tp = TunningParameters());
@@ -38,6 +37,7 @@ class Objective {
         double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
         TunningParameters tp;
         void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false);
+        void exportWST(const uint* gw, const uint* sf);
         void printSol(const uint* gw, const uint* sf);
     private:
         Instance* instance;

@@ -60,6 +60,7 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
 }
 
 void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight){
+    
     uint gwCount;
     uint energy;
     double maxUF;
@@ -85,7 +86,6 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
     }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
-
 }
 
 void Objective::printSol(const uint* gw, const uint* sf) {
@@ -101,4 +101,55 @@ void Objective::printSol(const uint* gw, const uint* sf) {
     
     outFile.flush();
     outFile.close();
+}
+
+void Objective::exportWST(const uint* gw, const uint* sf) {
+    std::cout << "<?xml version = \"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" << std::endl
+            << "<CPLEXSolutions version=\"1.2\">" << std::endl
+            << "  <CPLEXSolution version=\"1.2\">" << std::endl
+            << "   <header" << std::endl
+            << "    problemName=\"proof.lp\"" << std::endl
+            << "    solutionName=\"m1\"" << std::endl
+            << "    solutionIndex=\"0\"" << std::endl
+            << "    MIPStartEffortLevel=\"0\"" << std::endl
+            << "    writeLevel=\"2\"/>" << std::endl
+            << "  <variables>" << std::endl;
+
+    uint index = 3;
+    uint lastch = 0;
+    bool selected;
+    for(uint g = 1; g < this->instance->getGWCount()+1; g++){
+        selected = false;
+        for(uint e = 0; e < this->instance->getEDCount(); e++){
+            if(gw[e] == g){
+                selected = true;
+                break;
+            }
+        }
+        for(uint ch = 15; ch > 0; ch--){
+            std::cout << "    <variable name=\"w#" << g << "#" << ch 
+                    << "\" index=\"" << index
+                    << "\" value=\"" << (selected && ch==lastch ? 1 : 0)
+                    << "\"/>" << std::endl;
+            index++;
+        }
+        if(selected) lastch++;
+        if(lastch == 16) lastch = 0;
+    }
+
+    for(uint e = 1; e < this->instance->getEDCount()+1; e++)
+        for(uint g = this->instance->getGWCount(); g > 0 ; g--)   
+            for(uint s = 12; s >= 7; s--){
+                selected = gw[e-1] == g && sf[e-1] == s;
+                std::cout << "    <variable name=\"x#" 
+                        << e << "#" << g << "#" << s
+                        << "\" index=\"" << index
+                        << "\" value=\"" << (selected ? 1 : 0)
+                        << "\"/>" << std::endl;
+                index++;
+            }
+
+    std::cout << "  </variables>" << std::endl
+            << " </CPLEXSolution>" << std::endl
+            << "</CPLEXSolutions>" << std::endl;
 }

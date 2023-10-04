@@ -42,6 +42,7 @@ OPTIONS:
                      G2: Greedy method (version 2)  
                      G3: Greedy method (version 3)
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
+   -w, --wst      Export wst file. 
 
 EXAMPLES:
    1. gpprs -f input.dat
@@ -52,6 +53,9 @@ EXAMPLES:
 
    3. gpprs -f input.dat -m GA -v >> outputs.log 
       - Run the program using the GA method with default configurations and append complete results to "outputs.log" text file. Text may contain terminal formatting escape characters, so it is recommended to show results using the "cat" program instead of "less".
+
+   4. gpprs -f input.dat -m G3 -w solution.wst  
+      - Run the Greedy method and export the solution using the wst (xml) format.  
 
 AUTHORS
    Code was written by Dr. Matias J. Micheletto from CIT-GSJ (CONICET) and supervised by Dr. Rodrigo M. Santos from DIEC (UNS) - ICIC (CONICET) and Dr. Javier Marenco from UTDT.
