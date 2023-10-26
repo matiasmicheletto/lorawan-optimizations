@@ -278,4 +278,4 @@ std::vector<uint> Instance::getEDList(uint gw, uint sf) {
             edList.push_back(ed);
     }
     return edList;
-};
+}

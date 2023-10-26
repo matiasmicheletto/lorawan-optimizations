@@ -51,7 +51,7 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED
         energy += this->instance->sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
 
-    // If solution is feasible, at this point, cost should equal 0.0
+    // If solution is feasible, at this point (before following equation), cost should equal 0.0
     cost += this->tp.alpha * (double) gwCount + 
             this->tp.beta * (double) energy + 
             this->tp.gamma * maxUF;
