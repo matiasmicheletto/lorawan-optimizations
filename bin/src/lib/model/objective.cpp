@@ -121,7 +121,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
     for(uint g = 1; g < this->instance->getGWCount()+1; g++){
         selected = false;
         for(uint e = 0; e < this->instance->getEDCount(); e++){
-            if(gw[e] == g){
+            if(gw[e] == g-1){
                 selected = true;
                 break;
             }
@@ -140,7 +140,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
     for(uint e = 1; e < this->instance->getEDCount()+1; e++)
         for(uint g = this->instance->getGWCount(); g > 0 ; g--)   
             for(uint s = 12; s >= 7; s--){
-                selected = gw[e-1] == g && sf[e-1] == s;
+                selected = gw[e-1] == g-1 && sf[e-1] == s;
                 std::cout << "    <variable name=\"x#" 
                         << e << "#" << g << "#" << s
                         << "\" index=\"" << index
