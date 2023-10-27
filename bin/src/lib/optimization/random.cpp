@@ -1,10 +1,11 @@
 #include "random.h"
 
 
-OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose, bool wst){
+OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint timeout, bool verbose, bool wst){
     /* Fully random uniformly distributed solutions are generated */
 
     auto start = std::chrono::high_resolution_clock::now();
+    bool timedout = false;
 
     if(verbose)
         std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
@@ -49,6 +50,14 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
                 std::cout << std::endl << std::endl;
             }
         }
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
+        if (elapsedSeconds >= timeout) {
+            if(verbose) std::cout << "Time limit reached." << std::endl;
+            timedout = true;
+            break;
+        }
     }
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
@@ -82,9 +91,10 @@ OptimizationResults randomSearch(Instance* l, Objective* o, unsigned long maxIte
     return results;
 }
 
-OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned long maxIters, bool verbose, bool wst) {
+OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIters, uint timeout, bool verbose, bool wst) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
     auto start = std::chrono::high_resolution_clock::now();
+    bool timedout = false;
 
     if(verbose)
         std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
@@ -130,6 +140,14 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, unsigned lon
                 o->printSolution(gw, sf, false);
                 std::cout << std::endl;
             }
+        }
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
+        if (elapsedSeconds >= timeout) {
+            if(verbose) std::cout << "Time limit reached." << std::endl;
+            timedout = true;
+            break;
         }
     }
 

@@ -229,7 +229,7 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose, bool wst){
     return results;
 }
 
-OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool verbose, bool wst){
+OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout, bool verbose, bool wst){
     auto start = std::chrono::high_resolution_clock::now();
 
     if(verbose) std::cout << "------------- Greedy 3 minimization -------------" << std::endl << std::endl;
@@ -237,13 +237,14 @@ OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool
     const uint edCount = l->getEDCount();
 
     bool feasibleFound = false;    
+    bool timedout = false;
     uint gwBest[edCount];
     uint sfBest[edCount];
     double minimumCost = __DBL_MAX__;
     
     if(verbose) std::cout << "Running " << iters << " iterations..." << std::endl << std::endl;
 
-    for(unsigned long iter = 0; iter < iters; iter++){
+    for(uint iter = 0; iter < iters; iter++){
         uint gw[edCount];
         uint sf[edCount];
         std::vector<uint>gwList(gwCount);
@@ -293,6 +294,14 @@ OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool
                 allocatedEDs.clear(); // Clear list of allocated and continue with next SFs
             }
         }
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
+        if (elapsedSeconds >= timeout) {
+            if(verbose) std::cout << "Time limit reached." << std::endl;
+            timedout = true;
+            break;
+        }
     }
 
     if(verbose){
@@ -316,11 +325,12 @@ OptimizationResults greedy3(Instance* l, Objective* o, unsigned long iters, bool
     return results;
 }
 
-OptimizationResults greedy4(Instance* l, Objective* o, unsigned long iters, bool verbose, bool wst){
+OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout, bool verbose, bool wst){
 
-    const int TIMEOUT = 5;  // 5 seconds
     auto start = std::chrono::high_resolution_clock::now();
     bool timedout = false;
+
+    if(verbose) std::cout << "------------- Greedy 4 minimization -------------" << std::endl << std::endl;
 
     const uint gwCount = l->getGWCount();
     const uint edCount = l->getEDCount();
@@ -355,7 +365,7 @@ OptimizationResults greedy4(Instance* l, Objective* o, unsigned long iters, bool
 
         if(!hasCoverage) continue; // Next SF
         else{ // Has coverage --> make allocation and eval objective function
-            for(unsigned long iter = 0; iter < iters; iter++){ // Try many times
+            for(uint iter = 0; iter < iters; iter++){ // Try many times
                 // Shuffle list of gw
                 uint gw[edCount];
                 uint sf[edCount];
@@ -398,7 +408,7 @@ OptimizationResults greedy4(Instance* l, Objective* o, unsigned long iters, bool
                 // Check if out of time
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
-                if (elapsedSeconds >= TIMEOUT) {
+                if (elapsedSeconds >= timeout) {
                     if(verbose) std::cout << "Time limit reached." << std::endl;
                     timedout = true;
                     break;

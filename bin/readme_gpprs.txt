@@ -27,20 +27,22 @@ DESCRIPTION:
 
 OPTIONS:
    -h, --help     Display this help message.
-   -i, --iter     Iterations to perform. Default is 1e6.
-   -a, --alpha    Alpha tunning parameter. Default is 1.
-   -b, --beta     Beta tunning parameter. Default is 0.1.
-   -g, --gamma    Gamma tunning parameter. Default is 1000.
-   -m, --method   Optimization method: Default is RS (random).
+   -i, --iter     Iterations to perform. Default is 1e6.  
+   -t, --timeout  Timeout in seconds. Default is 3600.  
+   -a, --alpha    Alpha tunning parameter. Default is 1.  
+   -b, --beta     Beta tunning parameter. Default is 0.1.  
+   -g, --gamma    Gamma tunning parameter. Default is 1000.  
+   -m, --method   Optimization method: Default is RS (random).  
                      RS: Random Search  
                      IRS: Improved Random Search  
                      GA: Genetic Algorithms  
                      NSGA: Nondominated Sorting Genetic Algorithms (NSGA-III)
                      GGW: Greedy method to minimize GW  
                      GE: Greedy method to minimize E  
-                     GU: Greedy method to minimize U  
+                     GU: Greedy method to minimize U   
                      G2: Greedy method (version 2)  
-                     G3: Greedy method (version 3)
+                     G3: Greedy method (version 3)  
+                     G4: Greedy method (version 4)  
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
    -w, --wst      Export wst file. 
 

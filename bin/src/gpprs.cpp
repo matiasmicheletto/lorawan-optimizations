@@ -16,7 +16,8 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     Instance *l = 0;
-    unsigned long maxIters = 1e5;
+    uint maxIters = 1e5;
+    uint timeout = 3600;
     TunningParameters tp; // alpha, beta and gamma
     bool verbose = false; // Disable printing to terminal
     bool wst = false; // Disable XML wst file export
@@ -35,6 +36,12 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iter") == 0) {
             if(i+1 < argc) 
                 maxIters = atoi(argv[i+1]);
+            else
+                printHelp(MANUAL);
+        }
+        if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
+            if(i+1 < argc) 
+                timeout = atoi(argv[i+1]);
             else
                 printHelp(MANUAL);
         }
@@ -109,18 +116,19 @@ int main(int argc, char **argv) {
 
     switch (method) {
         case 0: {
-            results = randomSearch(l, o, maxIters, verbose, wst);    
+            results = randomSearch(l, o, maxIters, timeout, verbose, wst);    
             results.solverName = strdup("Random Search");
             break;
         }
         case 1: {
-            results = improvedRandomSearch(l, o, maxIters, verbose, wst);
+            results = improvedRandomSearch(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Improved Random Search");
             break;
         }
         case 2: {
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
+            gaconfig.timeout = timeout;
             results = ga(l, o, gaconfig, verbose, wst);
             results.solverName = strdup("Genetic Algorithm");
             break;
@@ -128,6 +136,7 @@ int main(int argc, char **argv) {
         case 3: {
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
+            gaconfig.timeout = timeout;
             results = nsga(l, o, gaconfig, verbose, wst);
             results.solverName = strdup("Nondominated Sorting Genetic Algorithm");
             break;
@@ -153,12 +162,12 @@ int main(int argc, char **argv) {
             break;
         }
         case 8: {
-            results = greedy3(l, o, maxIters, verbose, wst);
+            results = greedy3(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 3");
             break;
         }
         case 9: {
-            results = greedy4(l, o, maxIters, verbose, wst);
+            results = greedy4(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 4");
             break;
         }
