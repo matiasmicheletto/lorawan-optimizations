@@ -9,6 +9,7 @@
 #include "../util/util.h"
 #include "../model/instance.h"
 #include "../model/objective.h"
+#include "../model/uf.h"
 #include "results.h"
 
 enum MIN {GW, E, UF}; // Greedy minimization methods

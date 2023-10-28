@@ -104,29 +104,30 @@ Instance::Instance(const InstanceConfig& config) {
     }
     
     // Populate instance matrix with data
-    for(uint i = 0; i < eds.size(); i++) {
-        std::vector<uint> row;
-        uint availableGW = 0;
-        for(uint j = 0; j < gws.size(); j++) {
-            double dist = euclideanDistance(
-                eds[i].pos.x,
-                eds[i].pos.y, 
-                gws[j].x,
-                gws[j].y 
+    for(uint e = 0; e < eds.size(); e++) {
+        std::vector<uint> row; // Text line to print
+        uint availableGW = 0; // Available GW for this ED
+        for(uint g = 0; g < gws.size(); g++) { // Count available GW for this ED
+            double dist = euclideanDistance( // Distance from current ED to current GW
+                eds[e].pos.x,
+                eds[e].pos.y, 
+                gws[g].x,
+                gws[g].y 
             );
             int minSF = this->_getMinSF(dist);
-            int maxSF = this->_getMaxSF(eds[i].period);
-            if(minSF <= maxSF)
+            int maxSF = this->_getMaxSF(eds[e].period);
+            if(minSF <= maxSF) // Current ED can be assigned to current GW using at least one SF
                 availableGW++; // Count available gw for this ED
-            row.push_back(minSF);
+            row.push_back(minSF); // It is only required the minSF because it depends on distance. maxSF can be obtained from period.
         }
+        std::cout << "GW count for ED " << e << " is " << availableGW << std::endl;
         if(availableGW == 0) {
             std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
-                        << "ED = " << i << std::endl
-                        << "Period = " << eds[i].period << std::endl;
+                        << "ED = " << e << std::endl
+                        << "Period = " << eds[e].period << std::endl;
             exit(1);
         }
-        row.push_back(eds[i].period); // Add period as last element
+        row.push_back(eds[e].period); // Add period as last element
         this->raw.push_back(row); // Add row to data
     } // Raw data is ready to export (or use)
     // Set attributes (in case of using config to generate an instance to solve)
@@ -179,8 +180,7 @@ uint Instance::getMaxSF(uint ed) {
 UtilizationFactor Instance::getUF(uint ed, uint sf) {
     double pw = (double) this->sf2e(sf);
     double ufValue = pw / ((double)this->getPeriod(ed) - pw);
-    UtilizationFactor uf(sf, ufValue);
-    return uf;
+    return UtilizationFactor(sf, ufValue);
 }
 
 uint Instance::_getMaxSF(uint period) {

@@ -237,7 +237,6 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
     const uint edCount = l->getEDCount();
 
     bool feasibleFound = false;    
-    bool timedout = false;
     uint gwBest[edCount];
     uint sfBest[edCount];
     double minimumCost = __DBL_MAX__;
@@ -299,7 +298,6 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
         auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
         if (elapsedSeconds >= timeout) {
             if(verbose) std::cout << "Time limit reached." << std::endl;
-            timedout = true;
             break;
         }
     }
@@ -353,12 +351,22 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
         for(uint e = 0; e < edCount; e++){
             bool hasGW = false;
             for(uint g = 0; g < gwCount; g++){
+                /* Find if ED "e" is present in the "clusters" tensor
+                for(uint ee = 0; ee < clusters[s-7][g].size(); ee++){
+                    if(clusters[s-7][g][ee] == e){
+                        hasGW = true;
+                        break;
+                    }
+                }
+                */
                 auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                 hasGW = (it != clusters[s-7][g].end());
                 if(hasGW) break;
             }
             if(!hasGW){ 
                 hasCoverage = false;
+                if(verbose) std::cout << "No coverage for SF " << s << ": ED " << e << " cannot be assigned to any GW." << std::endl;
+                if(s == 12) exit(1);
                 break;
             }
         }
@@ -376,15 +384,17 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
                 std::shuffle(gwList.begin(), gwList.end(), gen);
 
                 // Start allocation of EDs one by one
+                std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
                 for(uint e = 0; e < edCount; e++){ 
                     for(uint gi = 0; gi < gwCount; gi++){
                         const uint g = gwList[gi];
-
                         // Check if ED e can be allocated to GW g
                         auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
-                        if((it != clusters[s-7][g].end())){
+                        if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
+                            uint minsf = l->getMinSF(e, g);
                             gw[e] = g;
-                            sf[e] = l->getMinSF(e, g); // Always assign lower SF
+                            sf[e] = minsf; // Always assign lower SF
+                            gwuf[g] += l->getUF(e, minsf);
                             break; // Go to next ed
                         }
                     }
