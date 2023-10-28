@@ -10,6 +10,7 @@
 #include <vector>
 #include <sstream>
 #include <cstring>
+#include <algorithm>
 
 #include "uf.h"
 #include "../util/util.h"
@@ -78,6 +79,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         std::vector<uint> getGWList(uint ed);
         std::vector<uint> getSortedGWList(uint ed);
         std::vector<uint> getEDList(uint gw, uint sf);
+        std::vector<uint> getAllEDList(uint gw, uint maxSF);
 
     private:
         std::vector<std::vector<uint>> raw;

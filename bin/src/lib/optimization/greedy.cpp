@@ -344,7 +344,7 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
         
         // Build cluster matrix for this SF
         for(uint g = 0; g < gwCount; g++)
-            clusters[s-7].push_back(l->getEDList(g, s));
+            clusters[s-7].push_back(l->getAllEDList(g ,s));
         
         // Check if SF has coverage
         bool hasCoverage = true; // This is updated if an ED cannot be assigned to any GW

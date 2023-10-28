@@ -5,7 +5,6 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
     /* Fully random uniformly distributed solutions are generated */
 
     auto start = std::chrono::high_resolution_clock::now();
-    bool timedout = false;
 
     if(verbose)
         std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
@@ -55,7 +54,6 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
         auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
         if (elapsedSeconds >= timeout) {
             if(verbose) std::cout << "Time limit reached." << std::endl;
-            timedout = true;
             break;
         }
     }
@@ -94,7 +92,6 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
 OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIters, uint timeout, bool verbose, bool wst) {
     /* Random solutions are generated within feasible and more convenient SF and GW values */
     auto start = std::chrono::high_resolution_clock::now();
-    bool timedout = false;
 
     if(verbose)
         std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
@@ -146,7 +143,6 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIter
         auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
         if (elapsedSeconds >= timeout) {
             if(verbose) std::cout << "Time limit reached." << std::endl;
-            timedout = true;
             break;
         }
     }

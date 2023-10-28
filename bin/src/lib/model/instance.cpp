@@ -115,12 +115,11 @@ Instance::Instance(const InstanceConfig& config) {
                 gws[g].y 
             );
             int minSF = this->_getMinSF(dist);
-            int maxSF = this->_getMaxSF(eds[e].period);
+            int maxSF = this->_getMaxSF(eds[e].period);            
             if(minSF <= maxSF) // Current ED can be assigned to current GW using at least one SF
                 availableGW++; // Count available gw for this ED
             row.push_back(minSF); // It is only required the minSF because it depends on distance. maxSF can be obtained from period.
         }
-        std::cout << "GW count for ED " << e << " is " << availableGW << std::endl;
         if(availableGW == 0) {
             std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
                         << "ED = " << e << std::endl
@@ -269,13 +268,27 @@ std::vector<uint> Instance::getSortedGWList(uint ed) {
 }
 
 std::vector<uint> Instance::getEDList(uint gw, uint sf) {
-    // Returns all ED that can be connected toGW
+    // Returns all ED that can be connected to GW using only the given SF
     std::vector<uint> edList;     
     for(uint ed = 0; ed < this->edCount; ed++){        
         const uint minSF = this->getMinSF(ed, gw);
         const uint maxSF = this->getMaxSF(ed);
         if(minSF <= sf && sf <= maxSF)
             edList.push_back(ed);
+    }
+    return edList;
+}
+
+std::vector<uint> Instance::getAllEDList(uint gw, uint maxSF) {
+    // Returns all ED that can be connected to GW using given SF from 7 to maxSF
+    std::vector<uint> edList;     
+    for(uint s = 7; s < maxSF; s++){
+        std::vector<uint> tempList = this->getEDList(gw, s);
+        for(uint ee = 0; ee < tempList.size(); ee++){
+            auto it = std::find(edList.begin(), edList.end(), tempList[ee]);
+            if(it == edList.end())
+                edList.push_back(tempList[ee]);
+        }
     }
     return edList;
 }
