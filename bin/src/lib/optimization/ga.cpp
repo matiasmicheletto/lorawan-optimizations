@@ -222,26 +222,6 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
 	const int bestIndex = ga_obj.last_generation.best_chromosome_index;
 	copy_genes(ga_obj.last_generation.chromosomes[bestIndex].genes, best);
 
-	// Print and return results
-	if(verbose){
-		std::cout << "Exit condition: ";
-		switch (res) {
-			case EA::StopReason::MaxGenerations:
-				std::cout << " Max. generations";
-				break;
-			case EA::StopReason::StallAverage:
-				std::cout << " Average stall";
-				break;
-			case EA::StopReason::StallBest:
-				std::cout << " Best stall";
-				break;
-			default:
-				break;
-		}
-		std::cout << std::endl << "Optimal result:" << std::endl;
-		o->printSolution(best.gw.data(), best.sf.data(), true, true);
-	}
-
 	if(wst) o->exportWST(best.gw.data(), best.sf.data());
 
 	OptimizationResults results;
@@ -249,6 +229,27 @@ OptimizationResults ga(Instance* l, Objective* o, const GAConfig& config, bool v
     results.tp = o->tp;
     results.execTime = timer.toc()*1000;
     results.ready = true; // Set export flag to ready
+
+	// Print and return results
+	if(verbose){
+		std::cout << "Exit condition: ";
+		switch (res) {
+			case EA::StopReason::MaxGenerations:
+				std::cout << " Max. generations" << std::endl;
+				break;
+			case EA::StopReason::StallAverage:
+				std::cout << " Average stall" << std::endl;
+				break;
+			case EA::StopReason::StallBest:
+				std::cout << " Best stall" << std::endl;
+				break;
+			default:
+				break;
+		}
+		std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
+		std::cout << std::endl << "Optimal result:" << std::endl;
+		o->printSolution(best.gw.data(), best.sf.data(), true, true);
+	}
 
 	return results;
 }
@@ -309,26 +310,6 @@ OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool
 	Chromosome best;
 	//copy_genes(ga_obj.last_generation.chromosomes[ga_obj.last_generation.best_chromosome_index].genes, best);
 
-	// Print and return results
-	if(verbose){
-		std::cout << "Exit condition: ";
-		switch (res) {
-			case EA::StopReason::MaxGenerations:
-				std::cout << " Max. generations";
-				break;
-			case EA::StopReason::StallAverage:
-				std::cout << " Average stall";
-				break;
-			case EA::StopReason::StallBest:
-				std::cout << " Best stall";
-				break;
-			default:
-				break;
-		}
-		std::cout << std::endl << "Optimal result:" << std::endl;
-		o->printSolution(best.gw.data(), best.sf.data(), true, true);
-	}
-
 	if(wst) o->exportWST(best.gw.data(), best.sf.data());
 
 	OptimizationResults results;
@@ -336,6 +317,27 @@ OptimizationResults nsga(Instance* l, Objective* o, const GAConfig& config, bool
     results.tp = o->tp;
     results.execTime = timer.toc()*1000;
     results.ready = true; // Set export flag to ready
+
+	// Print and return results
+	if(verbose){
+		std::cout << "Exit condition: ";
+		switch (res) {
+			case EA::StopReason::MaxGenerations:
+				std::cout << " Max. generations" << std::endl;
+				break;
+			case EA::StopReason::StallAverage:
+				std::cout << " Average stall" << std::endl;
+				break;
+			case EA::StopReason::StallBest:
+				std::cout << " Best stall" << std::endl;
+				break;
+			default:
+				break;
+		}
+		std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
+		std::cout << std::endl << "Result:" << std::endl;
+		o->printSolution(best.gw.data(), best.sf.data(), true, true);
+	}
 
 	return results;
 }

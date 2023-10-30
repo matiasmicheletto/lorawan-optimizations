@@ -114,11 +114,6 @@ OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose
         }
     }
 
-    if(verbose){
-        std::cout << "Result:" << std::endl;
-        o->printSolution(gw, sf, true, true);
-    }
-
     if(wst) o->exportWST(gw, sf);
 
     // Evaluate GW and SF pair of vectors with objective function and return results
@@ -127,6 +122,12 @@ OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true; // Set export flag to ready
+
+    if(verbose){
+        std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
+        std::cout << "Result:" << std::endl;
+        o->printSolution(gw, sf, true, true);
+    }
 
     // Release memory used for optimization variable
     free(gw);
@@ -208,15 +209,6 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose, bool wst){
         }
     }
 
-    if(verbose){
-        if(feasibleFound){
-            std::cout << "Result:" << std::endl;
-            o->printSolution(gwBest, sfBest, true, true);
-        }else{
-            std::cout << "No feasible solution was found." << std::endl;
-        }
-    }
-
     if(wst) o->exportWST(gwBest, sfBest);
 
     OptimizationResults results;
@@ -225,6 +217,16 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose, bool wst){
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true; // Set export flag to ready
+
+    if(verbose){
+        std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
+        if(feasibleFound){
+            std::cout << "Best result:" << std::endl;
+            o->printSolution(gwBest, sfBest, true, true);
+        }else{
+            std::cout << "No feasible solution was found." << std::endl;
+        }
+    }
 
     return results;
 }
@@ -302,15 +304,6 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
         }
     }
 
-    if(verbose){
-        if(feasibleFound){
-            std::cout << "Result:" << std::endl;
-            o->printSolution(gwBest, sfBest, true, true);
-        }else{
-            std::cout << "No feasible solution was found." << std::endl;
-        }
-    }
-
     if(wst) o->exportWST(gwBest, sfBest);
 
     OptimizationResults results;
@@ -319,6 +312,16 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true; // Set export flag to ready
+
+    if(verbose){
+        std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
+        if(feasibleFound){
+            std::cout << "Best result:" << std::endl;
+            o->printSolution(gwBest, sfBest, true, true);
+        }else{
+            std::cout << "No feasible solution was found." << std::endl;
+        }
+    }
 
     return results;
 }
@@ -428,15 +431,6 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
         if(timedout) break;   
     }
 
-    if(verbose){
-        if(feasibleFound){
-            std::cout << "Result:" << std::endl;
-            o->printSolution(gwBest, sfBest, true, true);
-        }else{
-            std::cout << "No feasible solution was found." << std::endl;
-        }
-    }
-
     if(wst) o->exportWST(gwBest, sfBest);
 
     OptimizationResults results;
@@ -445,6 +439,16 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true; // Set export flag to ready
+
+    if(verbose){
+        std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
+        if(feasibleFound){
+            std::cout << "Best result:" << std::endl;
+            o->printSolution(gwBest, sfBest, true, true);
+        }else{
+            std::cout << "No feasible solution was found." << std::endl;
+        }
+    }
 
     return results;
 }
