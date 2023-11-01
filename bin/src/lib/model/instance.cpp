@@ -201,6 +201,7 @@ uint Instance::_getMaxSF(uint period) {
         return 0;
 }
 
+/*
 uint Instance::_getMinSF(double distance) {
     if(distance < 62.5)
         return 7;
@@ -213,6 +214,24 @@ uint Instance::_getMinSF(double distance) {
     else if(distance < 1000)
         return 11;
     else if(distance < 2000)
+        return 12;
+    else // No SF for this distance
+        return 100;
+}
+*/
+
+uint Instance::_getMinSF(double distance) {
+    if(distance < 2.5)
+        return 7;
+    else if(distance < 5)
+        return 8;
+    else if(distance < 10)
+        return 9;
+    else if(distance < 20)
+        return 10;
+    else if(distance < 40)
+        return 11;
+    else if(distance < 80)
         return 12;
     else // No SF for this distance
         return 100;
