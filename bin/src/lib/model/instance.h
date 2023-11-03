@@ -22,6 +22,7 @@
 
 enum POSDIST {UNIFORM, NORMAL, CLOUDS}; 
 enum PERIODIST {SOFT, MEDIUM, HARD, FIXED}; 
+enum OUTFORMAT {TXT, HTML};
 
 struct InstanceConfig { // This is for instance generation
     uint mapSize; // Map size
@@ -29,6 +30,7 @@ struct InstanceConfig { // This is for instance generation
     uint gwNumber; // Number of gateways (columns)
     PERIODIST timeRequirement; // PDF for ED periods
     POSDIST posDistribution; // Distribution of positions
+    OUTFORMAT outputFormat; // Format of output file  
     uint fixedPeriod; // Fixed period (if PERIODIST == FIXED)
 
     InstanceConfig(  // Default configuration parameters
@@ -37,6 +39,7 @@ struct InstanceConfig { // This is for instance generation
         uint gwNumber = 100,
         PERIODIST timeRequirement = SOFT,
         POSDIST posDistribution = UNIFORM,
+        OUTFORMAT outputFormat = TXT,
         uint fixedPeriod = 3200
     ) : 
         mapSize(mapSize),
@@ -44,6 +47,7 @@ struct InstanceConfig { // This is for instance generation
         gwNumber(gwNumber),
         timeRequirement(timeRequirement),
         posDistribution(posDistribution),
+        outputFormat(outputFormat),
         fixedPeriod(fixedPeriod) {}
 };
 
@@ -64,8 +68,8 @@ class Instance { // Provides attributes and funcions related to problem formulat
         Instance(const InstanceConfig& config = InstanceConfig()); // Generate from config
         ~Instance();
         
-        void printRawData();
-        void exportRawData(char* filename);
+        void exportRawData(const char* filename = nullptr);
+        void generateHtmlPlot(const char* filename);
         void copySFDataTo(std::vector<std::vector<uint>>& destination);
         
         inline uint getGWCount(){return this->gwCount;};
@@ -84,7 +88,10 @@ class Instance { // Provides attributes and funcions related to problem formulat
     private:
         std::vector<std::vector<uint>> raw;
         uint gwCount, edCount;
+        std::vector<EndDevice> eds; 
+        std::vector<Position> gws; 
         char* instanceFileName;
+        OUTFORMAT outputFormat;
         static const uint pw[6];
 
         uint _getMaxSF(uint period);

@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     InstanceConfig config; // Default configuration
-    bool output = false; // Print data to output file
-    char* outputFileName;
+
+    char* outputFileName = nullptr;
 
     // Program arguments
     for(int i = 0; i < argc; i++) {    
@@ -19,13 +19,18 @@ int main(int argc, char **argv) {
             printHelp(MANUAL);
         if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
             if(i+1 < argc) {
-                output = true;
                 size_t len = strlen(argv[i+1]);
                 outputFileName = new char[len+1];
                 strcpy(outputFileName, argv[i+1]);
             }else{
                 printHelp(MANUAL);
             }
+        }
+        if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--format") == 0) {
+            if(i+1 < argc){
+                config.outputFormat = (std::strcmp(argv[i+1], "HTML") == 0) ? OUTFORMAT::HTML : OUTFORMAT::TXT;
+            }else
+                printHelp(MANUAL);
         }
         if(strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--enddevices") == 0) {
             if(i+1 < argc)
@@ -65,11 +70,11 @@ int main(int argc, char **argv) {
 
     Instance* l = new Instance(config);
 
-    if(output)
+    if(config.outputFormat == OUTFORMAT::TXT)
         l->exportRawData(outputFileName);
-    else
-        l->printRawData();
-
+    if(config.outputFormat == OUTFORMAT::HTML)
+        l->generateHtmlPlot(outputFileName);
+    
     delete(l);
     l = 0;
     

@@ -8,13 +8,14 @@ DESCRIPTION:
    This program generates instances for the Gateway Placement Problem (GPP), to be solved using the optimization program. Depending on the distribution function configured for node positioning, a random network of end devices and gateways is generated. Each end device is assigned a period depending on the configured real time requirements and finally a matrix is printed with one row for each end device and one column for each gateway. The final column indicates the transmission period of each end device.
 
 OPTIONS:
-   -h, --help           Display this help message.
-   -e, --enddevices     Number of end-devices. Default is 1000.
-   -g, --gateways       Number of gateways. Default is 100.
-   -r, --requirements   Real-time requirements for end-devices: 0=soft, 1=intermediate, 2=hard, 3=fixed (add value after the 3). Default is soft.
-   -p, --positions      Placement of nodes: 0=uniform, 1=normal, 2=clouds. Default is uniform. Gateways possible positions are generated with this function too.
-   -m, --map            Map size. Default is 1000.
-   -o, --oputput        Output file name. 
+   -h, --help           Display this help message.  
+   -e, --enddevices     Number of end-devices. Default is 1000.  
+   -g, --gateways       Number of gateways. Default is 100.  
+   -r, --requirements   Real-time requirements for end-devices: 0=soft, 1=intermediate, 2=hard, 3=fixed (add value after the 3). Default is soft.  
+   -p, --positions      Placement of nodes: 0=uniform, 1=normal, 2=clouds. Default is uniform. Gateways possible positions are generated with this function too.  
+   -m, --map            Map size. Default is 1000.  
+   -o, --oputput        Output file name.  
+   -f, --format         Output file format: TXT, HTML, XML (not implemented yet).  
 
 EXAMPLES:
    1. datgen 

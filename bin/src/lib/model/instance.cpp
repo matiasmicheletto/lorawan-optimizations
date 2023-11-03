@@ -80,9 +80,9 @@ Instance::Instance(const InstanceConfig& config) {
     }
     CustomDist *periodGenerator = new CustomDist(distBuilder.build());
 
+    this->outputFormat = config.outputFormat;
+
     // Generate network nodes
-    std::vector<EndDevice> eds;
-    std::vector<Position> gws;
     for (uint i = 0; i < config.edNumber; i++) {
         // End device position
         double x, y; 
@@ -93,29 +93,29 @@ Instance::Instance(const InstanceConfig& config) {
             period = config.fixedPeriod;
         else 
             period = periodGenerator->randomInt(); 
-        eds.push_back({{x, y}, period});
+        this->eds.push_back({{x, y}, period});
     }
 
     for(uint i = 0; i < config.gwNumber; i++) {
         // Gateway position
         double x, y; 
         posGenerator->setRandom(x, y);
-        gws.push_back({x, y});
+        this->gws.push_back({x, y});
     }
     
     // Populate instance matrix with data
-    for(uint e = 0; e < eds.size(); e++) {
+    for(uint e = 0; e < this->eds.size(); e++) {
         std::vector<uint> row; // Text line to print
         uint availableGW = 0; // Available GW for this ED
-        for(uint g = 0; g < gws.size(); g++) { // Count available GW for this ED
+        for(uint g = 0; g < this->gws.size(); g++) { // Count available GW for this ED
             double dist = euclideanDistance( // Distance from current ED to current GW
-                eds[e].pos.x,
-                eds[e].pos.y, 
-                gws[g].x,
-                gws[g].y 
+                this->eds[e].pos.x,
+                this->eds[e].pos.y, 
+                this->gws[g].x,
+                this->gws[g].y 
             );
             int minSF = this->_getMinSF(dist);
-            int maxSF = this->_getMaxSF(eds[e].period);            
+            int maxSF = this->_getMaxSF(this->eds[e].period);            
             if(minSF <= maxSF) // Current ED can be assigned to current GW using at least one SF
                 availableGW++; // Count available gw for this ED
             row.push_back(minSF); // It is only required the minSF because it depends on distance. maxSF can be obtained from period.
@@ -123,10 +123,10 @@ Instance::Instance(const InstanceConfig& config) {
         if(availableGW == 0) {
             std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
                         << "ED = " << e << std::endl
-                        << "Period = " << eds[e].period << std::endl;
+                        << "Period = " << this->eds[e].period << std::endl;
             exit(1);
         }
-        row.push_back(eds[e].period); // Add period as last element
+        row.push_back(this->eds[e].period); // Add period as last element
         this->raw.push_back(row); // Add row to data
     } // Raw data is ready to export (or use)
     // Set attributes (in case of using config to generate an instance to solve)
@@ -138,29 +138,103 @@ Instance::~Instance() {
     delete[] this->instanceFileName;
 }
 
-void Instance::printRawData() {
-    for (const auto& row : this->raw) {
-        for (int num : row) 
-            std::cout << num << " ";
-        std::cout << std::endl;
-    }
-}
+void Instance::exportRawData(const char* filename) {
+    std::ostream& output = (filename != nullptr) ? *new std::ofstream(filename) : std::cout;
 
-void Instance::exportRawData(char* filename) {
-    std::ofstream outputFile(filename);
-    
-    if (!outputFile.is_open()) { 
-        std::cerr << "Failed to open output file." << std::endl;
+    if (!output) { 
+        std::cerr << "Failed to open output stream." << std::endl;
         exit(1);
     }
-    
+
     for (const auto& row : this->raw) {
         for (int num : row)
-            outputFile << num << " ";
-        outputFile << '\n';
+            output << num << " ";
+        output << '\n';
     }
 
-    outputFile.close();
+    if (filename != nullptr) 
+        dynamic_cast<std::ofstream&>(output).close();
+}
+
+void Instance::generateHtmlPlot(const char* filename) {
+    // Compute canvas size:
+
+    double minX = std::numeric_limits<double>::max();
+    double minY = std::numeric_limits<double>::max();
+    double maxX = -std::numeric_limits<double>::max();
+    double maxY = -std::numeric_limits<double>::max();
+
+    for (const EndDevice& ed : eds) {
+        if (ed.pos.x < minX)
+            minX = ed.pos.x;
+        if (ed.pos.y < minY)
+            minY = ed.pos.y;
+        if (ed.pos.x > maxX)
+            maxX = ed.pos.x;
+        if (ed.pos.y > maxY)
+            maxY = ed.pos.y;
+    }
+
+    for (const Position& gw : gws) {
+        if (gw.x < minX)
+            minX = gw.x;
+        if (gw.y < minY)
+            minY = gw.y;
+        if (gw.x > maxX)
+            maxX = gw.x;
+        if (gw.y > maxY)
+            maxY = gw.y;
+    }
+
+    // Add padding to ensure all positions are visible
+    double padding = 10.0;
+
+    // Calculate canvas size based on the range of coordinates
+    int canvasWidth = static_cast<int>(maxX - minX + 2 * padding);
+    int canvasHeight = static_cast<int>(maxY - minY + 2 * padding);
+    
+    
+    std::ofstream htmlFile(filename);
+
+    if (!htmlFile.is_open()) {
+        std::cerr << "Failed to open HTML file." << std::endl;
+        return;
+    }
+
+    htmlFile << "<!DOCTYPE html>\n";
+    htmlFile << "\t<html>\n";
+    htmlFile << "\t\t<head>\n";
+    htmlFile << "\t\t\t<title>LoRaWAN Position Plot</title>\n";
+    htmlFile << "\t\t</head>\n";
+    htmlFile << "\t\t<body>\n";
+    htmlFile << "\t\t\t<h3>LoRaWAN Generated network</h3>\n";
+    htmlFile << "\t\t\t<p>Map width = " << canvasWidth << "<br>\n";
+    htmlFile << "\t\t\tMap height = " << canvasHeight << "</p>\n";
+    htmlFile << "\t\t\t<canvas id='positionCanvas' width='" 
+        << canvasWidth << "' height='" 
+        << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'></canvas>\n";
+    htmlFile << "\t\t\t<script>\n";
+    htmlFile << "\t\t\t\tvar canvas = document.getElementById('positionCanvas');\n";
+    htmlFile << "\t\t\t\tvar ctx = canvas.getContext('2d');\n";
+
+    // Draw positions of End Devices
+    htmlFile << "\t\t\t\tctx.fillStyle = 'red';\n";
+    for (const EndDevice& ed : this->eds) {
+        htmlFile << "\t\t\t\tctx.fillRect(" << ed.pos.x+maxX << ", " << ed.pos.y+maxY << ", 2, 2);\n";
+    }
+
+    // Draw positions of Gateways
+    htmlFile << "\t\t\t\tctx.fillStyle = 'blue';\n";
+    for (const Position& gw : this->gws) {
+        htmlFile << "\t\t\t\tctx.fillRect(" << gw.x+maxX << ", " << gw.y+maxY << ", 2, 2);\n";
+    }
+
+    htmlFile << "\t\t\t</script>\n";
+    htmlFile << "\t\t</body>\n";
+    htmlFile << "\t</html>\n";
+
+    htmlFile.close();
+    std::cout << "HTML file generated: " << filename << std::endl;
 }
 
 void Instance::copySFDataTo(std::vector<std::vector<uint>>& destination) {
@@ -201,7 +275,7 @@ uint Instance::_getMaxSF(uint period) {
         return 0;
 }
 
-/*
+
 uint Instance::_getMinSF(double distance) {
     if(distance < 62.5)
         return 7;
@@ -218,8 +292,9 @@ uint Instance::_getMinSF(double distance) {
     else // No SF for this distance
         return 100;
 }
-*/
 
+
+/*
 uint Instance::_getMinSF(double distance) {
     if(distance < 2.5)
         return 7;
@@ -236,6 +311,7 @@ uint Instance::_getMinSF(double distance) {
     else // No SF for this distance
         return 100;
 }
+*/
 
 uint Instance::getPeriod(uint ed) {
     return this->raw[ed+1][this->gwCount]; // Last column of raw data
