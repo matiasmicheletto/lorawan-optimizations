@@ -60,25 +60,9 @@ OptimizationResults greedy(Instance* l, Objective* o, MIN minimize, bool verbose
                     minUF += edToTestUF.getMax();
                 }
             }
-            bool condition = false;
-            switch(minimize){ // Switch depending on component to minimize
-                case MIN::GW: {
-                    condition = tempEDList.size() > edsOfSelectedGW.size();
-                    break;
-                }
-                case MIN::E: {
-                    condition = minener < gwMinEnergy;
-                    break;
-                }
-                case MIN::UF: {
-                    condition = minUF < gwMinUF;
-                    break;
-                }
-                default: 
-                    std::cerr << "Error: Invalid greedy algorithm" << std::endl;
-                    exit(1);
-                    break;
-            }
+            bool condition = (minimize==MIN::GW && tempEDList.size() > edsOfSelectedGW.size()) ||
+                            (minimize==MIN::E && minener < gwMinEnergy) ||
+                            (minimize==MIN::UF && minUF < gwMinUF);
             if(condition) { // If a better allocation found, update
                 edsOfSelectedGW.resize(tempEDList.size());
                 std::copy(tempEDList.begin(), tempEDList.end(), edsOfSelectedGW.begin());
@@ -376,16 +360,79 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
 
         if(!hasCoverage) continue; // Next SF
         else{ // Has coverage --> make allocation and eval objective function
-            for(uint iter = 0; iter < iters; iter++){ // Try many times
-                // Shuffle list of gw
+            
+            // Initialize GW List
+            std::vector<uint>gwList(gwCount);
+            for(uint i = 0; i < gwCount; i++) gwList[i] = i;
+
+
+
+            /////// PERMUTATIONS ///////////
+            std::vector<uint> permutation(gwList.begin(), gwList.end());
+            uint perm = 0;
+            do {
+                perm++;
+
                 uint gw[edCount];
                 uint sf[edCount];
-                std::vector<uint>gwList(gwCount);
-                for(uint i = 0; i < gwCount; i++) gwList[i] = i;
-                std::random_device rd;
-                std::mt19937 gen(rd());
-                std::shuffle(gwList.begin(), gwList.end(), gen);
+                
+                // Start allocation of EDs one by one
+                std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
+                for(uint e = 0; e < edCount; e++){ 
+                    for(uint gi = 0; gi < gwCount; gi++){
+                        const uint g = permutation[gi];
+                        // Check if ED e can be allocated to GW g
+                        auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
+                        if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
+                            uint minsf = l->getMinSF(e, g);
+                            gw[e] = g;
+                            sf[e] = minsf; // Always assign lower SF
+                            gwuf[g] += l->getUF(e, minsf);
+                            break; // Go to next ed
+                        }
+                    }
+                }// Allocation finished
 
+                // Eval solution
+                uint gwUsed, energy; double uf; bool feasible;
+                const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
+                if(feasible && cost < minimumCost){ // New optimum
+                    minimumCost = cost;
+                    std::copy(gw, gw + edCount, gwBest);
+                    std::copy(sf, sf + edCount, sfBest);
+                    feasibleFound = true;
+                    if(verbose){
+                        std::cout << "New best at permutation: " << perm << " (SF = " << s << ")" << std::endl;
+                        o->printSolution(gw, sf, false);
+                        std::cout << std::endl << std::endl;
+                    }
+                }
+
+                // Check if out of time
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
+                if (elapsedSeconds >= timeout) {
+                    if(verbose) std::cout << "Time limit reached." << std::endl;
+                    timedout = true;
+                    break;
+                }
+            } while (std::next_permutation(permutation.begin(), permutation.end()) && !timedout);
+
+
+
+
+            //////// RANDOM SORTING ////////
+            /*
+            std::random_device rd;
+            std::mt19937 gen(rd());
+
+            for(uint iter = 0; iter < iters; iter++){ // Try many times                
+                
+                std::shuffle(gwList.begin(), gwList.end(), gen); // Shuffle list of gw
+
+                uint gw[edCount];
+                uint sf[edCount];
+                
                 // Start allocation of EDs one by one
                 std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
                 for(uint e = 0; e < edCount; e++){ 
@@ -427,6 +474,7 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
                     break;
                 }
             }
+            */
         }
         if(timedout) break;   
     }
