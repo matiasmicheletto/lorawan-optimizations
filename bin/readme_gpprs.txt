@@ -42,7 +42,9 @@ OPTIONS:
                      GU: Greedy method to minimize U   
                      G2: Greedy method (version 2)  
                      G3: Greedy method (version 3)  
-                     G4: Greedy method (version 4)  
+                     G4: Greedy method (version 4): Random sampling of GW list
+                     G5: Greedy method (version 5): Brute force GW selection from permutations of GW list.  
+                     G6: Greedy method (version 6): Sorted GW by total ED number
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
    -w, --wst      Export wst file. 
 
