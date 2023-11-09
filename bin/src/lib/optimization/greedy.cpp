@@ -567,7 +567,6 @@ OptimizationResults greedy5(Instance* l, Objective* o, uint iters, uint timeout,
 OptimizationResults greedy6(Instance* l, Objective* o, uint iters, uint timeout, bool verbose, bool wst){
 
     auto start = std::chrono::high_resolution_clock::now();
-    bool timedout = false;
 
     if(verbose) std::cout << "------------- Greedy 6 minimization -------------" << std::endl << std::endl;
 
@@ -664,6 +663,8 @@ OptimizationResults greedy6(Instance* l, Objective* o, uint iters, uint timeout,
                     o->printSolution(gw, sf, false);
                     std::cout << std::endl << std::endl;
                 }
+            }else{
+                std::cout << "Not optimum for SF = " << s << std::endl;
             }
 
             // Check if out of time
@@ -671,7 +672,6 @@ OptimizationResults greedy6(Instance* l, Objective* o, uint iters, uint timeout,
             auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
             if (elapsedSeconds >= timeout) {
                 if(verbose) std::cout << "Time limit reached." << std::endl;
-                timedout = true;
                 break;
             }
         }
