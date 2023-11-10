@@ -635,9 +635,9 @@ OptimizationResults greedy6(Instance* l, Objective* o, uint iters, uint timeout,
             
             // Start allocation of EDs one by one
             std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
-            for(uint gi = 0; gi < gwCount; gi++){
-                const uint g = gwList[gi];
-                for(uint e = 0; e < edCount; e++){ 
+            for(uint e = 0; e < edCount; e++){ 
+                for(uint gi = 0; gi < gwCount; gi++){    
+                    const uint g = gwList[gi];
                     // Check if ED e can be allocated to GW g
                     auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                     if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
@@ -645,7 +645,7 @@ OptimizationResults greedy6(Instance* l, Objective* o, uint iters, uint timeout,
                         gw[e] = g;
                         sf[e] = minsf; // Always assign lower SF
                         gwuf[g] += l->getUF(e, minsf);
-                        //break; // Go to next ed
+                        break; // Go to next ed
                     }
                 }
             }// Allocation finished
