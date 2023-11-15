@@ -8,6 +8,7 @@
 #include "lib/optimization/random.h"
 #include "lib/optimization/greedy.h"
 #include "lib/optimization/ga.h"
+#include "lib/optimization/siman.h"
 #include "lib/optimization/results.h"
 
 
@@ -91,6 +92,8 @@ int main(int argc, char **argv) {
                     method = 11;
                 else if(std::strcmp(argv[i+1], "G7") == 0)
                     method = 12;
+                else if(std::strcmp(argv[i+1], "SA") == 0)
+                    method = 13;
                 else 
                     std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
             }else
@@ -190,6 +193,11 @@ int main(int argc, char **argv) {
         case 12: {
             results = greedy7(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 7");
+            break;
+        }
+        case 13: {
+            results = siman(l, o, maxIters, verbose, wst);
+            results.solverName = strdup("Simulated Anealing");
             break;
         }
         default: {
