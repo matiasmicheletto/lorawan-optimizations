@@ -1,6 +1,7 @@
 #ifndef SIMAN_H
 #define SIMAN_H
 
+#define INIT_TRIES 100         /* initialization tries for G4 algorithm */
 #define N_TRIES 200             /* how many points do we try before stepping */
 #define STEP_SIZE 1.0           /* max step size in random walk */
 #define K 1.0                   /* Boltzmann constant */
@@ -11,6 +12,7 @@
 #include <chrono>
 #include <vector>
 #include <algorithm>
+#include <random>
 #include <math.h>
 #include <string.h>
 #include <stdio.h>

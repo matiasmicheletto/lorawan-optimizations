@@ -24,7 +24,7 @@ gpprs: $(GPPRS_OBJECTS)
 
 datgen: $(DATGEN_OBJECTS)
 	@echo "Compiling datgen..."
-	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@
+	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 	@echo "datgen compiled"
 
 
