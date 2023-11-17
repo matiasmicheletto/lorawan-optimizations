@@ -3,7 +3,6 @@
 
 #define INIT_TRIES 100         /* initialization tries for G4 algorithm */
 #define N_TRIES 200             /* how many points do we try before stepping */
-#define STEP_SIZE 1.0           /* max step size in random walk */
 #define K 1.0                   /* Boltzmann constant */
 #define T_INITIAL 5000.0        /* initial temperature */
 #define MU_T 1.002              /* damping factor for temperature */

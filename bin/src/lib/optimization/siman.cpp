@@ -14,32 +14,36 @@ struct s_allocation { // Solution model
 		sf.resize(size);
 	}
 	void print() const { 
-        //_ot->printSolution(gw.data(), sf.data());
-        //std::cout << std::endl;
+        /*
+        std::cout << std::endl;
+        _ot->printSolution(gw.data(), sf.data());
+        std::cout << std::endl;
+        */
 	}
 };
 
 typedef struct s_allocation Salloc;
 
 void copy_func (void *source, void *dest) {
-    Salloc* a = (Salloc*) source;
-    Salloc* b = (Salloc*) dest;
     const uint edCount = _lt->getEDCount();
-
+    Salloc* xsource = (Salloc*) source;
+    Salloc* xdest = (Salloc*) dest;
+    
+    for(uint i = 0; i < edCount; i++) {
+        xdest->gw[i] = xsource->gw[i];
+        xdest->sf[i] = xsource->sf[i];
+    }
     /*
     std::copy(a->gw, a->gw + edCount, b->gw);
     std::copy(a->sf, a->sf + edCount, b->sf);
     */
-
-    for(uint i = 0; i < edCount; i++) {
-        b->gw[i] = a->gw[i];
-        b->sf[i] = a->sf[i];
-    }
 }
 
 void * construct (void *xp) {
-    Salloc* a = (Salloc*) xp;
-    return a;
+    Salloc* source = (Salloc*) xp;
+    Salloc* result = new Salloc();
+    copy_func(source, result);
+    return result;
 }
 
 void destroy (void *xp) {
@@ -50,17 +54,28 @@ void destroy (void *xp) {
 void randomize_alloc(Salloc& p, const uint index) {
 	// Randomly modify GW and SF allocation for "index"
 	std::vector<uint> gwList = _lt->getGWList(index); // Valid gws for this ED	
-	const uint gw = gwList[(uint)floor(uniform.random()*(double)gwList.size())]; // Pick random GW from list
-	uint maxSF = _lt->getMaxSF(index);
-	uint minSF = _lt->getMinSF(index, gw);
-	p.gw[index] = gw;
-	p.sf[index] = (uint)floor(uniform.random()*(double)(maxSF - minSF) + (double)minSF);	
+
+    // Remove from gwList the ones that are not in p (to avoid adding new ones)
+    for(uint i = 0; i < gwList.size(); i++){
+        auto it = std::find(p.gw.begin(), p.gw.end(), gwList[i]);
+        if(it == p.gw.end()){ // Gateway i was not used before, so remove
+            gwList.erase(it);
+        }
+    }
+    if(gwList.size() > 1){ // If it is possible to change gw, proceed, else leave everything same as before
+        const uint gw = gwList[(uint)floor(uniform.random()*(double)gwList.size())]; // Pick random GW from list
+        uint maxSF = _lt->getMaxSF(index);
+        uint minSF = _lt->getMinSF(index, gw);
+        p.gw[index] = gw;
+        p.sf[index] = (uint)floor(uniform.random()*(double)(maxSF - minSF) + (double)minSF);
+    }
 }
 
 void init_random(Salloc& initial) {	
 	for(uint i = 0; i < _lt->getEDCount(); i++)
 		randomize_alloc(initial, i);
 }
+
 
 void init_g4(Salloc& initial) {
 
@@ -81,14 +96,6 @@ void init_g4(Salloc& initial) {
         for(uint e = 0; e < edCount; e++){
             bool hasGW = false;
             for(uint g = 0; g < gwCount; g++){
-                /* Find if ED "e" is present in the "clusters" tensor
-                for(uint ee = 0; ee < clusters[s-7][g].size(); ee++){
-                    if(clusters[s-7][g][ee] == e){
-                        hasGW = true;
-                        break;
-                    }
-                }
-                */
                 auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                 hasGW = (it != clusters[s-7][g].end());
                 if(hasGW) break;
@@ -178,8 +185,8 @@ double Mtsp(void *xp, void *yp) { // Distance between two configurations
     Salloc* a = (Salloc*) xp;
     Salloc* b = (Salloc*) yp;
     for(uint i = 0; i < _lt->getEDCount(); i++) {
-        distance += ((a->gw[i] == b->gw[i]) ? 0 : 1);
-        distance += ((a->sf[i] == b->sf[i]) ? 0 : 1);
+        distance += ((a->gw[i] == b->gw[i]) ? 0 : 0.1);
+        distance += ((a->sf[i] == b->sf[i]) ? 0 : 0.1);
     }
     return distance;
 }
@@ -187,7 +194,8 @@ double Mtsp(void *xp, void *yp) { // Distance between two configurations
 
 void Stsp(const gsl_rng * r, void *xp, double step_size) { // Step function
     Salloc* X = (Salloc*) xp;
-	for(uint i = 0; i < _lt->getEDCount(); i++)
+    const uint edCount = _lt->getEDCount();
+	for(uint i = 0; i < edCount; i++)
 		if(uniform.random() < step_size)	
 			randomize_alloc(*X, i);
 }
@@ -209,18 +217,18 @@ OptimizationResults siman(Instance* l, Objective* o, uint iters, bool verbose, b
     const gsl_rng * r = gsl_rng_alloc (gsl_rng_env_setup()) ;
     gsl_ieee_env_setup ();
 
-    Salloc* s_initial = new Salloc();
-    //init_random(*s_initial);
-    init_g4(*s_initial);
+    Salloc* s_0 = new Salloc();
+    init_g4(*s_0);
+    //init_random(*s_0);
 
-    gsl_siman_params_t params = {N_TRIES, (int) iters/10, STEP_SIZE, K, T_INITIAL, MU_T, T_MIN};
+    gsl_siman_params_t params = {N_TRIES, (int) iters, 5/(double)_lt->getEDCount(), K, T_INITIAL, MU_T, T_MIN};
 
-    gsl_siman_solve(r, s_initial, Etsp, Stsp, Mtsp, Ptsp, copy_func, construct, destroy, 0, params);
+    gsl_siman_solve(r, s_0, Etsp, Stsp, Mtsp, Ptsp, copy_func, construct, destroy, 0, params);
 
     // Export results
 
     OptimizationResults results;
-    results.cost = _ot->eval(s_initial->gw.data(), s_initial->sf.data(), results.gwUsed, results.energy, results.uf, results.feasible);
+    results.cost = _ot->eval(s_0->gw.data(), s_0->sf.data(), results.gwUsed, results.energy, results.uf, results.feasible);
     results.tp = _ot->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true; // Set export flag to ready
@@ -228,7 +236,7 @@ OptimizationResults siman(Instance* l, Objective* o, uint iters, bool verbose, b
     if(verbose){
 		std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
 		std::cout << std::endl << "Optimal result:" << std::endl;
-		_ot->printSolution(s_initial->gw.data(), s_initial->sf.data(), true, true);
+		_ot->printSolution(s_0->gw.data(), s_0->sf.data(), true, true, true);
 	}
 
     return results;
