@@ -1,6 +1,7 @@
 #ifndef SIMAN_H
 #define SIMAN_H
 
+#define STEP_SIZE 1.0           /* step size: number of allocation to alter on each step*/
 #define INIT_TRIES 100         /* initialization tries for G4 algorithm */
 #define N_TRIES 200             /* how many points do we try before stepping */
 #define K 1.0                   /* Boltzmann constant */
