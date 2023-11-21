@@ -433,7 +433,7 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
         std::cout << "Optimization finished in " << results.execTime << " ms" << std::endl;
         if(feasibleFound){
             std::cout << "Best result:" << std::endl;
-            o->printSolution(gwBest, sfBest, true, true);
+            o->printSolution(gwBest, sfBest, true, true, true);
         }else{
             std::cout << "No feasible solution was found." << std::endl;
         }

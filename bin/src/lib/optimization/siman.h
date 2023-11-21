@@ -13,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include <random>
+#include <cmath>
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
