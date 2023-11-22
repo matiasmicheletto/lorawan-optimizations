@@ -21,5 +21,6 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
 OptimizationResults greedy5(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 OptimizationResults greedy6(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 OptimizationResults greedy7(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
+OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 
 #endif // GREEDY_H

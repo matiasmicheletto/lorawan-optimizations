@@ -95,7 +95,7 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
     if(allocation){
         std::cout << "GW allocation (GW[SF]):" << std::endl;
         for(uint i = 0; i < edCount; i++) // For each ED    
-            std::cout << gw[i] << "[" << sf[i] << "]  ";
+            std::cout << gw[i] << "[" << sf[i] << "]\t";
         std::cout << std::endl;
         //this->printSol(gw, sf); // Export file
     }

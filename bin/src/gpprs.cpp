@@ -92,8 +92,10 @@ int main(int argc, char **argv) {
                     method = 11;
                 else if(std::strcmp(argv[i+1], "G7") == 0)
                     method = 12;
-                else if(std::strcmp(argv[i+1], "SA") == 0)
+                else if(std::strcmp(argv[i+1], "G8") == 0)
                     method = 13;
+                else if(std::strcmp(argv[i+1], "SA") == 0)
+                    method = 14;
                 else 
                     std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
             }else
@@ -196,6 +198,11 @@ int main(int argc, char **argv) {
             break;
         }
         case 13: {
+            results = greedy8(l, o, maxIters, timeout, verbose, wst);
+            results.solverName = strdup("Greedy 8");
+            break;
+        }
+        case 14: {
             results = siman(l, o, maxIters, verbose, wst);
             results.solverName = strdup("Simulated Anealing");
             break;

@@ -46,6 +46,7 @@ OPTIONS:
                      G5: Greedy method (version 5): Brute force GW selection from permutations of GW list.  
                      G6: Greedy method (version 6): Sorted GW by total ED number.  
                      G7: Greedy method (version 7): Combination of G4 and G6.  
+                     G8: Greedy method (version 8): Postprocessing of G4 solution.  
                      SA: Simulated Anealing.  
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
    -w, --wst      Export wst file. 
