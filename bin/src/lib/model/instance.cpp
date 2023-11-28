@@ -1,5 +1,5 @@
-#include "instance.h"
-
+#include "instance.h" 
+                        //    7  8  9 10  11  12
 const uint Instance::pw[6] = {1, 2, 4, 8, 16, 32}; // Time window values for spread factors
 
 Instance::Instance(char* filename) {
