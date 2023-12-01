@@ -139,7 +139,9 @@ Instance::~Instance() {
 }
 
 void Instance::exportRawData(const char* filename) {
-    std::ostream& output = (filename != nullptr) ? *new std::ofstream(filename) : std::cout;
+    std::string filenameWithExtension = std::string(filename) + ".dat";
+    std::ostream& output = (filename != nullptr) ? *new std::ofstream(filenameWithExtension) : std::cout;
+
 
     if (!output) { 
         std::cerr << "Failed to open output stream." << std::endl;
@@ -193,8 +195,9 @@ void Instance::generateHtmlPlot(const char* filename) {
     int canvasWidth = static_cast<int>(maxX - minX + 2 * padding);
     int canvasHeight = static_cast<int>(maxY - minY + 2 * padding);
     
-    
-    std::ofstream htmlFile(filename);
+    std::string filenameWithExtension = std::string(filename) + ".html";
+    std::ofstream htmlFile(filenameWithExtension);
+
 
     if (!htmlFile.is_open()) {
         std::cerr << "Failed to open HTML file." << std::endl;
@@ -219,15 +222,13 @@ void Instance::generateHtmlPlot(const char* filename) {
 
     // Draw positions of End Devices
     htmlFile << "\t\t\t\tctx.fillStyle = 'red';\n";
-    for (const EndDevice& ed : this->eds) {
+    for (const EndDevice& ed : this->eds)
         htmlFile << "\t\t\t\tctx.fillRect(" << ed.pos.x+maxX << ", " << ed.pos.y+maxY << ", 2, 2);\n";
-    }
 
     // Draw positions of Gateways
     htmlFile << "\t\t\t\tctx.fillStyle = 'blue';\n";
-    for (const Position& gw : this->gws) {
+    for (const Position& gw : this->gws)
         htmlFile << "\t\t\t\tctx.fillRect(" << gw.x+maxX << ", " << gw.y+maxY << ", 2, 2);\n";
-    }
 
     htmlFile << "\t\t\t</script>\n";
     htmlFile << "\t\t</body>\n";
