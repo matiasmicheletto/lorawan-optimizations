@@ -33,16 +33,21 @@ OPTIONS:
    -b, --beta     Beta tunning parameter. Default is 0.1.  
    -g, --gamma    Gamma tunning parameter. Default is 1000.  
    -m, --method   Optimization method: Default is RS (random).  
-                     RS: Random Search  
-                     IRS: Improved Random Search  
-                     GA: Genetic Algorithms  
+                     RS: Random Search.  
+                     IRS: Improved Random Search.  
+                     GA: Genetic Algorithms.  
                      NSGA: Nondominated Sorting Genetic Algorithms (NSGA-III)
-                     GGW: Greedy method to minimize GW  
-                     GE: Greedy method to minimize E  
-                     GU: Greedy method to minimize U   
-                     G2: Greedy method (version 2)  
-                     G3: Greedy method (version 3)  
-                     G4: Greedy method (version 4)  
+                     GGW: Greedy method to minimize GW.  
+                     GE: Greedy method to minimize E.  
+                     GU: Greedy method to minimize U.   
+                     G2: Greedy method (version 2).  
+                     G3: Greedy method (version 3).  
+                     G4: Greedy method (version 4): Random sampling of GW list.  
+                     G5: Greedy method (version 5): Brute force GW selection from permutations of GW list.  
+                     G6: Greedy method (version 6): Sorted GW by total ED number.  
+                     G7: Greedy method (version 7): Combination of G4 and G6.  
+                     G8: Greedy method (version 8): Postprocessing of G4 solution.  
+                     SA: Simulated Anealing.  
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
    -w, --wst      Export wst file. 
 

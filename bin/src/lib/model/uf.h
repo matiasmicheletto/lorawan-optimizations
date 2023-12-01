@@ -22,6 +22,7 @@ public:
     // Logic and algebraic operators for UF
     UtilizationFactor operator+(const UtilizationFactor& other) const;
     UtilizationFactor& operator+=(const UtilizationFactor& other);
+    UtilizationFactor& operator-=(const UtilizationFactor& other);
     bool operator==(const UtilizationFactor& other) const;
     bool operator!=(const UtilizationFactor& other) const;
     bool operator<(const UtilizationFactor& other) const;

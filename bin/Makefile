@@ -1,5 +1,6 @@
 CPP      = g++
-CFLAGS   = -Wall -pthread
+CFLAGS   = -Wall -pthread 
+LDFLAGS  = -lgsl -lgslcblas -lm
 SRCDIR   = src
 OBJDIR   = obj
 LIBDIR   = $(SRCDIR)/lib
@@ -17,20 +18,20 @@ all: $(TARGETS)
 
 gpprs: $(GPPRS_OBJECTS)
 	@echo "Compiling gpprs..."
-	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@
+	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 	@echo "gpprs compiled"
 
 
 datgen: $(DATGEN_OBJECTS)
 	@echo "Compiling datgen..."
-	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@
+	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 	@echo "datgen compiled"
 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)
 	@echo "Compiling $<..."
-	$(CPP) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CPP) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LDFLAGS)
 
 clean:
 	rm -rf $(OBJDIR) ./gpprs ./datgen

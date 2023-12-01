@@ -74,6 +74,12 @@ UtilizationFactor& UtilizationFactor::operator+=(const UtilizationFactor& other)
     return *this;
 }
 
+UtilizationFactor& UtilizationFactor::operator-=(const UtilizationFactor& other) {
+    for (int i = 0; i < SF_NUM; i++)
+        this->ufValues[i] -= other.ufValues[i];
+    return *this;
+}
+
 // Comparison operators
 bool UtilizationFactor::operator==(const UtilizationFactor& other) const {
     for (int i = 0; i < SF_NUM; i++)

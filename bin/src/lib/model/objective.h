@@ -36,7 +36,7 @@ class Objective {
         
         double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
         TunningParameters tp;
-        void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false);
+        void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false, bool showGWs = false);
         void exportWST(const uint* gw, const uint* sf);
         void printSol(const uint* gw, const uint* sf);
     private:

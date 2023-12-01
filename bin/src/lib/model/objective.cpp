@@ -59,12 +59,13 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     return cost; 
 }
 
-void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight){
+void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight, bool showGWs){
     
     uint gwCount;
     uint energy;
     double maxUF;
     bool feasible;
+    const uint edCount = this->instance->getEDCount();
 
     const double result = this->eval(gw, sf, gwCount, energy, maxUF, feasible);
 
@@ -77,10 +78,24 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
                 << ",U=" << maxUF
                 << ")" << std::endl;
     
+    if(showGWs) {
+        std::vector<uint> gwList;
+        for(uint i = 0; i < edCount; i++){
+            auto it = std::find(gwList.begin(), gwList.end(), gw[i]);
+            if(it == gwList.end()){ // If the gw of node "i" isnt in list
+                gwList.push_back(gw[i]);
+            }
+        }
+        std::cout << "GWs used: "; 
+        for(uint i = 0; i < gwList.size(); i++)
+            std::cout << gwList[i] << " ";
+        std::cout << std::endl;
+    }
+
     if(allocation){
         std::cout << "GW allocation (GW[SF]):" << std::endl;
-        for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED    
-            std::cout << gw[i] << "[" << sf[i] << "]  ";
+        for(uint i = 0; i < edCount; i++) // For each ED    
+            std::cout << gw[i] << "[" << sf[i] << "]\t";
         std::cout << std::endl;
         //this->printSol(gw, sf); // Export file
     }
@@ -129,7 +144,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
         for(int ch = 15; ch >= 0; ch--){
             std::cout << "    <variable name=\"w#" << g << "#" << ch 
                     << "\" index=\"" << index
-                    << "\" value=\"" << (selected && ch==lastch ? 1 : 0)
+                    << "\" value=\"" << (selected && (uint)ch == lastch ? 1 : 0)
                     << "\"/>" << std::endl;
             index++;
         }
