@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
             break;
         }
         case 15: {
-            results = greedy8(l, o, maxIters, timeout, verbose, wst);
+            results = greedy9(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 9");
             break;
         }

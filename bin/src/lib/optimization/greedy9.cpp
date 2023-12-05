@@ -77,6 +77,18 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
                 // Eval to get gwUsed
                 uint gwUsed, energy; double uf; bool feasible;
                 double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
+                if(feasible && cost < minimumCost){ // New optimum
+                    minimumCost = cost;
+                    std::copy(gw, gw + edCount, gwBest); // Copy from gw to gwBest
+                    std::copy(sf, sf + edCount, sfBest);
+                    if(verbose){
+                        std::cout << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
+                        o->printSolution(gw, sf, false);
+                        std::cout << std::endl;
+                    }
+                }else{
+                    continue; // If no improvement, next iteration
+                }
 
                 // Reallocation (G8)
                 std::vector<uint> gwList;
@@ -138,13 +150,13 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
                                         const uint s = l->getMinSF(edIndex, g2Index); // Use minSF
                                         UtilizationFactor uf = l->getUF(edIndex, s); // UF for this ED using the selected SF
                                         if(!(sortedgwuf[g2] + uf).isFull()) { // This ED can be moved to g2
-                                            if (sfBest[edIndex] > s){
-                                                if(verbose) std::cout << "Reasignacion ED " << edIndex << ": GW " << gIndex << " --> " << g2Index << ", SF: " << sfBest[edIndex]<<" --> " << s <<std::endl;	
+                                            if (sfBest[edIndex] > s || sortedGWEDs[g].size() == 1){ // Only if new SF is less than current
+                                                if(verbose) std::cout << "Reallocation ED " << edIndex << ": GW " << gIndex << " --> " << g2Index << ", SF: " << sfBest[edIndex]<<" --> " << s <<std::endl;	
                                                 gwBest[edIndex] = g2Index; // Reallocate ED to another GW
                                                 sfBest[edIndex] = s; // Reallocate ED to new SF
                                                 sortedgwuf[g] -= uf; // Reduce UF of original GW (g)
                                                 sortedGWEDs[g].erase(std::remove(sortedGWEDs[g].begin(), sortedGWEDs[g].end(), edIndex), sortedGWEDs[g].end()); // Remove ED e from GW g
-                                                // Sort again sortedGWList
+                                                // Sort again sortedGWList after removing ED
                                                 std::sort(
                                                     indirection.begin(), 
                                                     indirection.end(), 
@@ -163,19 +175,18 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
                     }
                 }
 
-                // Eval solution
+                // Eval solution after reallocation
                 cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
                 if(feasible && cost < minimumCost){ // New optimum
                     minimumCost = cost;
                     std::copy(gw, gw + edCount, gwBest);
                     std::copy(sf, sf + edCount, sfBest);
                     if(verbose){
-                        std::cout << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
+                        std::cout << "New best after reallocation." << std::endl;
                         o->printSolution(gw, sf, false);
                         std::cout << std::endl;
                     }
                 }
-
 
                 // Check if out of time
                 auto currentTime = std::chrono::high_resolution_clock::now();
@@ -190,6 +201,8 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
         if(timedout) break;   
     }
 
+
+
     
     OptimizationResults results;
     results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible);
@@ -200,7 +213,7 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true;
     if(verbose){
-        std::cout << "Tiempo total " << results.execTime << " ms" << std::endl;
+        std::cout << std::endl << "Exec. time " << results.execTime << " ms" << std::endl;
         std::cout << "Best:" << std::endl;
         o->printSolution(gwBest, sfBest, true, true, true);
     }
