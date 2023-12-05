@@ -74,28 +74,30 @@ int main(int argc, char **argv) {
                     method = 2;
                 else if(std::strcmp(argv[i+1], "NSGA") == 0)
                     method = 3;
-                else if(std::strcmp(argv[i+1], "GGW") == 0)
-                    method = 4;
-                else if(std::strcmp(argv[i+1], "GE") == 0)
-                    method = 5;
-                else if(std::strcmp(argv[i+1], "GU") == 0)
-                    method = 6;
-                else if(std::strcmp(argv[i+1], "G2") == 0)
-                    method = 7;
-                else if(std::strcmp(argv[i+1], "G3") == 0)
-                    method = 8;
-                else if(std::strcmp(argv[i+1], "G4") == 0)
-                    method = 9;
-                else if(std::strcmp(argv[i+1], "G5") == 0)
-                    method = 10;
-                else if(std::strcmp(argv[i+1], "G6") == 0)
-                    method = 11;
-                else if(std::strcmp(argv[i+1], "G7") == 0)
-                    method = 12;
-                else if(std::strcmp(argv[i+1], "G8") == 0)
-                    method = 13;
                 else if(std::strcmp(argv[i+1], "SA") == 0)
+                    method = 4;
+                else if(std::strcmp(argv[i+1], "GGW") == 0)
+                    method = 5;
+                else if(std::strcmp(argv[i+1], "GE") == 0)
+                    method = 6;
+                else if(std::strcmp(argv[i+1], "GU") == 0)
+                    method = 7;
+                else if(std::strcmp(argv[i+1], "G2") == 0)
+                    method = 8;
+                else if(std::strcmp(argv[i+1], "G3") == 0)
+                    method = 9;
+                else if(std::strcmp(argv[i+1], "G4") == 0)
+                    method = 10;
+                else if(std::strcmp(argv[i+1], "G5") == 0)
+                    method = 11;
+                else if(std::strcmp(argv[i+1], "G6") == 0)
+                    method = 12;
+                else if(std::strcmp(argv[i+1], "G7") == 0)
+                    method = 13;
+                else if(std::strcmp(argv[i+1], "G8") == 0)
                     method = 14;
+                else if(std::strcmp(argv[i+1], "G9") == 0)
+                    method = 15;
                 else 
                     std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
             }else
@@ -153,58 +155,63 @@ int main(int argc, char **argv) {
             break;
         }
         case 4: {
+            results = siman(l, o, maxIters, verbose, wst);
+            results.solverName = strdup("Simulated Anealing");
+            break;
+        }
+        case 5: {
             results = greedy(l, o, MIN::GW, verbose, wst);
             results.solverName = strdup("Greedy GW Minimization");
             break;
         }
-        case 5: {
+        case 6: {
             results = greedy(l, o, MIN::E, verbose, wst);
             results.solverName = strdup("Greedy E Minimization");
             break;
         }
-        case 6: {
+        case 7: {
             results = greedy(l, o, MIN::UF, verbose, wst);
             results.solverName = strdup("Greedy UF Minimization");
             break;
         }
-        case 7: {
+        case 8: {
             results = greedy2(l, o, verbose, wst);
             results.solverName = strdup("Greedy 2");
             break;
         }
-        case 8: {
+        case 9: {
             results = greedy3(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 3");
             break;
         }
-        case 9: {
+        case 10: {
             results = greedy4(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 4");
             break;
         }
-        case 10: {
+        case 11: {
             results = greedy5(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 5");
             break;
         }
-        case 11: {
+        case 12: {
             results = greedy6(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 6");
             break;
         }
-        case 12: {
+        case 13: {
             results = greedy7(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 7");
             break;
         }
-        case 13: {
+        case 14: {
             results = greedy8(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 8");
             break;
         }
-        case 14: {
-            results = siman(l, o, maxIters, verbose, wst);
-            results.solverName = strdup("Simulated Anealing");
+        case 15: {
+            results = greedy8(l, o, maxIters, timeout, verbose, wst);
+            results.solverName = strdup("Greedy 9");
             break;
         }
         default: {
