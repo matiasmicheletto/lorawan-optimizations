@@ -867,9 +867,6 @@ OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout,
     uint gw[edCount];
     uint sf[edCount];
     
-    uint gwBest2[edCount];
-    uint sfBest2[edCount];
-
     std::vector<std::vector<std::vector<uint>>> clusters; // Clusters tensor (SF x GW x ED)
     clusters.resize(6); // Initialize list of matrices (GW x ED)
     for(uint s = 7; s <= 12; s++){
@@ -976,6 +973,11 @@ OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout,
 
     if(verbose) std::cout << std::endl << "------------- Parte 2: Reasignacion -------------" << std::endl << std::endl;
     
+    uint gwBest2[edCount];
+    uint sfBest2[edCount];
+    std::copy(gwBest, gwBest + edCount, gwBest2);
+    std::copy(sfBest, sfBest + edCount, sfBest2);
+    
     std::vector<uint> gwList;
     std::vector<std::vector<uint>> gwEDs(results.gwUsed);
     std::vector<UtilizationFactor> gwuf; 
@@ -1039,10 +1041,10 @@ OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout,
                             const uint s = l->getMinSF(edIndex, g2Index); // Use minSF
                             UtilizationFactor uf = l->getUF(edIndex, s); // UF for this ED using the selected SF
                             if(!(sortedgwuf[g2] + uf).isFull()) { // This ED can be moved to g2
-                                if (sfBest[edIndex] > s){
-                                    if(verbose) std::cout << "Reasignacion ED " << edIndex << ": GW " << gIndex << " --> " << g2Index << ", SF: "<<sfBest[edIndex]<<" --> " << s <<std::endl;	
-                                    gwBest[edIndex] = g2Index; // Reallocate ED to another GW
-                                    sfBest[edIndex] = s; // Reallocate ED to new SF
+                                if (sfBest2[edIndex] > s){
+                                    if(verbose) std::cout << "Reasignacion ED " << edIndex << ": GW " << gIndex << " --> " << g2Index << ", SF: "<<sfBest2[edIndex]<<" --> " << s <<std::endl;	
+                                    gwBest2[edIndex] = g2Index; // Reallocate ED to another GW
+                                    sfBest2[edIndex] = s; // Reallocate ED to new SF
                                     sortedgwuf[g] -= uf; // Reduce UF of original GW (g)
                                     sortedGWEDs[g].erase(std::remove(sortedGWEDs[g].begin(), sortedGWEDs[g].end(), edIndex), sortedGWEDs[g].end()); // Remove ED e from GW g
                                     // Sort again sortedGWList
@@ -1065,35 +1067,32 @@ OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout,
     }
     
     OptimizationResults results2;
-    results2.cost = feasibleFound ? o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible) : __DBL_MAX__;
-    if(results2.cost < results.cost){ // Si mejora
-        if(verbose) std::cout << std::endl << "Nuevo optimo valor: " << results2.cost << " (anterior = " << results.cost << ")" << std::endl;
-        std::copy(gwBest, gwBest + edCount, gwBest2);
-        std::copy(sfBest, sfBest + edCount, sfBest2);
+    results2.cost = o->eval(gwBest2, sfBest2, results.gwUsed, results.energy, results.uf, results.feasible);
+
+    if(results2.cost < results.cost){
+        std::cout << std::endl << "Nuevo optimo valor: " << results2.cost << " (anterior = " << results.cost << ")" << std::endl;
+        std::copy(gwBest2, gwBest2 + edCount, gwBest);
+        std::copy(sfBest2, sfBest2 + edCount, sfBest);
         results = results2;
-    }else{
-        if(verbose) std::cout << "No hubo mejora en paso 2: Costo " << results2.cost << std::endl;
-    }
+    }else
+        std::cout << "No hubo mejora en paso 2: Costo " << results2.cost << std::endl;
+
+    
 
     //if(verbose) std::cout << std::endl << std::endl << "------------- Parte 3: Exploracion -------------" << std::endl << std::endl;
 
 
 
 
-    //////////// Final ////////////
-    if(wst) o->exportWST(gwBest2, sfBest2);
-    results.cost = feasibleFound ? o->eval(gwBest2, sfBest2, results.gwUsed, results.energy, results.uf, results.feasible) : __DBL_MAX__;
+    //////////// Resultados ////////////
+    if(wst) o->exportWST(gwBest, sfBest);
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     results.ready = true;
     if(verbose){
         std::cout << "Tiempo total " << results.execTime << " ms" << std::endl;
-        if(feasibleFound){
-            std::cout << "Best:" << std::endl;
-            o->printSolution(gwBest2, sfBest2, true, true, true);
-        }else{
-            std::cout << "No feasible solution was found." << std::endl;
-        }
+        std::cout << "Best:" << std::endl;
+        o->printSolution(gwBest, sfBest, true, true, true);
     }
     return results;
 }
