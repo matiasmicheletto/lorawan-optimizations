@@ -48,7 +48,8 @@ OPTIONS:
                      G6: Greedy method (version 6): Sorted GW by total ED number.  
                      G7: Greedy method (version 7): Combination of G4 and G6.  
                      G8: Greedy method (version 8): Postprocessing of G4 solution.  
-                     G8: Greedy method (version 8): Iterative G4 and G8.  
+                     G9: Greedy method (version 9): Iterative G4 and G8.  
+                     G10: Greedy method (version 10): Exploratory method.  
                      
    -v, --verbose  Verbose mode. If this option is passed, optimization methods will print progress and intermediate results. Otherwise, only final result is printed.
    -w, --wst      Export wst file. 

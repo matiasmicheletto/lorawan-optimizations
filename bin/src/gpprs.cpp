@@ -98,6 +98,8 @@ int main(int argc, char **argv) {
                     method = 14;
                 else if(std::strcmp(argv[i+1], "G9") == 0)
                     method = 15;
+                else if(std::strcmp(argv[i+1], "G10") == 0)
+                    method = 16;
                 else 
                     std::cerr << "Unknown optimization method. Defaulting to RS" << std::endl;
             }else
@@ -212,6 +214,11 @@ int main(int argc, char **argv) {
         case 15: {
             results = greedy9(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 9");
+            break;
+        }
+        case 16: {
+            results = greedy10(l, o, maxIters, timeout, verbose, wst);
+            results.solverName = strdup("Greedy 10");
             break;
         }
         default: {
