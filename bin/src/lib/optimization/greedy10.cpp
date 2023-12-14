@@ -46,28 +46,28 @@ OptimizationResults greedy10(Instance* l, Objective* o, uint iters, uint timeout
         else{ // Has coverage --> make allocation and eval objective function
             
             // Initialize GW List
-            std::vector<uint>gwList(gwCount);
-            for(uint i = 0; i < gwCount; i++) gwList[i] = i;
+            std::vector<uint>usedGWList(gwCount);
+            for(uint i = 0; i < gwCount; i++) usedGWList[i] = i;
 
             std::random_device rd;
             std::mt19937 gen(rd());
 
             for(uint iter = 0; iter < iters; iter++){ // Try many times 
                 
-                std::shuffle(gwList.begin(), gwList.end(), gen); // Shuffle list of gw
+                std::shuffle(usedGWList.begin(), usedGWList.end(), gen); // Shuffle list of gw
                 
                 // Start allocation of EDs one by one
-                std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
+                std::vector<UtilizationFactor> ufOfUsedGWs(gwCount); // Utilization factors of gws
                 for(uint e = 0; e < edCount; e++){ 
                     for(uint gi = 0; gi < gwCount; gi++){
-                        const uint g = gwList[gi];
+                        const uint g = usedGWList[gi];
                         // Check if ED e can be allocated to GW g
                         auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
-                        if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
+                        if((it != clusters[s-7][g].end()) && !ufOfUsedGWs[g].isFull()){
                             uint minsf = l->getMinSF(e, g);
                             gw[e] = g;
                             sf[e] = minsf; // Always assign lower SF
-                            gwuf[g] += l->getUF(e, minsf);
+                            ufOfUsedGWs[g] += l->getUF(e, minsf);
                             break; // Go to next ed
                         }
                     }
@@ -103,64 +103,118 @@ OptimizationResults greedy10(Instance* l, Objective* o, uint iters, uint timeout
 
     // G4 Allocation finished
     if(verbose) std::cout << std::endl << "Step 2: reallocation" << std::endl << std::endl;
-    OptimizationResults results;
-    results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible);
     
-    uint gwBest2[edCount];
-    uint sfBest2[edCount];
-    std::copy(gwBest, gwBest + edCount, gwBest2);
-    std::copy(sfBest, sfBest + edCount, sfBest2);
-    
-    std::vector<uint> gwList;
-    std::vector<std::vector<uint>> gwEDs(results.gwUsed);
-    std::vector<UtilizationFactor> gwuf; 
-    std::vector<uint>indirection(results.gwUsed);
-    std::iota(indirection.begin(), indirection.end(), 0);
-    for(uint i = 0; i < edCount; i++){
-        UtilizationFactor uf = l->getUF(i, sfBest[i]); // UF of ED i
-        auto it = std::find(gwList.begin(), gwList.end(), gwBest[i]); // Find gw of ED i in list
-        if(it != gwList.end()) { // If found, increase ED and UF
-            uint index = std::distance(gwList.begin(), it);
-            gwEDs[index].push_back(i); // Add ED to GW
-            gwuf[index] += uf;
-        }else{ // If not, add
-            gwList.push_back(gwBest[i]); // Add gw index to list
-            gwEDs[gwList.size()-1].push_back(i); // Add first ED to gw
-            gwuf.push_back(uf); // Add initial UF 
+
+
+    for(uint iter = 0; iter < 5; iter++){
+        uint gwUsed, energy;
+        bool feasible;
+        double uf;
+        o->eval(gwBest, sfBest, gwUsed, energy, uf, feasible);
+        
+        uint gwBest2[edCount];
+        uint sfBest2[edCount];
+        std::copy(gwBest, gwBest + edCount, gwBest2);
+        std::copy(sfBest, sfBest + edCount, sfBest2);
+        
+        std::vector<uint> usedGWList;
+        std::vector<UtilizationFactor> ufOfUsedGWs;
+        std::vector<std::vector<uint>> edOfUsedGWs(gwUsed);
+        for(uint e = 0; e < edCount; e++){
+            UtilizationFactor uf = l->getUF(e, sfBest[e]); // UF of ED i
+            auto it = std::find(usedGWList.begin(), usedGWList.end(), gwBest[e]); // Find gw of ED i in list
+            if(it != usedGWList.end()) { // If found, increase ED and UF
+                uint index = std::distance(usedGWList.begin(), it);
+                edOfUsedGWs[index].push_back(e); // Add ED to GW
+                ufOfUsedGWs[index] += uf;
+            }else{ // If not, add
+                usedGWList.push_back(gwBest[e]); // Add gw index to list
+                edOfUsedGWs[usedGWList.size()-1].push_back(e); // Add first ED to gw
+                ufOfUsedGWs.push_back(uf); // Add initial UF 
+            }
         }
+
+        // Ordenar por indireccion lista de gws de mas ed a menos
+        std::vector<uint>indirection(gwUsed);
+        std::iota(indirection.begin(), indirection.end(), 0);
+        std::sort(
+            indirection.begin(), 
+            indirection.end(), 
+            [&edOfUsedGWs](const uint &a, const uint &b) {
+                return edOfUsedGWs[a].size() < edOfUsedGWs[b].size();
+            }
+        );
+
+        
+        if(verbose){ // Imprimir asignacion por GW
+            std::cout << "####### UF #########" << std::endl;
+            for (uint i = 0; i < gwUsed; i++) {
+                const uint g = indirection[i];
+                std::cout << "GW " << usedGWList[g] << ": " << edOfUsedGWs[g].size() << " EDs." << std::endl;
+                for(int s = 7; s <= 12; s++)
+                    std::cout << "  UF SF" << s << " = " << ufOfUsedGWs[g].getUFValue(s) << std::endl;
+                std::cout << std::endl;
+            }
+
+            std::cout << "####### Reallocation #########" << std::endl;
+            for (uint i = 0; i < gwUsed; i++) {
+                const uint gIndex = indirection[i];
+                std::cout << "GW " << usedGWList[gIndex] << " (" << edOfUsedGWs[gIndex].size() << " EDs)" << std::endl;
+                for(uint e = 0; e < edOfUsedGWs[gIndex].size(); e++){
+                    const uint ed = edOfUsedGWs[gIndex][e];
+                    std::vector<uint> listOfGWForED = l->getSortedGWListByAvailableEd(ed);
+                    std::cout << "Available GW for ED " << ed << ": ";
+                    for(uint g2 = 0; g2 < listOfGWForED.size(); g2++)
+                        std::cout << listOfGWForED[g2] << " ";
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+            }
+        }
+
+        for (uint i = 0; i < gwUsed; i++) { // Para cada gw usado, recorrer EDs para reasignar o agregar gw sin usar
+            const uint gIndex = indirection[i];
+            const uint g = usedGWList[gIndex];
+            for(uint e = 0; e < edOfUsedGWs[gIndex].size(); e++){ // Para cada nodo asignado a este gw
+                const uint ed = edOfUsedGWs[gIndex][e];
+                std::vector<uint> listOfGWForED = l->getSortedGWListByAvailableEd(ed);
+                for(uint j = 0; j < listOfGWForED.size(); j++){ // Para cada gw disponible para este ed
+                    // Buscar si el gw ya fue usado (para reasignar)
+                    const uint g2 = listOfGWForED[j];
+                    bool found = false;
+                    uint gfound;
+                    for(uint jj = i+1; jj < gwUsed; jj++){
+                        uint gx = usedGWList[indirection[jj]];
+                        if(gx == g2){ 
+                            found = true;
+                            gfound = gx;
+                            break;
+                        }
+                    }
+                    if(found){ // Reasignar
+                        const uint s = l->getMinSF(ed, gfound);
+                        if(verbose) std::cout << "Reallocated ED " << ed << ": GW " << g << " --> " << gfound << ", SF: "<< sfBest2[ed] <<" --> " << s <<std::endl;	
+                        gwBest2[ed] = gfound; 
+                        sfBest2[ed] = s;
+                        // Sacar ed de la lista y agregar al otro gw
+                        auto it = std::find(edOfUsedGWs[gIndex].begin(), edOfUsedGWs[gIndex].end(), ed);
+                        edOfUsedGWs[gIndex].erase(it);
+                    }else{ // Si no fue usado, incorporar nuevo gw y recorrer la asignacion
+                        std::cout << g2 << " not found, inserted to list." << std::endl;           
+                        usedGWList.push_back(g2);
+                        goto end;
+                    }
+                }
+            }
+            end: break;
+        }
+        std::cout << std::endl << "######## Iter " << iter << ", GW used = " << gwUsed << " ############" << std::endl;
     }
 
-    // Sort indirection array in ascending order of number of EDs
-    std::sort(
-        indirection.begin(), 
-        indirection.end(), 
-        [&gwEDs](const uint &a, const uint &b) {
-            return gwEDs[a].size() < gwEDs[b].size();
-        }
-    );
-    
-    // Sort all arrays with indirection array
-    std::vector<uint> sortedGWList(results.gwUsed);
-    std::vector<std::vector<uint>> sortedGWEDs(results.gwUsed);
-    std::vector<UtilizationFactor> sortedgwuf(results.gwUsed);
-    for (uint i = 0; i < results.gwUsed; i++) {
-        sortedGWList[i] = gwList[indirection[i]];
-        sortedgwuf[i] = gwuf[indirection[i]];
-        sortedGWEDs[i] = gwEDs[indirection[i]];
-    }
-
-    if(verbose) // Print ED count and UF for each Gw
-        for (uint i = 0; i < results.gwUsed; i++) {
-            std::cout << "GW " << sortedGWList[i] << ": " << sortedGWEDs[i].size() << " EDs." << std::endl;
-            for(int s = 7; s <= 12; s++)
-                std::cout << "  UF SF" << s << " = " << sortedgwuf[i].getUFValue(s) << std::endl;
-            std::cout << std::endl;
-        }
-
-    
 
 
     /// Export results
+    OptimizationResults results;
     results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible);
     if(wst) o->exportWST(gwBest, sfBest);
     results.tp = o->tp;

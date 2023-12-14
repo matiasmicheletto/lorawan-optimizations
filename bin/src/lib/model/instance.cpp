@@ -337,7 +337,7 @@ std::vector<uint> Instance::getGWList(uint ed) {
 }
 
 std::vector<uint> Instance::getSortedGWList(uint ed) {
-    // Returns all GW that can be connected to ED
+    // Returns all GW that can be connected to ED sorted by SF (distance)
     std::vector<uint> gwList;
     const uint maxSF = getMaxSF(ed);
     uint frontSF = maxSF;
@@ -348,7 +348,7 @@ std::vector<uint> Instance::getSortedGWList(uint ed) {
         if(minSF <= maxSF){ 
             if(minSF < frontSF){
                 gwList.insert(gwList.begin(), gw);
-                frontSF = minSF;
+                frontSF = minSF; /// TODO: bug
             }else{
                 gwList.push_back(gw);
                 //backSF = minSF;
@@ -360,6 +360,37 @@ std::vector<uint> Instance::getSortedGWList(uint ed) {
                   << "ED = " << ed << std::endl;
         exit(1);
     }
+    return gwList;
+}
+
+std::vector<uint> Instance::getSortedGWListByAvailableEd(uint ed) {
+    // Returns all GW that can be connected to ED sorted by available ED
+    std::vector<uint> gwList;
+    std::vector<uint> edListSizes;
+    const uint maxSF = getMaxSF(ed);
+    for(uint gw = 0; gw < this->gwCount; gw++){
+        // If SF >= maxSF -> GW is out of range for this ed
+        const uint minSF = this->getMinSF(ed, gw);
+        if(minSF <= maxSF){ 
+            const uint sz = this->getAllEDList(gw, maxSF).size();
+            gwList.push_back(gw); 
+            edListSizes.push_back(sz);
+        }
+    }
+    if(gwList.size() == 0) { // No available gws for this ed
+        std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+                  << "ED = " << ed << std::endl;
+        exit(1);
+    }
+
+    std::sort(
+        gwList.begin(), 
+        gwList.end(), 
+        [&edListSizes](const uint &a, const uint &b) {
+            return edListSizes[a] < edListSizes[b];
+        }
+    );
+
     return gwList;
 }
 
