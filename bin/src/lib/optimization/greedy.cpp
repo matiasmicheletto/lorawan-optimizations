@@ -4,106 +4,88 @@
 OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, bool verbose, bool wst){
 
     auto start = std::chrono::high_resolution_clock::now();
-    bool timedout = false;
-
-    if(verbose) std::cout << "------------- Greedy minimization -------------" << std::endl << std::endl;
-
+    bool feasibleFound = false;    
     const uint gwCount = l->getGWCount();
     const uint edCount = l->getEDCount();
-
-    bool feasibleFound = false;    
     uint gwBest[edCount];
     uint sfBest[edCount];
-    double minimumCost = __DBL_MAX__;
 
-    std::vector<std::vector<std::vector<uint>>> clusters; // Clusters tensor (SF x GW x ED)
-    clusters.resize(6); // Initialize list of matrices (GW x ED)
-    for(uint s = 7; s <= 12; s++){
-        
-        // Build cluster matrix for this SF
-        for(uint g = 0; g < gwCount; g++)
-            clusters[s-7].push_back(l->getAllEDList(g ,s));
-        
-        // Check if SF has coverage
-        bool hasCoverage = true; // This is updated if an ED cannot be assigned to any GW
-        for(uint e = 0; e < edCount; e++){
-            bool hasGW = false;
-            for(uint g = 0; g < gwCount; g++){
-                auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
-                hasGW = (it != clusters[s-7][g].end());
-                if(hasGW) break;
-            }
-            if(!hasGW){ 
-                hasCoverage = false;
-                if(verbose) std::cout << "No coverage for SF " << s << ": ED " << e << " cannot be assigned to any GW." << std::endl;
-                if(s == 12) exit(1);
-                break;
-            }
+
+
+    /******** heuristica_rod *********/
+
+    std::vector<uint> A(edCount, 0);
+    std::vector<uint> G(gwCount, 0);
+    std::vector<uint> E(gwCount, 0);
+    std::vector<std::vector<uint>> GW(gwCount, std::vector<uint>(edCount, 0));
+    std::vector<std::vector<uint>> S(edCount, std::vector<uint>(gwCount+1));
+
+    for (uint e = 0; e < edCount; e++){
+        const uint maxSF = l->getMaxSF(e);
+        for (uint g = 0; g < gwCount; g++){
+            const uint minSF = l->getMinSF(e, g);
+            S[e][g] = maxSF >= minSF ? minSF : 100;
         }
-
-        if(!hasCoverage) continue; // Next SF
-        else{ // Has coverage --> make allocation and eval objective function
-            
-            // Initialize GW List
-            std::vector<uint>gwList(gwCount);
-            for(uint i = 0; i < gwCount; i++) gwList[i] = i;
-
-            std::random_device rd;
-            std::mt19937 gen(rd());
-
-            for(uint iter = 0; iter < iters; iter++){ // Try many times                
-                
-                std::shuffle(gwList.begin(), gwList.end(), gen); // Shuffle list of gw
-
-                uint gw[edCount];
-                uint sf[edCount];
-                
-                // Start allocation of EDs one by one
-                std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
-                for(uint e = 0; e < edCount; e++){ 
-                    for(uint gi = 0; gi < gwCount; gi++){
-                        const uint g = gwList[gi];
-                        // Check if ED e can be allocated to GW g
-                        auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
-                        if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
-                            uint minsf = l->getMinSF(e, g);
-                            gw[e] = g;
-                            sf[e] = minsf; // Always assign lower SF
-                            gwuf[g] += l->getUF(e, minsf);
-                            break; // Go to next ed
-                        }
-                    }
-                }// Allocation finished
-
-                // Eval solution
-                uint gwUsed, energy; double uf; bool feasible;
-                const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
-                if(feasible && cost < minimumCost){ // New optimum
-                    minimumCost = cost;
-                    std::copy(gw, gw + edCount, gwBest);
-                    std::copy(sf, sf + edCount, sfBest);
-                    feasibleFound = true;
-                    if(verbose){
-                        std::cout << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
-                        o->printSolution(gw, sf, false);
-                        std::cout << std::endl << std::endl;
-                    }
-                }
-
-                // Check if out of time
-                auto currentTime = std::chrono::high_resolution_clock::now();
-                auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
-                if (elapsedSeconds >= timeout) {
-                    if(verbose) std::cout << "Time limit reached." << std::endl;
-                    timedout = true;
-                    break;
-                }
-            }
-        }
-        if(timedout) break;   
     }
 
-    if(wst) o->exportWST(gwBest, sfBest);
+    for (uint e = 0; e < edCount; e++)
+        A[e] = l->getGWList(e).size();
+    for (uint g = 0; g < gwCount; g++)
+        G[g] = l->getEDList(g, 12).size();
+
+    for (uint e = 0; e < edCount; e++) 
+        if (A[e] == 1)
+            for (uint g = 0; g < gwCount; g++)
+                if (S[e][g] < 100)
+                    E[g] = 1;
+
+    for (uint g = 0; g < gwCount; g++)
+        if (E[g] == 1) 
+            for (uint e = 0; e < edCount; e++)
+                if (S[e][g] < 100) {
+                    GW[g][e] = S[e][g];
+                    for (uint k = 0; k < gwCount; k++)
+                        S[e][k] = 100;
+                }
+
+    while (std::accumulate(E.begin(), E.end(), 0) < (int) edCount) {
+        uint maxG = 0;
+        uint longitud = 0;
+        for (uint g = 0; g < gwCount; g++) {
+            if (E[g] == 0) {
+                uint count = std::count_if(S.begin(), S.end(), [g, edCount](const auto& row) {
+                    return row[g] < edCount;
+                });
+                if (longitud < count) {
+                    maxG = g;
+                    longitud = count;
+                }
+            }
+        }
+        if (maxG == 0) break;
+        E[maxG] = 1;
+        for (uint e = 0; e < edCount; e++)
+            if (S[e][maxG] < edCount) {
+                GW[maxG][e] = S[e][maxG];
+                for (uint k = 0; k < gwCount; k++)
+                    S[e][k] = edCount;
+            }
+    }
+
+    uint CG = std::accumulate(E.begin(), E.end(), 0);
+    uint eng = 0;
+    for (uint g = 0; g < gwCount; g++)
+        for (uint e = 0; e < edCount; e++)
+            if (GW[g][e] > 0)
+                eng += std::pow(2, GW[g][e] - 7);
+        
+    std::cout << "CG: " << CG << std::endl; // 8
+    std::cout << "Eng: " << eng << std::endl; // 485
+
+    /******** heuristica_rod *********/
+
+
+
 
     OptimizationResults results;
 
