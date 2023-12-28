@@ -35,10 +35,11 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                 const uint es = edList.size();
                 std::cout << "and has " << es << " EDs: ";
                 for(uint i = 0; i < es; i++){
-                    essED.push_back(i);
-                    std::cout << i << " ";
-                    gwBest[i] = g;
-                    sfBest[i] = l->getMinSF(i, g);
+                    const uint ee = edList[i];
+                    essED.push_back(ee);
+                    std::cout << ee << " ";
+                    gwBest[ee] = g;
+                    sfBest[ee] = l->getMinSF(ee, g);
                 }
                 std::cout << std::endl;
             }
@@ -128,7 +129,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                         }
                     }else{ // If allocated to essential GW, copy values
                         allocGW = gwBest[e];
-                        allocSF = l->getMinSF(e, allocGW);
+                        allocSF = sfBest[e];
                         allocated = true; // Mark as valid allocation values
                     }
                     if(allocated){ // If valid allocation values

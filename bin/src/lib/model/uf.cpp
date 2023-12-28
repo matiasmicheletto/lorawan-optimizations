@@ -11,8 +11,9 @@ UtilizationFactor::UtilizationFactor(uint sf, double ufValue) {
     if (sf-7 < SF_NUM){ 
         for (uint i = 0; i < SF_NUM; i++)
             this->ufValues[i] = (i == (sf-7) ? ufValue : 0.0);
-    }else
-        std::cerr << "Invalid SF index" << std::endl;
+    }else{
+        std::cerr << "Invalid SF index. SF = " << sf << std::endl;
+    }
 }
 
 // Constructor with initializer list
@@ -58,7 +59,7 @@ void UtilizationFactor::setSFValue(uint sf, double ufValue) {
     if (sf-7 < SF_NUM) 
         ufValues[sf-7] = ufValue;
     else
-        std::cerr << "Invalid SF index" << std::endl;
+        std::cerr << "Invalid SF index. SF = " << sf << std::endl;
 }
 // Summation operator
 UtilizationFactor UtilizationFactor::operator+(const UtilizationFactor& other) const {

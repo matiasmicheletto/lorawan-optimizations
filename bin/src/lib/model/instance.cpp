@@ -22,6 +22,22 @@ Instance::Instance(char* filename) {
 
     this->edCount = this->raw[0][0];
     this->gwCount = this->raw[0][1];
+
+    // Check data consistency
+    /*
+    std::cout << "Checking instance data consistency..." << std::endl;
+    for(uint row = 1; row < edCount; row++){
+        for(uint col = 0; col < gwCount; col++){
+            const uint sf = this->raw[row][col];
+            if(sf < 7 || sf > 12){
+                std::cout << "Invalid file, SF values should be in range 7 to 12." << std::endl;
+                std::cout << "row " << row << ", col " << col << ", value " << sf << std::endl;
+                exit(1);
+            }
+        }
+    }
+    */
+
     this->instanceFileName = new char[strlen(filename) + 1];
     strcpy(this->instanceFileName, extractFileName(filename));
 }
