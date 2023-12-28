@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
             break;
         }
         case 5: {
-            results = greedy(l, o, verbose, wst);
+            results = greedy(l, o, maxIters, timeout);
             results.solverName = strdup("Greedy Minimization");
             break;
         }

@@ -19,10 +19,10 @@ OPTIONS:
 
 EXAMPLES:
    1. datgen 
-      - Prints instance raw data to terminal
-   2. datgen > instance.dat 
+      - Prints this manual
+   2. datgen [...args] > instance.dat 
       - Generates an instance file with name "instance.dat"
-   3. datget -o instance.dat
+   3. datget [...args] -o instance.dat
       - Prints raw data to file with name "instance.dat"
    4. datgen -m 100 -e 1000 -g 50 -r 1 -p 2
       - Generate the instance for a network of 1050 nodes (1000 end devices and 50 gateways) with cloud distribution of positions over a 100x100 map. Time requirements are intermediate.
