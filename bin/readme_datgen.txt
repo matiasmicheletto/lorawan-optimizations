@@ -15,7 +15,8 @@ OPTIONS:
    -p, --positions      Placement of nodes: 0=uniform, 1=normal, 2=clouds. Default is uniform. Gateways possible positions are generated with this function too.  
    -m, --map            Map size. Default is 1000.  
    -o, --oputput        Output file name.  
-   -f, --format         Output file format: TXT, HTML (for plot ED and GW distribution), XML (not implemented yet).  
+   -f, --format         Output file format: TXT, HTML (for plot ED and GW distribution), XML (not implemented yet). Default is NONE (print to terminal).  
+   -s, --scaled         Scale spread factor range.  
 
 EXAMPLES:
    1. datgen 

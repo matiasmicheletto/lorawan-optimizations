@@ -123,21 +123,29 @@ Instance::Instance(const InstanceConfig& config) {
     for(uint e = 0; e < this->eds.size(); e++) {
         std::vector<uint> row; // Text line to print
         uint availableGW = 0; // Available GW for this ED
-        for(uint g = 0; g < this->gws.size(); g++) { // Count available GW for this ED
-            double dist = euclideanDistance( // Distance from current ED to current GW
-                this->eds[e].pos.x,
-                this->eds[e].pos.y, 
-                this->gws[g].x,
-                this->gws[g].y 
-            );
-            int minSF = this->_getMinSF(dist);
-            int maxSF = this->_getMaxSF(this->eds[e].period);            
-            if(minSF <= maxSF) // Current ED can be assigned to current GW using at least one SF
-                availableGW++; // Count available gw for this ED
-            row.push_back(minSF); // It is only required the minSF because it depends on distance. maxSF can be obtained from period.
+        uint tries = 0;
+        while(availableGW == 0 && tries < MAX_TRIES){ // Try many times until feasible system
+            for(uint g = 0; g < this->gws.size(); g++) { // Count available GW for this ED
+                double dist = euclideanDistance( // Distance from current ED to current GW
+                    this->eds[e].pos.x,
+                    this->eds[e].pos.y, 
+                    this->gws[g].x,
+                    this->gws[g].y 
+                );
+                int minSF = config.scaled ? this->_getMinSFScaled(dist) : this->_getMinSF(dist);
+                int maxSF = this->_getMaxSF(this->eds[e].period);            
+                if(minSF <= maxSF) // Current ED can be assigned to current GW using at least one SF
+                    availableGW++; // Count available gw for this ED
+                row.push_back(minSF); // It is only required the minSF because it depends on distance. maxSF can be obtained from period.
+            }
+            if(availableGW == 0){
+                row.clear();
+                this->eds[e].period = periodGenerator->randomInt(); // Try other period
+                tries++;
+            }
         }
-        if(availableGW == 0) {
-            std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+        if(tries >= MAX_TRIES){
+            std::cerr << "Error: Unfeasible system after many attempts. An End-Device cannot be allocated to any Gateway given its period." << std::endl
                         << "ED = " << e << std::endl
                         << "Period = " << this->eds[e].period << std::endl;
             exit(1);
@@ -154,7 +162,16 @@ Instance::~Instance() {
     delete[] this->instanceFileName;
 }
 
+void Instance::printRawData() {
+    for (const auto& row : this->raw) {
+        for (int num : row) 
+            std::cout << num << " ";
+        std::cout << std::endl;
+    }
+}
+
 void Instance::exportRawData(const char* filename) {
+
     std::string filenameWithExtension = std::string(filename) + ".dat";
     std::ostream& output = (filename != nullptr) ? *new std::ofstream(filenameWithExtension) : std::cout;
 
@@ -310,9 +327,7 @@ uint Instance::_getMinSF(double distance) {
         return 100;
 }
 
-
-/*
-uint Instance::_getMinSF(double distance) {
+uint Instance::_getMinSFScaled(double distance) {
     if(distance < 2.5)
         return 7;
     else if(distance < 5)
@@ -328,7 +343,6 @@ uint Instance::_getMinSF(double distance) {
     else // No SF for this distance
         return 100;
 }
-*/
 
 uint Instance::getPeriod(uint ed) {
     return this->raw[ed+1][this->gwCount]; // Last column of raw data

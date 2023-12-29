@@ -20,31 +20,36 @@
 #include "../random/clouds.h"
 #include "../random/custom.h"
 
+#define MAX_TRIES 100000
+
 enum POSDIST {UNIFORM, NORMAL, CLOUDS}; 
 enum PERIODIST {SOFT, MEDIUM, HARD, FIXED}; 
-enum OUTFORMAT {TXT, HTML};
+enum OUTPUTFORMAT {NONE, TXT, HTML};
 
 struct InstanceConfig { // This is for instance generation
     uint mapSize; // Map size
     uint edNumber; // Number of end devices (rows)
     uint gwNumber; // Number of gateways (columns)
+    bool scaled; // Use alternate function to compute SF from distance
     PERIODIST timeRequirement; // PDF for ED periods
     POSDIST posDistribution; // Distribution of positions
-    OUTFORMAT outputFormat; // Format of output file  
+    OUTPUTFORMAT outputFormat; // Format of output file  
     uint fixedPeriod; // Fixed period (if PERIODIST == FIXED)
 
     InstanceConfig(  // Default configuration parameters
         uint mapSize = 1000,
-        uint edNumber = 1000,
-        uint gwNumber = 100,
+        uint edNumber = 100,
+        uint gwNumber = 20,
+        bool scaled = false,
         PERIODIST timeRequirement = SOFT,
         POSDIST posDistribution = UNIFORM,
-        OUTFORMAT outputFormat = TXT,
+        OUTPUTFORMAT outputFormat = NONE,
         uint fixedPeriod = 3200
     ) : 
         mapSize(mapSize),
         edNumber(edNumber),
         gwNumber(gwNumber),
+        scaled(scaled),
         timeRequirement(timeRequirement),
         posDistribution(posDistribution),
         outputFormat(outputFormat),
@@ -68,6 +73,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         Instance(const InstanceConfig& config = InstanceConfig()); // Generate from config
         ~Instance();
         
+        void printRawData();
         void exportRawData(const char* filename = nullptr);
         void generateHtmlPlot(const char* filename);
         void copySFDataTo(std::vector<std::vector<uint>>& destination);
@@ -92,11 +98,12 @@ class Instance { // Provides attributes and funcions related to problem formulat
         std::vector<EndDevice> eds; 
         std::vector<Position> gws; 
         char* instanceFileName;
-        OUTFORMAT outputFormat;
+        OUTPUTFORMAT outputFormat;
         static const uint pw[6];
 
         uint _getMaxSF(uint period);
         uint _getMinSF(double distance);
+        uint _getMinSFScaled(double distance);
 };
 
 #endif // INSTANCE_H

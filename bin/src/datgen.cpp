@@ -28,7 +28,10 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--format") == 0) {
             if(i+1 < argc){
-                config.outputFormat = (std::strcmp(argv[i+1], "HTML") == 0) ? OUTFORMAT::HTML : OUTFORMAT::TXT;
+                if(std::strcmp(argv[i+1], "HTML") == 0)
+                    config.outputFormat = OUTPUTFORMAT::HTML;
+                if(std::strcmp(argv[i+1], "TXT") == 0)
+                    config.outputFormat = OUTPUTFORMAT::TXT;
             }else
                 printHelp(MANUAL);
         }
@@ -60,6 +63,9 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
             }
         }
+        if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--scaled") == 0){
+            config.scaled = true;
+        }
         if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--positions") == 0) {
             if(i+1 < argc)
                 config.posDistribution = (POSDIST) atoi(argv[i+1]);
@@ -70,10 +76,21 @@ int main(int argc, char **argv) {
 
     Instance* l = new Instance(config);
 
-    if(config.outputFormat == OUTFORMAT::TXT)
+
+    switch (config.outputFormat)
+    {
+    case OUTPUTFORMAT::NONE:
+        l->printRawData();
+        break;
+    case OUTPUTFORMAT::TXT:
         l->exportRawData(outputFileName);
-    if(config.outputFormat == OUTFORMAT::HTML)
+        break;
+    case OUTPUTFORMAT::HTML:
         l->generateHtmlPlot(outputFileName);
+        break;
+    default:
+        break;
+    }
     
     delete(l);
     l = 0;
