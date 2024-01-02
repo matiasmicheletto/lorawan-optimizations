@@ -60,15 +60,17 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
             std::mt19937 gen(rd());
 
             for(uint iter = 0; iter < iters; iter++){ // Try many times                
-                
+
                 std::shuffle(gwList.begin(), gwList.end(), gen); // Shuffle list of gw
 
                 uint gw[edCount];
                 uint sf[edCount];
                 
                 // Start allocation of EDs one by one
+                bool allEDAllocated = true;
                 std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
                 for(uint e = 0; e < edCount; e++){ 
+                    bool edAllocated = false;
                     for(uint gi = 0; gi < gwCount; gi++){
                         const uint g = gwList[gi];
                         // Check if ED e can be allocated to GW g
@@ -78,14 +80,21 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
                             gw[e] = g;
                             sf[e] = minsf; // Always assign lower SF
                             gwuf[g] += l->getUF(e, minsf);
+                            edAllocated = true;
                             break; // Go to next ed
                         }
                     }
+                    if(!edAllocated){
+                        allEDAllocated = false;
+                        break;
+                    }
                 }// Allocation finished
+                if(!allEDAllocated) continue;
 
                 // Eval solution
                 uint gwUsed, energy; double uf; bool feasible;
                 const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
+
                 if(feasible && cost < minimumCost){ // New optimum
                     minimumCost = cost;
                     std::copy(gw, gw + edCount, gwBest);

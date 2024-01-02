@@ -61,7 +61,9 @@ OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout,
                 
                 // Start allocation of EDs one by one
                 std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
+                bool allEDAllocated = true;
                 for(uint e = 0; e < edCount; e++){ 
+                    bool edAllocated = false;
                     for(uint gi = 0; gi < gwCount; gi++){
                         const uint g = gwList[gi];
                         // Check if ED e can be allocated to GW g
@@ -71,10 +73,16 @@ OptimizationResults greedy8(Instance* l, Objective* o, uint iters, uint timeout,
                             gw[e] = g;
                             sf[e] = minsf; // Always assign lower SF
                             gwuf[g] += l->getUF(e, minsf);
+                            edAllocated = true;
                             break; // Go to next ed
                         }
                     }
+                    if(!edAllocated){
+                        allEDAllocated = false;
+                        break;
+                    }
                 } // Allocation finished
+                if(!allEDAllocated) continue;
 
                 // Eval solution
                 uint gwUsed, energy; double uf; bool feasible;
