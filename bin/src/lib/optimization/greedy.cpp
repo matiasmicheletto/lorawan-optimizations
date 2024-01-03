@@ -22,6 +22,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
     std::cout << std::endl << "Stage 1 -- Find essential nodes" << std::endl;
     std::vector<uint> essGW;
     std::vector<uint> essED;
+    std::vector<UtilizationFactor> essGWUF; // Utilization factors of essential GWs
     for (uint e = 0; e < edCount; e++){ // For each ED
         auto it = std::find(essED.begin(), essED.end(), e);
         if(it == essED.end()){  // If not found in ED list with essential GWs
@@ -30,21 +31,27 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                 const uint g = gwList[0];
                 std::cout << "GW " << g << " is essential ";
                 essGW.push_back(g);
+                essGWUF.push_back(UtilizationFactor());
+                uint gwListIndex = essGW.size()-1; // Index of GW in esential list
                 // Allocate all EDs of g (essential GW) and remove from list
                 const std::vector<uint> edList = l->getAllEDList(g, 12);
                 const uint es = edList.size();
+                uint edAdded = 0;
                 std::cout << "and has " << es << " EDs: ";
                 for(uint i = 0; i < es; i++){
                     const uint ee = edList[i];
+                    std::cout << ee << " ";
                     auto it2 = std::find(essED.begin(), essED.end(), ee);
-                    if(it2 == essED.end()){ // If not already allocated, allocate
+                    const uint tempSF = l->getMinSF(ee, g);
+                    if(it2 == essED.end() && !(essGWUF[gwListIndex]+l->getUF(ee, tempSF)).isFull()){ // If not already allocated and GW not full, allocate
                         essED.push_back(ee);
-                        std::cout << ee << " ";
                         gwBest[ee] = g;
-                        sfBest[ee] = l->getMinSF(ee, g);
+                        sfBest[ee] = tempSF;
+                        essGWUF[gwListIndex] += l->getUF(ee, sfBest[ee]);
+                        edAdded++;
                     }
                 }
-                std::cout << std::endl;
+                std::cout << "(" << edAdded << " ED were not allocated)" << std::endl;
             }
         }
     }
@@ -123,15 +130,17 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                             const uint g = gwList[gi];
                             // Check if ED e can be allocated to GW g
                             auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
-                            if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
+                            uint tempSF = l->getMinSF(e, g);
+                            if((it != clusters[s-7][g].end()) && !(gwuf[g] + l->getUF(e, tempSF)).isFull()){
                                 allocGW = g;
-                                allocSF = l->getMinSF(e, g);
+                                allocSF = tempSF;
                                 allocated = true; // Mark as valid allocation values
                                 break; // Stop searching gw
                             }
                         }
                     }else{ // If allocated to essential GW, copy values of GW and SF
-                        if(!gwuf[gwBest[e]].isFull()){
+
+                        if(!(gwuf[gwBest[e]] + l->getUF(e, sfBest[e])).isFull()){
                             allocGW = gwBest[e];
                             allocSF = sfBest[e];
                             allocated = true; // Mark as valid allocation values
