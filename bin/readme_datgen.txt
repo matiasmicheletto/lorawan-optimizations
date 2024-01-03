@@ -16,7 +16,7 @@ OPTIONS:
    -m, --map            Map size. Default is 1000.  
    -o, --oputput        Output file name.  
    -f, --format         Output file format: TXT, HTML (for plot ED and GW distribution), XML (not implemented yet). Default is NONE (print to terminal).  
-   -s, --scaled         Scale spread factor range.  
+   -s, --scaled         Scale spread factor range (instance scaling).  
 
 EXAMPLES:
    1. datgen 

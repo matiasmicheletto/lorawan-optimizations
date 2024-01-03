@@ -22,24 +22,27 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
     std::cout << std::endl << "Stage 1 -- Find essential nodes" << std::endl;
     std::vector<uint> essGW;
     std::vector<uint> essED;
-    for (uint e = 0; e < edCount; e++){
+    for (uint e = 0; e < edCount; e++){ // For each ED
         auto it = std::find(essED.begin(), essED.end(), e);
-        if(it == essED.end()){  // If not found
+        if(it == essED.end()){  // If not found in ED list with essential GWs
             const std::vector<uint> gwList = l->getGWList(e);
-            if(gwList.size() == 1){
+            if(gwList.size() == 1){ // And if current ED has an essential GW
                 const uint g = gwList[0];
                 std::cout << "GW " << g << " is essential ";
                 essGW.push_back(g);
-                // Allocate all EDs of g (essential GW)
+                // Allocate all EDs of g (essential GW) and remove from list
                 const std::vector<uint> edList = l->getAllEDList(g, 12);
                 const uint es = edList.size();
                 std::cout << "and has " << es << " EDs: ";
                 for(uint i = 0; i < es; i++){
                     const uint ee = edList[i];
-                    essED.push_back(ee);
-                    std::cout << ee << " ";
-                    gwBest[ee] = g;
-                    sfBest[ee] = l->getMinSF(ee, g);
+                    auto it2 = std::find(essED.begin(), essED.end(), ee);
+                    if(it2 == essED.end()){ // If not already allocated, allocate
+                        essED.push_back(ee);
+                        std::cout << ee << " ";
+                        gwBest[ee] = g;
+                        sfBest[ee] = l->getMinSF(ee, g);
+                    }
                 }
                 std::cout << std::endl;
             }
@@ -100,7 +103,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
             std::random_device rd;
             std::mt19937 gen(rd());
 
-            for(uint iter = 0; iter < iters; iter++){ // Try many times                
+            for(uint iter = 0; iter < iters; iter++){ // Try many times         
                 
                 std::shuffle(gwList.begin(), gwList.end(), gen); // Shuffle list of gw
 
@@ -127,21 +130,24 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                                 break; // Stop searching gw
                             }
                         }
-                    }else{ // If allocated to essential GW, copy values
-                        allocGW = gwBest[e];
-                        allocSF = sfBest[e];
-                        allocated = true; // Mark as valid allocation values
+                    }else{ // If allocated to essential GW, copy values of GW and SF
+                        if(!gwuf[gwBest[e]].isFull()){
+                            allocGW = gwBest[e];
+                            allocSF = sfBest[e];
+                            allocated = true; // Mark as valid allocation values
+                        }else{
+                            std::cout << "Iteration " << iter << ", trying to allocate ED " << e << " to GW " << gwBest[e] << " but UF>1. UF Values:" << std::endl;
+                            gwuf[gwBest[e]].printUFValues(); 
+                            std::cout << std::endl;
+                        }
                     }
                     if(allocated){ // If valid allocation values
                         gw[e] = allocGW;
                         sf[e] = allocSF;
                         gwuf[allocGW] += l->getUF(e, allocSF);
-                    }else{ // If it was not possible to allocate ED "e"
-                        if(iter == iters){
-                            std::cout << "Not possible to allocate ED " << e << ", trying with next iteration." << std::endl;
-                            allAllocable = false;
-                            break; // Go to next iteration
-                        }
+                    }else{ // If it was not possible to allocate ED "e", jump to next iteration
+                        allAllocable = false;
+                        break; // Do not try next ED
                     }
                 } // Allocation finished
 

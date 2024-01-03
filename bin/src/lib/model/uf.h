@@ -32,6 +32,8 @@ public:
 
     inline double getUFValue(uint sf){ return this->ufValues[sf-7]; };
 
+    void printUFValues();
+
 private:
     double ufValues[SF_NUM];
 };

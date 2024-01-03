@@ -111,3 +111,10 @@ bool UtilizationFactor::operator>(const UtilizationFactor& other) const {
 bool UtilizationFactor::operator>=(const UtilizationFactor& other) const {
     return !(*this < other);
 }
+
+void UtilizationFactor::printUFValues() {
+    std::cout << this->ufValues[0];
+    for (int i = 1; i < SF_NUM; i++)
+        std::cout << ", " << this->ufValues[i];
+    std::cout << std::endl;
+}

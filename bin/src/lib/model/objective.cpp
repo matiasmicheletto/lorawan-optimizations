@@ -9,14 +9,14 @@ Objective::~Objective() {
 
 }
 
-const uint Objective::unfeasibleIncrement = 1000000;
+const uint Objective::unfeasibleIncrement = 10000;
 
 double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &maxUF, bool &feasible) {    
     // Reset objectives (if unfeasible solution, these values remain 0 and _DBL_MAX_ is returned)
     gwCount = 0;
     energy = 0;
     maxUF = 0.0;
-    feasible = true;
+    int feasibility = 0; // Feasibility type: 0->feasible, 1 -> no valid SF, 2 -> UF > 1 for some gw
     double cost = 0.0; // Cost value have meaning when solutions are feasible, else will take large values
 
     UtilizationFactor gwuf[this->instance->getGWCount()]; // Array of UF objects
@@ -27,14 +27,17 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
         uint minSF = this->instance->getMinSF(i, gw[i]);
         uint maxSF = this->instance->getMaxSF(i);
         if(sf[i] > maxSF || sf[i] < minSF){ // Unfeasibility condition: not valid SF available for this GW
-            feasible = false;
+            feasibility = 1;
+            //std::cout << "SF of ED " << i << " not valid." << std::endl;
             cost += unfeasibleIncrement;
         }
 
         // Compute GW UF
         gwuf[gw[i]] += this->instance->getUF(i, sf[i]);
         if(gwuf[gw[i]].isFull()){ // Unfeasibility condition: UF > 1 for some SF
-            feasible = false;
+            feasibility = 2;
+            //std::cout << "UF of GW " << gw[i] << " greater than 1" << std::endl;
+            //gwuf[gw[i]].printUFValues();
             cost += unfeasibleIncrement;
         }
         double maxUFTemp = gwuf[gw[i]].getMax(); // Max UF value between all SF
@@ -50,6 +53,8 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     // Compute energy cost
     for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED
         energy += this->instance->sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
+
+    feasible = feasibility == 0;
 
     // If solution is feasible, at this point (before following equation), cost should equal 0.0
     cost += this->tp.alpha * (double) gwCount + 
