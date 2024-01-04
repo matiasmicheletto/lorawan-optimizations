@@ -26,32 +26,40 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
     for (uint e = 0; e < edCount; e++){ // For each ED
         auto it = std::find(essED.begin(), essED.end(), e);
         if(it == essED.end()){  // If not found in ED list with essential GWs
-            const std::vector<uint> gwList = l->getGWList(e);
-            if(gwList.size() == 1){ // And if current ED has an essential GW
+            const std::vector<uint> gwList = l->getSortedGWList(e); // GWs sorted by SF
+            if(gwList.size() == 1){ // If current ED has an essential GW
                 const uint g = gwList[0];
                 std::cout << "GW " << g << " is essential ";
+                
+                // Add gw and ed to lists of essential and allocate to solution
                 essGW.push_back(g);
                 essGWUF.push_back(UtilizationFactor());
+                essED.push_back(e);
                 uint gwListIndex = essGW.size()-1; // Index of GW in esential list
-                // Allocate all EDs of g (essential GW) and remove from list
+                uint tempSF = l->getMinSF(e, g);
+                essGWUF[gwListIndex] += l->getUF(e, tempSF);
+                gwBest[e] = g;
+                sfBest[e] = tempSF;
+                uint edAdded = 1;
+
+                // Allocate the remaining EDs of g (essential GW)
                 const std::vector<uint> edList = l->getAllEDList(g, 12);
                 const uint es = edList.size();
-                uint edAdded = 0;
                 std::cout << "and has " << es << " EDs: ";
                 for(uint i = 0; i < es; i++){
                     const uint ee = edList[i];
-                    std::cout << ee << " ";
+                    tempSF = l->getMinSF(ee, g);
                     auto it2 = std::find(essED.begin(), essED.end(), ee);
-                    const uint tempSF = l->getMinSF(ee, g);
                     if(it2 == essED.end() && !(essGWUF[gwListIndex]+l->getUF(ee, tempSF)).isFull()){ // If not already allocated and GW not full, allocate
+                        std::cout << ee << " ";
                         essED.push_back(ee);
                         gwBest[ee] = g;
                         sfBest[ee] = tempSF;
-                        essGWUF[gwListIndex] += l->getUF(ee, sfBest[ee]);
+                        essGWUF[gwListIndex] += l->getUF(ee, tempSF);
                         edAdded++;
                     }
                 }
-                std::cout << "(" << edAdded << " ED were not allocated)" << std::endl;
+                std::cout << "(only " << edAdded << " ED were allocated)" << std::endl;
             }
         }
     }
