@@ -23,6 +23,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
     std::vector<uint> essGW;
     std::vector<uint> essED;
     std::vector<UtilizationFactor> essGWUF; // Utilization factors of essential GWs
+    uint allocatedCount = 0;
     for(uint g = 0; g < gwCount; g++){
         bool isEssential = false;
         uint gwAllocatedCount = 0;
@@ -50,6 +51,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                     sfBest[e] = tempSF;
                     essGWUF[essGWIndex] += l->getUF(e, tempSF);
                     gwAllocatedCount++;
+                    allocatedCount++;
                 }else{
                     std::cout << "ED " << e << " cannot be allocated to essential GW " << g << std::endl;
                     std::cout << "Unfeasible system. Exiting program..." << std::endl;
@@ -58,17 +60,20 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
             }
         }
         if(isEssential)
-            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << gwAllocatedCount << " allocated in first pass (essentials)." << std::endl;
+            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << gwAllocatedCount << " essential nodes allocated." << std::endl;
     }
 
-    for(uint e = 0; e < edCount; e++){
+    std::cout << std::endl << "Essential GWs: " << essGW.size() << " (of " << gwCount << ")" << std::endl;
+    std::cout << "Total allocated nodes to essential GWs: " << allocatedCount << std::endl;
+
+    for(uint e = 0; e < edCount; e++){ // Allocate non essential nodes to essential GWs
         auto it = std::find(essED.begin(), essED.end(), e);
-        if(it == essED.end()){
+        if(it == essED.end()){ // Remaining EDs (non essentials)
             const std::vector<uint> gwList = l->getSortedGWList(e);
-            for(uint i = 0; i < gwList.size(); i++){
+            for(uint i = 0; i < gwList.size(); i++){ // Find essential GW in list of reachable
                 const uint g = gwList[i];
                 auto it2 = std::find(essGW.begin(), essGW.end(), g);
-                if(it2 == essGW.end()){ // Is essential -> try to allocate
+                if(it2 != essGW.end()){ // Is essential -> try to allocate to that gw
                     const uint essGWIndex = std::distance(essGW.begin(), it2);
                     uint tempSF = l->getMinSF(e, g);
                     if(!(essGWUF[essGWIndex] + l->getUF(e, tempSF)).isFull()){
@@ -76,13 +81,15 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                         sfBest[e] = tempSF;
                         essGWUF[essGWIndex] += l->getUF(e, tempSF);
                         essED.push_back(e);
+                        allocatedCount++;
+                        
                     }
                 }
             }
         }
     }
 
-    std::cout << std::endl << "Essential GWs " << essGW.size() << " of " << gwCount << std::endl;
+    std::cout << "Total non-essential nodes allocated to essential GWs: " << allocatedCount << std::endl;
 
     ////// G4 //////
     std::cout << std::endl << "Stage 2 -- Allocation of non-essential nodes" << std::endl;
@@ -110,7 +117,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                 }
                 if(!hasGW){ 
                     hasCoverage = false;
-                    std::cout << "No coverage for SF " << s << ": ED " << e << " cannot be assigned to any GW." << std::endl;
+                    std::cout << "No coverage for SF" << s << ": ED " << e << " cannot be assigned to any GW." << std::endl;
                     if(s == 12){ 
                         std::cout << "Exiting program." << std::endl;
                         exit(1);
@@ -131,7 +138,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                 if(it == essGW.end()) // If not essential, add to gw allocation list
                     gwList.push_back(g);
             }
-            std::cout << "SF " << s << " " << gwList.size() << " available GWs" << std::endl;
+            std::cout << "In SF" << s << " there are " << gwList.size() << " available GWs. Starting iterations..." << std::endl;
 
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -151,13 +158,13 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                     
                     // Check if e already allocated (essential)
                     auto it = std::find(essED.begin(), essED.end(), e);
-                    if(it == essED.end()) { // If not allocated to essential GW, allocate to available GW
+                    if(it == essED.end()) { // If not allocated to essential GW, allocate to another available GW
                         for(uint gi = 0; gi < gwList.size(); gi++){
                             const uint g = gwList[gi];
                             // Check if ED e can be allocated to GW g
-                            auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
+                            auto it2 = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                             uint tempSF = l->getMinSF(e, g);
-                            if((it != clusters[s-7][g].end()) && !(gwuf[g] + l->getUF(e, tempSF)).isFull()){
+                            if((it2 != clusters[s-7][g].end()) && !(gwuf[g] + l->getUF(e, tempSF)).isFull()){
                                 allocGW = g;
                                 allocSF = tempSF;
                                 allocated = true; // Mark as valid allocation values
@@ -165,7 +172,6 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                             }
                         }
                     }else{ // If allocated to essential GW, copy values of GW and SF
-
                         if(!(gwuf[gwBest[e]] + l->getUF(e, sfBest[e])).isFull()){
                             allocGW = gwBest[e];
                             allocSF = sfBest[e];
@@ -182,11 +188,13 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                         gwuf[allocGW] += l->getUF(e, allocSF);
                     }else{ // If it was not possible to allocate ED "e", jump to next iteration
                         allAllocable = false;
-                        std::cout << "ED " << e << " not allocable. GWs: " << std::endl;
+                        /*
+                        std::cout << "ED " << e << " not allocable. GWs: ";
                         std::vector<uint> glist = l->getGWList(e);
                         for(uint i = 0; i < glist.size(); i++)
                             std::cout << glist[i] << " ";
                         std::cout << std::endl;
+                        */
                         break; // Do not try next ED
                     }
                 } // Allocation finished
@@ -201,9 +209,8 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                         feasibleFound = true;
                         
                         // Print status
-                        std::cout << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
+                        std::cout << std::endl << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
                         o->printSolution(gw, sf, false);
-                        std::cout << std::endl << std::endl;
                     }
                 }
 
@@ -226,7 +233,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
     results.tp = o->tp;
     results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
     
-    std::cout << "Stage 2 finished in " << results.execTime << " ms" << std::endl;
+    std::cout << std::endl << "Stage 2 finished in " << results.execTime << " ms" << std::endl;
     if(feasibleFound){
         std::cout << "Best:" << std::endl;
         o->printSolution(gwBest, sfBest, true, true, false);
