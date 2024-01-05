@@ -1,7 +1,7 @@
 #include "greedy.h"
 
 
-OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
+OptimizationResults greedy12(Instance* l, Objective* o, uint iters, uint timeout){
 
     std::cout << "------------- Greedy minimization -------------" << std::endl << std::endl;
 
@@ -23,9 +23,11 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
     std::vector<uint> essGW;
     std::vector<uint> essED;
     std::vector<UtilizationFactor> essGWUF; // Utilization factors of essential GWs
+    std::vector<uint>allocatedEDs;
     for(uint g = 0; g < gwCount; g++){
         bool isEssential = false;
         uint gwAllocatedCount = 0;
+        std::vector<uint> unallocatedEDs; // Used if essential
         const std::vector<uint> edList = l->getAllEDList(g, 12);
         //  First pass: Search for essential nodes and allocate to GW
         for(uint i = 0; i < edList.size(); i++){ 
@@ -50,39 +52,40 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout){
                     sfBest[e] = tempSF;
                     essGWUF[essGWIndex] += l->getUF(e, tempSF);
                     gwAllocatedCount++;
+                    allocatedEDs.push_back(e);
                 }else{
                     std::cout << "ED " << e << " cannot be allocated to essential GW " << g << std::endl;
                     std::cout << "Unfeasible system. Exiting program..." << std::endl;
                     exit(1);
                 }
+            }else{ // Node e is not essential, add to list for later allocation
+                unallocatedEDs.push_back(e);
             }
         }
-        if(isEssential)
-            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << gwAllocatedCount << " allocated in first pass (essentials)." << std::endl;
-    }
-
-    for(uint e = 0; e < edCount; e++){
-        auto it = std::find(essED.begin(), essED.end(), e);
-        if(it == essED.end()){
-            const std::vector<uint> gwList = l->getSortedGWList(e);
-            for(uint i = 0; i < gwList.size(); i++){
-                const uint g = gwList[i];
-                auto it2 = std::find(essGW.begin(), essGW.end(), g);
-                if(it2 == essGW.end()){ // Is essential -> try to allocate
-                    const uint essGWIndex = std::distance(essGW.begin(), it2);
-                    uint tempSF = l->getMinSF(e, g);
-                    if(!(essGWUF[essGWIndex] + l->getUF(e, tempSF)).isFull()){
-                        gwBest[e] = g;
-                        sfBest[e] = tempSF;
-                        essGWUF[essGWIndex] += l->getUF(e, tempSF);
-                        essED.push_back(e);
-                    }
+        if(isEssential){ // Allocate the remaining of EDs
+            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << gwAllocatedCount << " allocated in first pass (essentials), ";
+            for(uint i = 0; i < unallocatedEDs.size(); i++){
+                const uint e = unallocatedEDs[i];
+                const uint essGWIndex = std::distance(essGW.begin(), std::find(essGW.begin(), essGW.end(), g));
+                uint tempSF = l->getMinSF(e, g);
+                auto it = std::find(allocatedEDs.begin(), allocatedEDs.end(), e);
+                if(it == allocatedEDs.end() && !(essGWUF[essGWIndex] + l->getUF(e, tempSF)).isFull()){
+                    gwBest[e] = g;
+                    sfBest[e] = tempSF;
+                    essGWUF[essGWIndex] += l->getUF(e, tempSF);
+                    gwAllocatedCount++;
+                    allocatedEDs.push_back(e);
                 }
             }
+            std::cout << gwAllocatedCount << " allocated in total." << std::endl;
         }
     }
 
-    std::cout << std::endl << "Essential GWs " << essGW.size() << " of " << gwCount << std::endl;
+    std::cout << std::endl << "Essential GW proportion: " << essGW.size() << "/" << gwCount << std::endl;
+    std::cout << allocatedEDs.size() << " nodes allocated. Essentials = " << essED.size() << std::endl;
+
+
+
 
     ////// G4 //////
     std::cout << std::endl << "Stage 2 -- Allocation of non-essential nodes" << std::endl;
