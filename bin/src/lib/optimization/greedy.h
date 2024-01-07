@@ -27,6 +27,7 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
 OptimizationResults greedy10(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout);
 OptimizationResults greedy12(Instance* l, Objective* o, uint iters, uint timeout);
+OptimizationResults greedy13(Instance* l, Objective* o, uint iters, uint timeout, bool verboes = false);
 OptimizationResults heuristica_rod(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 
 #endif // GREEDY_H
