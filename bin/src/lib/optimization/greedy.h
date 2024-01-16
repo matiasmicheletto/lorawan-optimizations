@@ -14,7 +14,7 @@
 
 enum MIN {GW, E, UF}; // Greedy minimization methods
 
-OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, bool verboes = false);
+OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false);
 OptimizationResults greedy1(Instance* l, Objective* o, MIN minimize, bool verbose = false, bool wst = false);
 OptimizationResults greedy2(Instance* l, Objective* o, bool verbose = false, bool wst = false);
 OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
@@ -27,7 +27,8 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
 OptimizationResults greedy10(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout);
 OptimizationResults greedy12(Instance* l, Objective* o, uint iters, uint timeout);
-OptimizationResults greedy13(Instance* l, Objective* o, uint iters, uint timeout, bool verboes = false);
+OptimizationResults greedy13(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false);
+OptimizationResults greedy14(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false);
 OptimizationResults heuristica_rod(Instance* l, Objective* o, uint iters, uint timeout, bool verbose = false, bool wst = false);
 
 #endif // GREEDY_H

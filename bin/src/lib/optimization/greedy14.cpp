@@ -1,0 +1,254 @@
+#include "greedy.h"
+
+
+OptimizationResults greedy14(Instance* l, Objective* o, uint iters, uint timeout, bool verbose){
+
+    if(verbose) std::cout << "------------- Greedy minimization -------------" << std::endl << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    const uint gwCount = l->getGWCount();
+    const uint edCount = l->getEDCount();
+    
+    // Best
+    uint gwBest[edCount];
+    uint sfBest[edCount];
+
+    // Essential gws
+    if(verbose) std::cout << std::endl << "Stage 1 -- Find essential nodes" << std::endl;
+    std::vector<uint> essGW;
+    std::vector<uint> essED;
+    std::vector<UtilizationFactor> gwUF(gwCount); // Utilization factors of GWs
+    for(uint g = 0; g < gwCount; g++){
+        bool isEssential = false;
+        uint allocatedCount = 0;
+        const std::vector<uint> edList = l->getAllEDList(g, 12);
+        //  First pass: Search for essential nodes and allocate to GW
+        for(uint i = 0; i < edList.size(); i++){ 
+            const uint e = edList[i];
+            if(l->getGWList(e).size() == 1){ // GW g is essential for node e
+                isEssential = true;
+                essED.push_back(e);
+                // Add gw to esential list (if not in list)
+                auto it = std::find(essGW.begin(), essGW.end(), g);
+                if(it == essGW.end()) // If not in essential list
+                    essGW.push_back(g);
+                // Try to allocate essential ed to essential gw
+                uint tempSF = l->getMinSF(e, g);
+                if(!(gwUF[g] + l->getUF(e, tempSF)).isFull()){
+                    gwBest[e] = g;
+                    sfBest[e] = tempSF;
+                    gwUF[g] += l->getUF(e, tempSF);
+                    allocatedCount++;
+                }else{
+                    std::cout << "ED " << e << " cannot be allocated to essential GW " << g << std::endl;
+                    std::cout << "Unfeasible system. Exiting program..." << std::endl;
+                    exit(1);
+                }
+            }
+        }
+        if(isEssential && verbose)
+            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << allocatedCount << " essential nodes allocated." << std::endl;
+    }
+
+    if(verbose){
+        std::cout << std::endl << "Essential GWs: " << essGW.size() << " (of " << gwCount << ")" << std::endl;
+        std::cout << "Total allocated nodes to essential GWs: " << essED.size() << std::endl;
+    }
+
+    if(verbose) std::cout << std::endl << "Stage 2 -- Priority allocation" << std::endl;
+
+    // Sort ED by GW number
+    std::vector<uint>indirection(edCount);
+    std::vector<std::vector<uint>> edGWList(edCount);
+    for(uint e = 0; e < edCount; e++){
+        indirection[e] = e;
+        edGWList[e] = l->getSortedGWList(e); // List of gw sorted by SF
+    }
+    std::sort(
+        indirection.begin(), 
+        indirection.end(), 
+        [&edGWList](const uint &a, const uint &b) {
+            return edGWList[a].size() < edGWList[b].size();
+        }
+    );
+
+    // Allocate ed to GW using order of priority
+    for(uint i = 0; i < edCount; i++){
+        const uint e = indirection[i];
+        if(edGWList[e].size() > 1){ // If 2 or more gw in range
+            bool eAllocated = false;
+            for(uint j = 0; j < edGWList[e].size(); j++){ // For each GW (sorted by SF) of "e" 
+                const uint g = edGWList[e][j]; // gw index
+                auto it = std::find(essGW.begin(), essGW.end(), g); // Check if there is an essential gw
+                if(it != essGW.end()){ // Essential GW found
+                    uint tempSF = l->getMinSF(e, g);
+                    if(!(gwUF[g] + l->getUF(e, tempSF)).isFull()){ // If allocable
+                        gwBest[e] = g;
+                        sfBest[e] = tempSF;
+                        gwUF[g] += l->getUF(e, tempSF);
+                        eAllocated = true;
+                        break; // Next ED
+                    }
+                }
+            }
+            if(!eAllocated){ // If not allocated to essential GW, search non essential
+                for(uint j = 0; j < edGWList[e].size(); j++){ // For each GW (sorted by SF) of "e" 
+                    const uint g = edGWList[e][j]; // gw index
+                    uint tempSF = l->getMinSF(e, g);
+                    if(!(gwUF[g] + l->getUF(e, tempSF)).isFull()){ // If allocable
+                        gwBest[e] = g;
+                        sfBest[e] = tempSF;
+                        gwUF[g] += l->getUF(e, tempSF);
+                        eAllocated = true;
+                        break; // Next ED
+                    }
+                }   
+            }
+            if(!eAllocated && verbose){
+                std::cout << "Cannot find GW for ED " << e << std::endl;
+                std::cout << "Printing UF for reachable GWs:" << std::endl;
+                for(uint j = 0; j < edGWList[e].size(); j++){ // For each GW (sorted by SF) of "e" 
+                    const uint g = edGWList[e][j]; // gw index
+                    gwUF[g].printUFValues();
+                    std::cout << std::endl;
+                }
+                exit(1);
+            }
+        }
+    }
+
+    OptimizationResults results;
+    results.cost = o->eval(gwBest, sfBest, results.gwUsed, results.energy, results.uf, results.feasible);
+    results.tp = o->tp;
+    results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
+    if(!results.feasible){
+        if(verbose) std::cout << "No feasible solution found" << std::endl;
+        exit(1);
+    }
+
+    if(verbose){ 
+        std::cout << std::endl << "Stage 2 finished in " << results.execTime << " ms" << std::endl;
+        std::cout << "Best:" << std::endl;
+        o->printSolution(gwBest, sfBest, true, true, false);
+        std::cout << std::endl << "Stage 3 -- Reallocation of ED" << std::endl;
+    }
+    
+    uint gwBest2[edCount];
+    uint sfBest2[edCount];
+    std::copy(gwBest, gwBest + edCount, gwBest2);
+    std::copy(sfBest, sfBest + edCount, sfBest2);
+    
+    std::vector<uint> gwList;
+    std::vector<std::vector<uint>> gwEDs(results.gwUsed);
+    std::vector<UtilizationFactor> gwUF2; 
+    std::vector<uint>indirection2(results.gwUsed);
+    std::iota(indirection2.begin(), indirection2.end(), 0);
+    for(uint i = 0; i < edCount; i++){
+        UtilizationFactor uf = l->getUF(i, sfBest[i]); // UF of ED i
+        auto it = std::find(gwList.begin(), gwList.end(), gwBest[i]); // Find gw of ED i in list
+        if(it != gwList.end()) { // If found, increase ED and UF
+            uint index = std::distance(gwList.begin(), it);
+            gwEDs[index].push_back(i); // Add ED to GW
+            gwUF2[index] += uf;
+        }else{ // If not, add
+            gwList.push_back(gwBest[i]); // Add gw index to list
+            gwEDs[gwList.size()-1].push_back(i); // Add first ED to gw
+            gwUF2.push_back(uf); // Add initial UF 
+        }
+    }
+
+    // Sort indirection2 array in ascending order of number of EDs
+    std::sort(
+        indirection2.begin(), 
+        indirection2.end(), 
+        [&gwEDs](const uint &a, const uint &b) {
+            return gwEDs[a].size() < gwEDs[b].size();
+        }
+    );
+    
+    // Sort all arrays with indirection2 array
+    std::vector<uint> sortedGWList(results.gwUsed);
+    std::vector<std::vector<uint>> sortedGWEDs(results.gwUsed);
+    std::vector<UtilizationFactor> sortedgwUF2(results.gwUsed);
+    for (uint i = 0; i < results.gwUsed; i++) {
+        sortedGWList[i] = gwList[indirection2[i]];
+        sortedgwUF2[i] = gwUF2[indirection2[i]];
+        sortedGWEDs[i] = gwEDs[indirection2[i]];
+    }
+
+    if(verbose)
+        for (uint i = 0; i < results.gwUsed; i++) {
+            std::cout << "GW " << sortedGWList[i] << ": " << sortedGWEDs[i].size() << " EDs." << std::endl;
+            for(int s = 7; s <= 12; s++)
+                std::cout << "  UF SF" << s << " = " << sortedgwUF2[i].getUFValue(s) << std::endl;
+            std::cout << std::endl;
+        }
+
+    // Start from first GW and try to reallocate all of its EDs to any of the following
+    for (uint g = 0; g < results.gwUsed; g++) {
+        const uint gIndex = sortedGWList[g];
+        uint e = 0;
+        while(e < sortedGWEDs[g].size()) { // For each ED of GW gIndex
+            uint edIndex = sortedGWEDs[g][e]; // Number of ED
+            std::vector<uint> availablesGWs = l->getSortedGWList(edIndex); // List of GW in range of this ED
+            if (availablesGWs.size() > 1){
+                for(uint g2 = 0; g2 < results.gwUsed; g2++) { // Search if possible to allocate to another GW puse el principio de la lista... 
+                    const uint g2Index = sortedGWList[g2];
+                    if(gIndex != g2Index){ 
+                        auto it = std::find(availablesGWs.begin(), availablesGWs.end(), g2Index);
+                        if(it != availablesGWs.end()){ // g2 is in available list, check if enough UF
+                            const uint s = l->getMinSF(edIndex, g2Index); // Use minSF
+                            UtilizationFactor uf = l->getUF(edIndex, s); // UF for this ED using the selected SF
+                            if(!(sortedgwUF2[g2] + uf).isFull()) { // This ED can be moved to g2
+                                if (sfBest[edIndex] > s || sortedGWEDs[g].size() == 1){ // If lower SF or remove GW
+                                    if(verbose) std::cout << "Reallocated ED " << edIndex << ": GW " << gIndex << " --> " << g2Index << ", SF: "<<sfBest2[edIndex]<<" --> " << s <<std::endl;	
+                                    gwBest2[edIndex] = g2Index; // Reallocate ED to another GW
+                                    sfBest2[edIndex] = s; // Reallocate ED to new SF
+                                    sortedgwUF2[g] -= uf; // Reduce UF of original GW (g)
+                                    sortedGWEDs[g].erase(std::remove(sortedGWEDs[g].begin(), sortedGWEDs[g].end(), edIndex), sortedGWEDs[g].end()); // Remove ED e from GW g
+                                    // Sort again sortedGWList
+                                    std::sort(
+                                        indirection2.begin(), 
+                                        indirection2.end(), 
+                                        [&sortedGWEDs](const uint &a, const uint &b) {
+                                            return sortedGWEDs[a].size() < sortedGWEDs[b].size();
+                                        }
+                                    );
+                                    for (uint i = 0; i < results.gwUsed; i++) {
+                                        sortedGWList[i] = gwList[indirection2[i]];
+                                        sortedgwUF2[i] = gwUF2[indirection2[i]];
+                                        sortedGWEDs[i] = gwEDs[indirection2[i]];
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            e++;
+        }
+    }
+    
+    OptimizationResults results2;
+    results2.cost = o->eval(gwBest2, sfBest2, results2.gwUsed, results2.energy, results2.uf, results2.feasible);
+    
+    if(results2.cost < results.cost){
+        if(verbose) std::cout << std::endl << "New optimum: " << results2.cost << " (previous: " << results.cost << ")" << std::endl << std::endl;
+        std::copy(gwBest2, gwBest2 + edCount, gwBest);
+        std::copy(sfBest2, sfBest2 + edCount, sfBest);
+    }else
+        if(verbose) std::cout << "No improvement in stage 3. Cost = " << results2.cost << std::endl << std::endl;
+
+    //////////// Export results ////////////
+    results2.tp = o->tp;
+    results2.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
+    results2.ready = true;
+    if(verbose) std::cout << "Total exec. time " << results2.execTime << " ms" << std::endl;
+    if(verbose) std::cout << "Best:" << std::endl;
+
+    o->printSolution(gwBest, sfBest, true, true, true);
+
+    return results2;
+}
