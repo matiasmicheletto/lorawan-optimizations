@@ -25,7 +25,6 @@
 #include "../random/uniform.h"
 #include "../model/instance.h"
 #include "../model/objective.h"
-#include "results.h"
 
 OptimizationResults siman(Instance* l, Objective* o, uint iters, bool verbose = false, bool wst = false);
 

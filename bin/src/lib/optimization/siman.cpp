@@ -47,8 +47,8 @@ void randomize_alloc(float *sol, uint size, uint index) {
 
 void init_g4(float* sol) {
 
-	const uint gwCount = _lt->getGWCount();
-    const uint edCount = _lt->getEDCount();
+	const uint gwCount = _lt->gwCount;
+    const uint edCount = _lt->edCount;
 
     double minimumCost = __DBL_MAX__;
     std::vector<std::vector<std::vector<uint>>> clusters; // Clusters tensor (SF x GW x ED)
@@ -184,7 +184,7 @@ OptimizationResults siman(Instance* l, Objective* o, uint iters, bool verbose, b
     _lt = l;
     _ot = o;
     
-    ED_COUNT = l->getEDCount();
+    ED_COUNT = l->edCount;
     
     //const int ITERS_FIXED = (int)  ((double)ED_COUNT / 10); // Reduce number of iterations if is large ED_COUNT
     const int ITERS_FIXED = iters;

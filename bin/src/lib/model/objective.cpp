@@ -19,10 +19,10 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     int feasibility = 0; // Feasibility type: 0->feasible, 1 -> no valid SF, 2 -> UF > 1 for some gw
     double cost = 0.0; // Cost value have meaning when solutions are feasible, else will take large values
 
-    UtilizationFactor gwuf[this->instance->getGWCount()]; // Array of UF objects
-    std::fill(gwuf, gwuf + this->instance->getGWCount(), UtilizationFactor()); // Initialize all elements to 0.0 (all SF from 7 to 12)
+    UtilizationFactor gwuf[this->instance->gwCount]; // Array of UF objects
+    std::fill(gwuf, gwuf + this->instance->gwCount, UtilizationFactor()); // Initialize all elements to 0.0 (all SF from 7 to 12)
 
-    for(uint i = 0; i < this->instance->getEDCount(); i++){ // For each ED    
+    for(uint i = 0; i < this->instance->edCount; i++){ // For each ED    
         // Check if feasible SF
         uint minSF = this->instance->getMinSF(i, gw[i]);
         uint maxSF = this->instance->getMaxSF(i);
@@ -46,12 +46,12 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     }
 
     // Count number of used gw
-    for(uint j = 0; j < this->instance->getGWCount(); j++)
+    for(uint j = 0; j < this->instance->gwCount; j++)
         if(gwuf[j].isUsed()) 
             gwCount++;
 
     // Compute energy cost
-    for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED
+    for(uint i = 0; i < this->instance->edCount; i++) // For each ED
         energy += this->instance->sf2e(sf[i]);// energy += pow(2, sf[i] - 7);
 
     feasible = feasibility == 0;
@@ -64,13 +64,18 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     return cost; 
 }
 
+EvalResults Objective::eval(Allocation alloc) {
+    EvalResults er;
+    return er;
+}
+
 void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight, bool showGWs){
     
     uint gwCount;
     uint energy;
     double maxUF;
     bool feasible;
-    const uint edCount = this->instance->getEDCount();
+    const uint edCount = this->instance->edCount;
 
     const double result = this->eval(gw, sf, gwCount, energy, maxUF, feasible);
 
@@ -110,6 +115,43 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
 }
 
+void Objective::printSolution(const Allocation alloc, const EvalResults results, bool allocation, bool highlight, bool showGWs) {
+
+    if(highlight) std::cout << "\033[1;31m"; // Switch to red font
+
+    std::cout << "Cost=" << results.cost
+                << (results.feasible ? " (Feasible)" : " (Unfeasible)")
+                << ", (GW=" << results.gwUsed
+                << ",E=" << results.energy 
+                << ",U=" << results.uf
+                << ")" << std::endl;
+    
+    if(showGWs) {
+        std::vector<uint> gwList;
+        for(uint i = 0; i < alloc.gw.size(); i++){
+            auto it = std::find(gwList.begin(), gwList.end(), alloc.gw[i]);
+            if(it == gwList.end()){ // If the gw of node "i" isnt in list
+                gwList.push_back(alloc.gw[i]);
+            }
+        }
+        std::cout << "GWs used: "; 
+        for(uint i = 0; i < gwList.size(); i++)
+            std::cout << gwList[i] << " ";
+        std::cout << std::endl;
+    }
+
+    if(allocation){
+        std::cout << "Allocation (GW[SF]):" << std::endl;
+        for(uint i = 0; i < alloc.gw.size(); i++){ // For each ED    
+            if(i % 10 == 0) std::cout << std::endl;
+            std::cout << alloc.gw[i] << "[" << alloc.sf[i] << "]\t";
+        }
+        std::cout << std::endl;
+    }
+    
+    if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
+}
+
 void Objective::printSol(const uint* gw, const uint* sf) {
     std::ofstream outFile("last.out", std::ios::app); 
 
@@ -118,7 +160,7 @@ void Objective::printSol(const uint* gw, const uint* sf) {
         return;
     }
     
-    for(uint i = 0; i < this->instance->getEDCount(); i++) // For each ED    
+    for(uint i = 0; i < this->instance->edCount; i++) // For each ED    
         outFile << i+1 << "\t" << gw[i]+1 << "\t" << sf[i] << std::endl;
     
     outFile.flush();
@@ -140,9 +182,9 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
     uint index = 3;
     uint lastch = 0;
     bool selected;
-    for(uint g = 1; g < this->instance->getGWCount()+1; g++){
+    for(uint g = 1; g < this->instance->gwCount+1; g++){
         selected = false;
-        for(uint e = 0; e < this->instance->getEDCount(); e++){
+        for(uint e = 0; e < this->instance->edCount; e++){
             if(gw[e] == g-1){
                 selected = true;
                 break;
@@ -159,8 +201,8 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
         if(lastch == 16) lastch = 0;
     }
 
-    for(uint e = 1; e < this->instance->getEDCount()+1; e++)
-        for(uint g = this->instance->getGWCount(); g > 0 ; g--)   
+    for(uint e = 1; e < this->instance->edCount+1; e++)
+        for(uint g = this->instance->gwCount; g > 0 ; g--)   
             for(uint s = 12; s >= 7; s--){
                 selected = gw[e-1] == g-1 && sf[e-1] == s;
                 std::cout << "    <variable name=\"x#" 
@@ -174,4 +216,32 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
     std::cout << "  </variables>" << std::endl
             << " </CPLEXSolution>" << std::endl
             << "</CPLEXSolutions>" << std::endl;
+}
+
+void logResultsToCSV(const OptimizationResults results, const char* csvfilename) {
+    std::ofstream csvFile(csvfilename, std::ios::app); // Open file in append mode
+
+    if (!csvFile) {
+        std::cerr << "Error: Unable to open CSV file." << std::endl;
+        return;
+    }
+
+    if (csvFile.tellp() == 0) { // File is empty, write the header
+        csvFile << "Instance Name,Alpha,Beta,Gamma,Solver,Execution Time (ms),Cost,Feasible,GW Used,Energy,UF" << std::endl;
+    }
+    
+    csvFile << results.instanceName << ","
+            << results.tp.alpha << ","
+            << results.tp.beta << ","
+            << results.tp.gamma << ","
+            << results.solverName << ","
+            << results.execTime << ","
+            << results.cost << ","
+            << (results.feasible ? "Yes,":"No,")
+            << results.gwUsed << ","
+            << results.energy << ","
+            << results.uf << std::endl;
+
+    csvFile.flush();
+    csvFile.close();
 }

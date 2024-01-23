@@ -10,14 +10,14 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
         std::cout << std::endl << "-------------- RS ----------------" << std::endl << std::endl;
 
     // Optimization variable
-    uint* gw = (uint*) malloc( sizeof(uint) * l->getEDCount());
-    uint* sf = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* gw = (uint*) malloc( sizeof(uint) * l->edCount);
+    uint* sf = (uint*) malloc( sizeof(uint) * l->edCount);
     // Best
-    uint* gwBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
-    uint* sfBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* gwBest = (uint*) malloc( sizeof(uint) * l->edCount);
+    uint* sfBest = (uint*) malloc( sizeof(uint) * l->edCount);
 
     // Random generators use uniform distribution
-    Uniform gwGenerator = Uniform(0, l->getGWCount());
+    Uniform gwGenerator = Uniform(0, l->gwCount);
     Uniform sfGenerator = Uniform(7, 12);
 
     double bestQ = __DBL_MAX__; // Cost minimization
@@ -28,7 +28,7 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
 
     for(uint k = 0; k < maxIters; k++){ // For each iteration
         // Generate a random solution (candidate)
-        for(uint i = 0; i < l->getEDCount(); i++){
+        for(uint i = 0; i < l->edCount; i++){
             gw[i] = gwGenerator.random();
             sf[i] = sfGenerator.random();
         }
@@ -41,8 +41,8 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
         if(feasible && q < bestQ){ // New optimum
             bestQ = q;
             found = true;
-            std::copy(gw, gw + l->getEDCount(), gwBest);
-            std::copy(sf, sf + l->getEDCount(), sfBest);
+            std::copy(gw, gw + l->edCount, gwBest);
+            std::copy(sf, sf + l->edCount, sfBest);
             if(verbose){
                 std::cout << "New best at iteration: " << k << std::endl;
                 o->printSolution(gw, sf, false);
@@ -97,11 +97,11 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIter
         std::cout << std::endl << "-------------- IRS ---------------" << std::endl << std::endl;
 
     // Optimization variable
-    uint* gw = (uint*) malloc( sizeof(uint) * l->getEDCount());
-    uint* sf = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* gw = (uint*) malloc( sizeof(uint) * l->edCount);
+    uint* sf = (uint*) malloc( sizeof(uint) * l->edCount);
     // Best
-    uint* gwBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
-    uint* sfBest = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* gwBest = (uint*) malloc( sizeof(uint) * l->edCount);
+    uint* sfBest = (uint*) malloc( sizeof(uint) * l->edCount);
 
     Uniform uniform = Uniform(0.0, 1.0);
 
@@ -113,7 +113,7 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIter
 
     for(uint k = 0; k < maxIters; k++){ // For each iteration
         // Generate a random solution (candidate)
-        for(uint i = 0; i < l->getEDCount(); i++){
+        for(uint i = 0; i < l->edCount; i++){
             std::vector<uint> gwList = l->getGWList(i); // Valid gw for this ed
             gw[i] = gwList[(uint)floor(uniform.random()*gwList.size())]; // Pick random gw
             // Pick random SF from valid range
@@ -130,8 +130,8 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIter
         if(feasible && q < bestQ){ // New optimum
             bestQ = q;
             found = true;
-            std::copy(gw, gw + l->getEDCount(), gwBest);
-            std::copy(sf, sf + l->getEDCount(), sfBest);
+            std::copy(gw, gw + l->edCount, gwBest);
+            std::copy(sf, sf + l->edCount, sfBest);
             if(verbose){
                 std::cout << "New best at iteration: " << k << std::endl;
                 o->printSolution(gw, sf, false);

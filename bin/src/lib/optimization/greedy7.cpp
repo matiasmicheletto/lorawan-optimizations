@@ -6,8 +6,8 @@ OptimizationResults greedy7(Instance* l, Objective* o, uint iters, uint timeout,
 
     if(verbose) std::cout << "------------- Greedy 7 minimization -------------" << std::endl << std::endl;
 
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
 
     bool feasibleFound = false;
     uint gwBest[edCount];

@@ -5,8 +5,8 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
     auto start = std::chrono::high_resolution_clock::now();
 
     if(verbose) std::cout << "------------- Greedy 3 minimization -------------" << std::endl << std::endl;
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
 
     bool feasibleFound = false;    
     uint gwBest[edCount];

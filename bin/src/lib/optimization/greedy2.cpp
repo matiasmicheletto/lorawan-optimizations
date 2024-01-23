@@ -5,8 +5,8 @@ OptimizationResults greedy2(Instance* l, Objective* o, bool verbose, bool wst){
     auto start = std::chrono::high_resolution_clock::now();
 
     if(verbose) std::cout << "------------- Greedy 2 minimization -------------" << std::endl << std::endl;
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
 
     // STEP 1
     if(verbose) std::cout << "Step 1: Adjacency list (nodes for each gw)" << std::endl;

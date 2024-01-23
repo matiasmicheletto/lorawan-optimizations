@@ -8,8 +8,8 @@ OptimizationResults greedy13(Instance* l, Objective* o, uint iters, uint timeout
     auto start = std::chrono::high_resolution_clock::now();
     bool timedout = false;
     
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
     
     // Best
     uint gwBest[edCount];
@@ -325,6 +325,7 @@ OptimizationResults greedy13(Instance* l, Objective* o, uint iters, uint timeout
                                     sortedgwuf[g] -= uf; // Reduce UF of original GW (g)
                                     sortedGWEDs[g].erase(std::remove(sortedGWEDs[g].begin(), sortedGWEDs[g].end(), edIndex), sortedGWEDs[g].end()); // Remove ED e from GW g
                                     // Sort again sortedGWList
+                                    /*
                                     std::sort(
                                         indirection.begin(), 
                                         indirection.end(), 
@@ -337,6 +338,7 @@ OptimizationResults greedy13(Instance* l, Objective* o, uint iters, uint timeout
                                         sortedgwuf[i] = gwuf[indirection[i]];
                                         sortedGWEDs[i] = gwEDs[indirection[i]];
                                     }
+                                    */
                                     break;
                                 }
                             }

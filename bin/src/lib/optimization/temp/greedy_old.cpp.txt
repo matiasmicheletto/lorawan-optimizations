@@ -1,7 +1,7 @@
 #include "greedy.h"
 
 
-OptimizationResults greedy14(Instance* l, Objective* o, uint iters, uint timeout, bool verbose){
+OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, bool verbose){
 
     if(verbose) std::cout << "------------- Greedy minimization -------------" << std::endl << std::endl;
 

@@ -9,7 +9,6 @@
 #include "lib/optimization/greedy.h"
 #include "lib/optimization/ga.h"
 #include "lib/optimization/siman.h"
-#include "lib/optimization/results.h"
 
 
 int main(int argc, char **argv) {
@@ -125,8 +124,8 @@ int main(int argc, char **argv) {
 
     if(verbose) {    
         std::cout << "Input file loaded." << std::endl;
-        std::cout << "GW Count: " << l->getGWCount() << std::endl;
-        std::cout << "ED Count: " << l->getEDCount() << std::endl; 
+        std::cout << "GW Count: " << l->gwCount << std::endl;
+        std::cout << "ED Count: " << l->edCount << std::endl; 
         std::cout << "Tunning parameters:" << std::endl;
         std::cout << "  Alpha: " << tp.alpha << std::endl;
         std::cout << "  Beta: " << tp.beta << std::endl;

@@ -26,12 +26,12 @@ OptimizationResults greedy1(Instance* l, Objective* o, MIN minimize, bool verbos
     }
 
     // Allocate optimization variable (initialization should not be required)
-    uint* gw = (uint*) malloc( sizeof(uint) * l->getEDCount());
-    uint* sf = (uint*) malloc( sizeof(uint) * l->getEDCount());
+    uint* gw = (uint*) malloc( sizeof(uint) * l->edCount);
+    uint* sf = (uint*) malloc( sizeof(uint) * l->edCount);
     
     // Initialize stacks of GWs and EDs indexes
-    std::vector<uint> edStack(l->getEDCount());
-    std::vector<uint> gwStack(l->getGWCount());
+    std::vector<uint> edStack(l->edCount);
+    std::vector<uint> gwStack(l->gwCount);
     std::iota(edStack.begin(), edStack.end(), 0); // Initialization: 0,1,2,3, ....
     std::iota(gwStack.begin(), gwStack.end(), 0); // Initialization: 0,1,2,3, ....
 
@@ -93,7 +93,7 @@ OptimizationResults greedy1(Instance* l, Objective* o, MIN minimize, bool verbos
 
         // Repeat until no more EDs can be elimina
         loopCounter++; // Included to avoid infinite loop
-        if(loopCounter > l->getGWCount()) {
+        if(loopCounter > l->gwCount) {
             std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway." << std::endl;
             exit(1);
         }

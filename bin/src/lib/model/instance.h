@@ -78,8 +78,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         void generateHtmlPlot(const char* filename);
         void copySFDataTo(std::vector<std::vector<uint>>& destination);
         
-        inline uint getGWCount(){return this->gwCount;};
-        inline uint getEDCount(){return this->edCount;};
+        uint gwCount, edCount;
         inline char* getInstanceFileName(){return this->instanceFileName;};
         inline uint sf2e(uint sf) {return this->pw[sf-7];};
         uint getMinSF(uint ed, uint gw);
@@ -94,7 +93,6 @@ class Instance { // Provides attributes and funcions related to problem formulat
 
     private:
         std::vector<std::vector<uint>> raw;
-        uint gwCount, edCount;
         std::vector<EndDevice> eds; 
         std::vector<Position> gws; 
         char* instanceFileName;
@@ -104,6 +102,43 @@ class Instance { // Provides attributes and funcions related to problem formulat
         uint _getMaxSF(uint period);
         uint _getMinSF(double distance);
         uint _getMinSFScaled(double distance);
+};
+
+struct Allocation { // Models a candidate solution (allocation of gw and sf for each ed)
+    std::vector<uint> gw;
+	std::vector<uint> sf;
+    std::vector<bool> allocated;
+    std::vector<UtilizationFactor> uf;
+    Instance *l;
+
+	Allocation(Instance* l) {
+		gw.resize(l->edCount);
+		sf.resize(l->edCount);
+        allocated.resize(l->edCount);
+        uf.resize(l->gwCount);
+        this->l = l;
+	}
+
+    void connect(uint e, uint g, int asf = -1) {
+        const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+        gw[e] = g;
+        sf[e] = sf2;
+        allocated[e] = true;
+        uf[g] += l->getUF(e, sf2);
+    }
+
+    bool checkBeforeConnect(uint e, uint g, int asf = -1) {
+        const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+        const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
+        if((uf[g] + nextUF).isFull()) // If g not available for e with sf2, return
+            return false;
+        // else, allocate and return
+        gw[e] = g;
+        sf[e] = sf2;
+        allocated[e] = true;
+        uf[g] += nextUF;
+        return true;
+    }
 };
 
 #endif // INSTANCE_H

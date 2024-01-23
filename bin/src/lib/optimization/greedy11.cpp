@@ -8,8 +8,8 @@ OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout
     auto start = std::chrono::high_resolution_clock::now();
     bool timedout = false;
     
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
     
     // Best
     uint gwBest[edCount];

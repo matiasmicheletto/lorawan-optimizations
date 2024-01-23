@@ -8,8 +8,8 @@ OptimizationResults greedy9(Instance* l, Objective* o, uint iters, uint timeout,
 
     if(verbose) std::cout << "------------- Greedy 9 -------------" << std::endl << std::endl;
 
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
 
     uint gwBest[edCount];
     uint sfBest[edCount];

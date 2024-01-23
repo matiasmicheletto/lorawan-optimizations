@@ -273,7 +273,7 @@ void Instance::generateHtmlPlot(const char* filename) {
 
 void Instance::copySFDataTo(std::vector<std::vector<uint>>& destination) {
     // Make a copy of the raw data, only sf values
-    copyMatrix(this->raw, destination, 1, this->getEDCount(), 0, this->getGWCount()-1);
+    copyMatrix(this->raw, destination, 1, this->edCount, 0, this->gwCount-1);
 }
 
 uint Instance::getMinSF(uint ed, uint gw) {

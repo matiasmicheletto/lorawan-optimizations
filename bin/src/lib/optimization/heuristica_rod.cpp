@@ -5,8 +5,8 @@ OptimizationResults heuristica_rod(Instance* l, Objective* o, uint iters, uint t
 
     auto start = std::chrono::high_resolution_clock::now();
     bool feasibleFound = false;    
-    const uint gwCount = l->getGWCount();
-    const uint edCount = l->getEDCount();
+    const uint gwCount = l->gwCount;
+    const uint edCount = l->edCount;
     uint gwBest[edCount];
     uint sfBest[edCount];
 

@@ -10,7 +10,7 @@ struct Chromosome {
 	std::vector<uint> gw;
 	std::vector<uint> sf;
 	Chromosome() {
-		const uint size = _l->getEDCount();
+		const uint size = _l->edCount;
 		gw.resize(size);
 		sf.resize(size);
 	}
@@ -52,13 +52,13 @@ void randomize_gene(Chromosome& p, const uint index, const std::function<double(
 }
 
 void init_genes_random(Chromosome& p, const std::function<double(void)> &rnd01) {	
-	for(uint i = 0; i < _l->getEDCount(); i++)
+	for(uint i = 0; i < _l->edCount; i++)
 		randomize_gene(p, i, rnd01);
 }
 
 void init_genes_greedy(Chromosome& p, const std::function<double(void)> &rnd01) {
-	const uint gwCount = _l->getGWCount();
-    const uint edCount = _l->getEDCount();        
+	const uint gwCount = _l->gwCount;
+    const uint edCount = _l->edCount;        
     
 	// Create the list of gw indexes and randomize it
 	std::vector<uint>gwList(gwCount);
@@ -92,9 +92,9 @@ void init_genes_greedy(Chromosome& p, const std::function<double(void)> &rnd01) 
 }
 
 Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &rnd01, double shrink_scale) {
-	const double pr = 1.5 / (double)_l->getEDCount();
+	const double pr = 1.5 / (double)_l->edCount;
 	Chromosome X_new;		
-	for(uint i = 0; i < _l->getEDCount(); i++){
+	for(uint i = 0; i < _l->edCount; i++){
 		if(rnd01() < pr){			
 			randomize_gene(X_new, i, rnd01);
 		}else{
@@ -107,12 +107,12 @@ Chromosome mutate(const Chromosome& X_base, const std::function<double(void)> &r
 
 Chromosome crossover(const Chromosome& X1, const Chromosome& X2, const std::function<double(void)> &rnd01) {
 	Chromosome X_new;	
-	const uint x_point = (uint) (rnd01()*((double)_l->getEDCount()-1)) + 1; // Crossover point
+	const uint x_point = (uint) (rnd01()*((double)_l->edCount-1)) + 1; // Crossover point
     for(uint i = 0; i < x_point; i++){
         X_new.gw[i] = X1.gw[i];
 		X_new.sf[i] = X1.sf[i];
 	}
-    for(uint i = x_point; i < _l->getEDCount(); i++){
+    for(uint i = x_point; i < _l->edCount; i++){
         X_new.gw[i] = X2.gw[i];
 		X_new.sf[i] = X2.sf[i];
 	}

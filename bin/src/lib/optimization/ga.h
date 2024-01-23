@@ -4,7 +4,6 @@
 #include <vector>
 #include "../model/instance.h"
 #include "../model/objective.h"
-#include "results.h"
 
 
 struct GAConfig {

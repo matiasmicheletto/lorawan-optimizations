@@ -29,19 +29,46 @@ struct TunningParameters {
         gamma(gamma) {}
 };
 
+struct OptimizationResults {
+    bool ready; // Valid content flag
+    char* instanceName; // Instance input file name
+    char* solverName; // Optimization method used
+    double execTime; // Total computing time in ms
+    double cost; // Optimal solution cost
+    unsigned int gwUsed; // Optimal number of used gw
+    unsigned int energy; // Energy of solution
+    bool feasible; // Feasible solution
+    double uf; // Max. utilization factor of solution
+    TunningParameters tp; // alpha, beta, gamma
+};
+
+struct EvalResults {
+    unsigned int gwUsed; // Optimal number of used gw
+    unsigned int energy; // Energy of solution
+    bool feasible; // Feasible solution
+    double uf; // Max. utilization factor of solution
+    double cost; // Objective cost
+};
+
 class Objective {
     public:
         Objective(Instance* instance, const TunningParameters& tp = TunningParameters());
         ~Objective();
         
         double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
-        TunningParameters tp;
+        EvalResults eval(Allocation alloc);
+
         void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false, bool showGWs = false);
+        void printSolution(const Allocation alloc, const EvalResults results, bool allocation = true, bool highlight = false, bool showGWs = false);
         void exportWST(const uint* gw, const uint* sf);
         void printSol(const uint* gw, const uint* sf);
+
+        TunningParameters tp;
     private:
         Instance* instance;
         static const uint unfeasibleIncrement;
 };
+
+void logResultsToCSV(const OptimizationResults results, const char* csvfilename);
 
 #endif // OBJECTIVE_H
