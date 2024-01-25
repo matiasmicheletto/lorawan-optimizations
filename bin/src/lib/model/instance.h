@@ -107,37 +107,76 @@ class Instance { // Provides attributes and funcions related to problem formulat
 struct Allocation { // Models a candidate solution (allocation of gw and sf for each ed)
     std::vector<uint> gw;
 	std::vector<uint> sf;
-    std::vector<bool> allocated;
+    std::vector<bool> connected;
+    uint connectedCount;
     std::vector<UtilizationFactor> uf;
     Instance *l;
 
 	Allocation(Instance* l) {
 		gw.resize(l->edCount);
 		sf.resize(l->edCount);
-        allocated.resize(l->edCount);
+        connected.resize(l->edCount);
+        connectedCount = 0;
         uf.resize(l->gwCount);
         this->l = l;
 	}
 
-    void connect(uint e, uint g, int asf = -1) {
-        const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
-        gw[e] = g;
-        sf[e] = sf2;
-        allocated[e] = true;
-        uf[g] += l->getUF(e, sf2);
+    bool checkUFAndConnect(uint e, uint g, uint asf = 0, bool incremental = false) {
+        uint sf2 = (asf == 0 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+        UtilizationFactor nextUF;
+        while(sf2 <= 12) {
+            nextUF = l->getUF(e, sf2); // UF of node e for g
+            if(!(uf[g] + nextUF).isFull()){ // If available UF, use it
+                gw[e] = g;
+                sf[e] = sf2;
+                uf[g] += nextUF;
+                if(!connected[e]){ // May be previously connected
+                    connected[e] = true;
+                    connectedCount++;
+                }
+                return true;
+            }
+            if(incremental)
+                sf2++;
+            else 
+                break;
+        }
+        return false;
     }
 
-    bool checkBeforeConnect(uint e, uint g, int asf = -1) {
-        const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
-        const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
-        if((uf[g] + nextUF).isFull()) // If g not available for e with sf2, return
+    bool checkUFAndMove(uint e, uint g, uint asf = 0) {
+        if(gw[e] != g && connected[e]){
+            const uint sf2 = (asf == 0 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+            const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
+            if((uf[g] + nextUF).isFull()) // If g not available for e with sf2, return
+                return false;
+            // else, move node
+            uf[gw[e]] -= uf[gw[e]];
+            gw[e] = g;
+            sf[e] = sf2;
+            uf[g] += nextUF;
+            return true;
+        }else 
             return false;
-        // else, allocate and return
+    }
+
+    void connect(uint e, uint g, int asf = -1) { // Unvalidated operation
+        const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
         gw[e] = g;
         sf[e] = sf2;
-        allocated[e] = true;
+        uf[g] += l->getUF(e, sf2);
+        connected[e] = true;
+        connectedCount++;
+    }
+
+    void move(uint e, uint g, int asf = -1) { // Unvalidated operation
+        const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+        const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
+        uf[gw[e]] -= uf[gw[e]];
+        gw[e] = g;
+        sf[e] = sf2;
+        connected[e] = true;
         uf[g] += nextUF;
-        return true;
     }
 };
 

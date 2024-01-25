@@ -100,7 +100,7 @@ void init_g4(float* sol) {
                 for(uint e = 0; e < edCount; e++){ 
                     for(uint gi = 0; gi < gwCount; gi++){
                         const uint g = gwList[gi];
-                        // Check if ED e can be allocated to GW g
+                        // Check if ED e can be connected to GW g
                         auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                         if((it != clusters[s-7][g].end()) && !gwuf[g].isFull()){
                             uint minsf = _lt->getMinSF(e, g);

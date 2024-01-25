@@ -8,10 +8,10 @@ void printHelp(const char* file) { // Open readme file with manual and print on 
             std::cout << line << std::endl;
         }
         manualFile.close();
-        exit(1);
     } else {
         std::cerr << "Error: Unable to open manual file." << std::endl;
     }
+    exit(1);
 }
 
 char* extractFileName(const char* path) { // Remove path from full file name

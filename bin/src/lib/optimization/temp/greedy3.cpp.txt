@@ -33,7 +33,7 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
                 std::vector<uint> edList = l->getEDList(g, s);                
                 for(uint e = 0; e < edList.size(); e++){
                     uint selectedED = edList[e];
-                    if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not allocated                    
+                    if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not connected                    
                         UtilizationFactor u = l->getUF(selectedED, s);
                         if(!(guf + u).isFull()){ // If allowed to allocate (enough uf)
                             allocatedEDs.push_back(selectedED);
@@ -62,7 +62,7 @@ OptimizationResults greedy3(Instance* l, Objective* o, uint iters, uint timeout,
                     }
                 }
                 //if(verbose) std::cout << "SF: " << s << " -- " << (feasible?"Feasible":"Unfeasible") << "  Cost = " << cost << std::endl;
-                allocatedEDs.clear(); // Clear list of allocated and continue with next SFs
+                allocatedEDs.clear(); // Clear list of connected and continue with next SFs
             }
         }
 

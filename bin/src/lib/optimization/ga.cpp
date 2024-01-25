@@ -76,7 +76,7 @@ void init_genes_greedy(Chromosome& p, const std::function<double(void)> &rnd01) 
             std::vector<uint> edList = _l->getEDList(g, s);                
             for(uint e = 0; e < edList.size(); e++){
                 uint selectedED = edList[e];
-                if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not allocated                    
+                if(std::find(allocatedEDs.begin(), allocatedEDs.end(), selectedED) == allocatedEDs.end()){ // If not connected                    
                     UtilizationFactor u = _l->getUF(selectedED, s);                    
                     if(!(guf + u).isFull()){ // If allowed to allocate (enough uf)
                         allocatedEDs.push_back(selectedED);

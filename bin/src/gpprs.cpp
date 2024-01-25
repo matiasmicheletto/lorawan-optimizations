@@ -173,6 +173,7 @@ int main(int argc, char **argv) {
             results.solverName = strdup("Greedy Minimization");
             break;
         }
+        /*
         case 6: {
             results = greedy1(l, o, MIN::GW, verbose, wst);
             results.solverName = strdup("Greedy GW Minimization");
@@ -248,6 +249,7 @@ int main(int argc, char **argv) {
             results.solverName = strdup("Greedy 10");
             break;
         }
+        */
         default: {
             if(verbose)
                 std::cerr << "Error: Unknown optimization method." << std::endl;

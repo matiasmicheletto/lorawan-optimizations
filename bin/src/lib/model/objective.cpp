@@ -65,8 +65,51 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
 }
 
 EvalResults Objective::eval(Allocation alloc) {
-    EvalResults er;
-    return er;
+    EvalResults res = {
+        0, // gwUsed
+        0, // energy
+        true, // feasible
+        0.0, // uf
+        0.0 // cost
+    };
+
+    for(uint i = 0; i < this->instance->edCount; i++){ // For each ED
+        if(alloc.connected[i]){
+            // Check if feasible SF
+            uint minSF = this->instance->getMinSF(i, alloc.gw[i]);
+            uint maxSF = this->instance->getMaxSF(i);
+            if(alloc.sf[i] > maxSF || alloc.sf[i] < minSF){ // Unfeasibility condition: not valid SF available for this GW
+                res.feasible = false;
+                res.cost += unfeasibleIncrement;
+            }
+
+            // Compute GW UF
+            if(alloc.uf[alloc.gw[i]].isFull()){ // Unfeasibility condition: UF > 1 for some SF
+                res.feasible = false;
+                res.cost += unfeasibleIncrement;
+            }
+            double maxUFTemp = alloc.uf[alloc.gw[i]].getMax(); // Max UF value between all SF
+            if(maxUFTemp > res.uf) // Update max UF
+                res.uf = maxUFTemp;
+
+            res.energy += this->instance->sf2e(alloc.sf[i]);// energy += pow(2, sf[i] - 7);
+        }else{
+            res.feasible = false;
+            res.cost += 3*unfeasibleIncrement;
+        }
+    }
+
+    // Count number of used gw
+    for(uint j = 0; j < this->instance->gwCount; j++)
+        if(alloc.uf[j].isUsed()) 
+            res.gwUsed++;
+
+    // If solution is feasible, at this point (before following equation), cost should equal 0.0
+    res.cost += this->tp.alpha * (double) res.gwUsed + 
+            this->tp.beta * (double) res.energy + 
+            this->tp.gamma * res.uf;    
+
+    return res;
 }
 
 void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight, bool showGWs){
@@ -118,35 +161,37 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
 void Objective::printSolution(const Allocation alloc, const EvalResults results, bool allocation, bool highlight, bool showGWs) {
 
     if(highlight) std::cout << "\033[1;31m"; // Switch to red font
-
-    std::cout << "Cost=" << results.cost
-                << (results.feasible ? " (Feasible)" : " (Unfeasible)")
-                << ", (GW=" << results.gwUsed
-                << ",E=" << results.energy 
-                << ",U=" << results.uf
-                << ")" << std::endl;
     
-    if(showGWs) {
-        std::vector<uint> gwList;
-        for(uint i = 0; i < alloc.gw.size(); i++){
-            auto it = std::find(gwList.begin(), gwList.end(), alloc.gw[i]);
-            if(it == gwList.end()){ // If the gw of node "i" isnt in list
-                gwList.push_back(alloc.gw[i]);
-            }
-        }
-        std::cout << "GWs used: "; 
-        for(uint i = 0; i < gwList.size(); i++)
-            std::cout << gwList[i] << " ";
-        std::cout << std::endl;
-    }
+    std::cout << "Cost=" << results.cost << (results.feasible ? " (Feasible)" : " (Unfeasible)");
 
-    if(allocation){
-        std::cout << "Allocation (GW[SF]):" << std::endl;
-        for(uint i = 0; i < alloc.gw.size(); i++){ // For each ED    
-            if(i % 10 == 0) std::cout << std::endl;
-            std::cout << alloc.gw[i] << "[" << alloc.sf[i] << "]\t";
+    if(results.feasible){
+        std::cout << ", (GW=" << results.gwUsed
+                  << ",E=" << results.energy 
+                  << ",U=" << results.uf
+                  << ")" << std::endl;
+
+        if(showGWs) {
+            std::vector<uint> gwList;
+            for(uint i = 0; i < alloc.gw.size(); i++){
+                auto it = std::find(gwList.begin(), gwList.end(), alloc.gw[i]);
+                if(it == gwList.end()){ // If the gw of node "i" isnt in list
+                    gwList.push_back(alloc.gw[i]);
+                }
+            }
+            std::cout << "GWs used: "; 
+            for(uint i = 0; i < gwList.size(); i++)
+                std::cout << gwList[i] << " ";
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
+
+        if(allocation){
+            std::cout << "Allocation (GW[SF]):" << std::endl;
+            for(uint i = 0; i < alloc.gw.size(); i++){ // For each ED    
+                if(i % 10 == 0) std::cout << std::endl;
+                std::cout << alloc.gw[i] << "[" << alloc.sf[i] << "]\t";
+            }
+            std::cout << std::endl;
+        }
     }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font

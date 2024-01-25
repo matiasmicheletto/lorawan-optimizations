@@ -27,8 +27,8 @@ DESCRIPTION:
 
 OPTIONS:
    -h, --help     Display this help message.
-   -i, --iter     Iterations to perform. Default is 100.  
    -t, --timeout  Timeout in seconds. Default is 60.  
+   -s, --stall    Stagnation threshold (for 10 iterations).  
    -a, --alpha    Alpha tunning parameter. Default is 1.  
    -b, --beta     Beta tunning parameter. Default is 0.01.  
    -g, --gamma    Gamma tunning parameter. Default is 7.8.  

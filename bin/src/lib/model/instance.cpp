@@ -145,7 +145,7 @@ Instance::Instance(const InstanceConfig& config) {
             }
         }
         if(tries >= MAX_TRIES){
-            std::cerr << "Error: Unfeasible system after many attempts. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+            std::cerr << "Error: Unfeasible system after many attempts. An End-Device cannot be connected to any Gateway given its period." << std::endl
                         << "ED = " << e << std::endl
                         << "Period = " << this->eds[e].period << std::endl;
             exit(1);
@@ -359,7 +359,7 @@ std::vector<uint> Instance::getGWList(uint ed) {
             gwList.push_back(gw);
     }
     if(gwList.size() == 0) { // No available gws for this ed
-        std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+        std::cerr << "Error: Unfeasible system. An End-Device cannot be connected to any Gateway given its period." << std::endl
                   << "ED = " << ed << std::endl;
         exit(1);
     }
@@ -386,7 +386,7 @@ std::vector<uint> Instance::getSortedGWList(uint ed) {
         }
     }
     if(gwList.size() == 0) { // No available gws for this ed
-        std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+        std::cerr << "Error: Unfeasible system. An End-Device cannot be connected to any Gateway given its period." << std::endl
                   << "ED = " << ed << std::endl;
         exit(1);
     }
@@ -408,7 +408,7 @@ std::vector<uint> Instance::getSortedGWListByAvailableEd(uint ed) {
         }
     }
     if(gwList.size() == 0) { // No available gws for this ed
-        std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway given its period." << std::endl
+        std::cerr << "Error: Unfeasible system. An End-Device cannot be connected to any Gateway given its period." << std::endl
                   << "ED = " << ed << std::endl;
         exit(1);
     }

@@ -75,19 +75,19 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, 
                     allocatedCount++;
                     SFnodos[tempSF-7]++;
                 }else{
-                    std::cout << "ED " << e << " cannot be allocated to essential GW " << g << std::endl;
+                    std::cout << "ED " << e << " cannot be connected to essential GW " << g << std::endl;
                     std::cout << "Unfeasible system. Exiting program..." << std::endl;
                     exit(1);
                 }
             }
         }
         if(isEssential && verbose)
-            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << allocatedCount << " essential nodes allocated." << std::endl;
+            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << allocatedCount << " essential nodes connected." << std::endl;
     }
 
     if(verbose){
         std::cout << std::endl << "Essential GWs: " << essGW.size() << " (of " << gwCount << ")" << std::endl;
-        std::cout << "Total allocated nodes to essential GWs: " << essED.size() << std::endl;
+        std::cout << "Total connected nodes to essential GWs: " << essED.size() << std::endl;
     	std::cout << "EDs esenciales: " << essED.size() << std::endl;
         for (uint i=0;i<essED.size();i++)
         	std::cout<<essED[i]<<" ";
@@ -162,7 +162,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, 
                            bool edAllocated = false;                  
                            for(uint gi = 0; gi < esenciales; gi++){
                                const uint g = gwList[gi];
-                         // Check if ED e can be allocated to GW g
+                         // Check if ED e can be connected to GW g
                                auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                                if((it != clusters[s-7][g].end()) && !gwUF[g].isFull()){
                                   uint minsf = l->getMinSF(e, g);
@@ -209,7 +209,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, 
  	                   	bool edAllocated = false;              
         	            	for(uint gi = 0; gi < gwCount; gi++){
         	                	const uint g = gwList[gi];
-        	                // Check if ED e can be allocated to GW g
+        	                // Check if ED e can be connected to GW g
         	                	auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
         	                	if((it != clusters[s-7][g].end()) && !gwUF[g].isFull()){
         		                    	uint minsf = l->getMinSF(e, g);
@@ -462,7 +462,7 @@ OptimizationResults greedy(Instance* l, Objective* o, uint iters, uint timeout, 
                     bool edAllocated = false;
                     for(uint gi = 0; gi < gwCount; gi++){
                         const uint g = gwList[gi];
-                        // Check if ED e can be allocated to GW g
+                        // Check if ED e can be connected to GW g
                         auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                         if((it != clusters[s-7][g].end()) && !gwUF[g].isFull()){
                             uint minsf = l->getMinSF(e, g);

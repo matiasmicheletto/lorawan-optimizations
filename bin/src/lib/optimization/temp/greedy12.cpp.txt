@@ -1,7 +1,7 @@
 #include "greedy.h"
 
 
-OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout){
+OptimizationResults greedy12(Instance* l, Objective* o, uint iters, uint timeout){
 
     std::cout << "------------- Greedy minimization -------------" << std::endl << std::endl;
 
@@ -23,54 +23,68 @@ OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout
     std::vector<uint> essGW;
     std::vector<uint> essED;
     std::vector<UtilizationFactor> essGWUF; // Utilization factors of essential GWs
-    for (uint e = 0; e < edCount; e++){ // For each ED
-        auto it = std::find(essED.begin(), essED.end(), e);
-        if(it == essED.end()){  // If not found in ED list with essential GWs
-            const std::vector<uint> gwList = l->getSortedGWList(e); // GWs sorted by SF
-            if(gwList.size() == 1){ // If current ED has an essential GW
-                const uint g = gwList[0];
-                auto it2 = std::find(essGW.begin(), essGW.end(), g);
-                if(it2 == essGW.end()){ // If gw was not already marked as essential
-                    std::cout << "GW " << g << " is essential ";
-                    
-                    // Add gw and ed to lists of essential and allocate to solution
+    std::vector<uint>allocatedEDs;
+    for(uint g = 0; g < gwCount; g++){
+        bool isEssential = false;
+        uint gwAllocatedCount = 0;
+        std::vector<uint> unallocatedEDs; // Used if essential
+        const std::vector<uint> edList = l->getAllEDList(g, 12);
+        //  First pass: Search for essential nodes and allocate to GW
+        for(uint i = 0; i < edList.size(); i++){ 
+            const uint e = edList[i];
+            if(l->getGWList(e).size() == 1){ // GW g is essential for node e
+                isEssential = true;
+                essED.push_back(e);
+                // Add gw to esential list (if not in list)
+                auto it = std::find(essGW.begin(), essGW.end(), g);
+                uint essGWIndex;
+                if(it == essGW.end()){
                     essGW.push_back(g);
                     essGWUF.push_back(UtilizationFactor());
-                    essED.push_back(e);
-                    uint gwListIndex = essGW.size()-1; // Index of GW in esential list
-                    uint tempSF = l->getMinSF(e, g);
-                    essGWUF[gwListIndex] += l->getUF(e, tempSF);
+                    essGWIndex = essGW.size()-1;
+                }else{
+                    essGWIndex = std::distance(essGW.begin(), it);
+                }
+                // Try to allocate essential ed to essential gw
+                uint tempSF = l->getMinSF(e, g);
+                if(!(essGWUF[essGWIndex] + l->getUF(e, tempSF)).isFull()){
                     gwBest[e] = g;
                     sfBest[e] = tempSF;
-                    uint edAdded = 1;
-
-                    // Allocate the remaining EDs of g (essential GW)
-                    const std::vector<uint> edList = l->getAllEDList(g, 12);
-                    const uint es = edList.size();
-                    std::cout << "and has " << es << " EDs: ";
-                    for(uint i = 0; i < es; i++){
-                        const uint ee = edList[i];
-                        std::cout << ee;
-                        tempSF = l->getMinSF(ee, g);
-                        auto it3 = std::find(essED.begin(), essED.end(), ee);
-                        if(it3 == essED.end() && !(essGWUF[gwListIndex]+l->getUF(ee, tempSF)).isFull()){ // If not already allocated and GW not full, allocate
-                            std::cout << "(v) ";
-                            essED.push_back(ee);
-                            gwBest[ee] = g;
-                            sfBest[ee] = tempSF;
-                            essGWUF[gwListIndex] += l->getUF(ee, tempSF);
-                            edAdded++;
-                        }else{
-                            std::cout << "(x) ";
-                        }
-                    }
-                    std::cout << "(only " << edAdded << " ED were allocated)" << std::endl;
+                    essGWUF[essGWIndex] += l->getUF(e, tempSF);
+                    gwAllocatedCount++;
+                    allocatedEDs.push_back(e);
+                }else{
+                    std::cout << "ED " << e << " cannot be connected to essential GW " << g << std::endl;
+                    std::cout << "Unfeasible system. Exiting program..." << std::endl;
+                    exit(1);
                 }
+            }else{ // Node e is not essential, add to list for later allocation
+                unallocatedEDs.push_back(e);
             }
         }
+        if(isEssential){ // Allocate the remaining of EDs
+            std::cout << "Essential GW " << g << " has " << edList.size() << " reachable nodes, " << gwAllocatedCount << " connected in first pass (essentials), ";
+            for(uint i = 0; i < unallocatedEDs.size(); i++){
+                const uint e = unallocatedEDs[i];
+                const uint essGWIndex = std::distance(essGW.begin(), std::find(essGW.begin(), essGW.end(), g));
+                uint tempSF = l->getMinSF(e, g);
+                auto it = std::find(allocatedEDs.begin(), allocatedEDs.end(), e);
+                if(it == allocatedEDs.end() && !(essGWUF[essGWIndex] + l->getUF(e, tempSF)).isFull()){
+                    gwBest[e] = g;
+                    sfBest[e] = tempSF;
+                    essGWUF[essGWIndex] += l->getUF(e, tempSF);
+                    gwAllocatedCount++;
+                    allocatedEDs.push_back(e);
+                }
+            }
+            std::cout << gwAllocatedCount << " connected in total." << std::endl;
+        }
     }
-    if(essGW.size() == 0)
-        std::cout << "No essential gateways found." << std::endl;
+
+    std::cout << std::endl << "Essential GW proportion: " << essGW.size() << "/" << gwCount << std::endl;
+    std::cout << allocatedEDs.size() << " nodes connected. Essentials = " << essED.size() << std::endl;
+
+
 
 
     ////// G4 //////
@@ -89,7 +103,7 @@ OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout
         for(uint e = 0; e < edCount; e++){
             // If ed is not in essential list
             auto it = std::find(essED.begin(), essED.end(),e);
-            if(it == essED.end()) { // If not found (not allocated)
+            if(it == essED.end()) { // If not found (not connected)
                 bool hasGW = false;
                 for(uint g = 0; g < gwCount; g++){
                     // Find if ED "e" is present in the "clusters" tensor
@@ -120,6 +134,7 @@ OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout
                 if(it == essGW.end()) // If not essential, add to gw allocation list
                     gwList.push_back(g);
             }
+            std::cout << "SF " << s << " " << gwList.size() << " available GWs" << std::endl;
 
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -135,41 +150,46 @@ OptimizationResults greedy11(Instance* l, Objective* o, uint iters, uint timeout
                 std::vector<UtilizationFactor> gwuf(gwCount); // Utilization factors of gws
                 for(uint e = 0; e < edCount; e++){ 
                     uint allocGW, allocSF;
-                    bool allocated = false;
+                    bool connected = false;
                     
-                    // Check if e already allocated (essential)
-                    auto it = std::find(essED.begin(), essED.end(),e);
-                    if(it == essED.end()) { // If not allocated to essential GW, allocate to available GW
+                    // Check if e already connected (essential)
+                    auto it = std::find(essED.begin(), essED.end(), e);
+                    if(it == essED.end()) { // If not connected to essential GW, allocate to available GW
                         for(uint gi = 0; gi < gwList.size(); gi++){
                             const uint g = gwList[gi];
-                            // Check if ED e can be allocated to GW g
+                            // Check if ED e can be connected to GW g
                             auto it = std::find(clusters[s-7][g].begin(), clusters[s-7][g].end(), e);
                             uint tempSF = l->getMinSF(e, g);
                             if((it != clusters[s-7][g].end()) && !(gwuf[g] + l->getUF(e, tempSF)).isFull()){
                                 allocGW = g;
                                 allocSF = tempSF;
-                                allocated = true; // Mark as valid allocation values
+                                connected = true; // Mark as valid allocation values
                                 break; // Stop searching gw
                             }
                         }
-                    }else{ // If allocated to essential GW, copy values of GW and SF
+                    }else{ // If connected to essential GW, copy values of GW and SF
 
                         if(!(gwuf[gwBest[e]] + l->getUF(e, sfBest[e])).isFull()){
                             allocGW = gwBest[e];
                             allocSF = sfBest[e];
-                            allocated = true; // Mark as valid allocation values
+                            connected = true; // Mark as valid allocation values
                         }else{
                             std::cout << "Iteration " << iter << ", trying to allocate ED " << e << " to GW " << gwBest[e] << " but UF>1. UF Values:" << std::endl;
                             gwuf[gwBest[e]].printUFValues(); 
                             std::cout << std::endl;
                         }
                     }
-                    if(allocated){ // If valid allocation values
+                    if(connected){ // If valid allocation values
                         gw[e] = allocGW;
                         sf[e] = allocSF;
                         gwuf[allocGW] += l->getUF(e, allocSF);
                     }else{ // If it was not possible to allocate ED "e", jump to next iteration
                         allAllocable = false;
+                        std::cout << "ED " << e << " not allocable. GWs: " << std::endl;
+                        std::vector<uint> glist = l->getGWList(e);
+                        for(uint i = 0; i < glist.size(); i++)
+                            std::cout << glist[i] << " ";
+                        std::cout << std::endl;
                         break; // Do not try next ED
                     }
                 } // Allocation finished

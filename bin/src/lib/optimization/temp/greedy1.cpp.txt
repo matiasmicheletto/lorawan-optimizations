@@ -36,7 +36,7 @@ OptimizationResults greedy1(Instance* l, Objective* o, MIN minimize, bool verbos
     std::iota(gwStack.begin(), gwStack.end(), 0); // Initialization: 0,1,2,3, ....
 
     uint loopCounter = 0; // Count number of times the loop is executed (to prevent infinite loop)
-    while(!edStack.empty()) { // While edStack to be allocated
+    while(!edStack.empty()) { // While edStack to be connected
         // Get index of the GW that can be associated to a larger number of EDs
         uint selectedGW = 0; // Index of GW with max (initially pointing to the first GW)
         uint gwMinEnergy = __UINT32_MAX__; // Min energy computed until now
@@ -94,7 +94,7 @@ OptimizationResults greedy1(Instance* l, Objective* o, MIN minimize, bool verbos
         // Repeat until no more EDs can be elimina
         loopCounter++; // Included to avoid infinite loop
         if(loopCounter > l->gwCount) {
-            std::cerr << "Error: Unfeasible system. An End-Device cannot be allocated to any Gateway." << std::endl;
+            std::cerr << "Error: Unfeasible system. An End-Device cannot be connected to any Gateway." << std::endl;
             exit(1);
         }
     }
