@@ -144,20 +144,21 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
         return false;
     }
 
-    bool checkUFAndMove(uint e, uint g, uint asf = 0) {
+    bool checkUFAndMove(uint e, uint g) {
         if(gw[e] != g && connected[e]){
-            const uint sf2 = (asf == 0 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
-            const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
-            if((uf[g] + nextUF).isFull()) // If g not available for e with sf2, return
-                return false;
-            // else, move node
-            uf[gw[e]] -= uf[gw[e]];
-            gw[e] = g;
-            sf[e] = sf2;
-            uf[g] += nextUF;
-            return true;
-        }else 
-            return false;
+            const uint sf2 = l->getMinSF(e, g);
+            if(sf2 < sf[e]){
+                const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
+                if(!(uf[g] + nextUF).isFull()){ // If g available for e with sf2
+                    uf[gw[e]] -= uf[gw[e]];
+                    gw[e] = g;
+                    sf[e] = sf2;
+                    uf[g] += nextUF;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     void connect(uint e, uint g, int asf = -1) { // Unvalidated operation

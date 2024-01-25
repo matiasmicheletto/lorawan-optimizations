@@ -142,7 +142,6 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                     bool allEDAllocated = true;
                     std::vector<UtilizationFactor> gwUF(gwCount); // Utilization factors of gws
                     bool asigna = false;
-                    uint ultimo;
                     //std::cout<<"Esenciales: "<<iter<<std::endl;
                     for (uint e = 0; e < edCount; e++) {
                         asigna = false;
@@ -217,7 +216,6 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                                         //	(gwUF[g]).printUFValues();
 
                                         edAllocated = true;
-                                        ultimo = e;
                                         break; // Go to next ed
                                     }
                                 }

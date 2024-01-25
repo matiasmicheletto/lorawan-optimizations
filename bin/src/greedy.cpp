@@ -10,10 +10,20 @@
 #include "lib/optimization/ga.h"
 #include "lib/optimization/siman.h"
 
-bool isTimeout(std::chrono::_V2::system_clock::time_point start, uint timeout) {
+auto getElapsed(std::chrono::_V2::system_clock::time_point start) {
     auto currentTime = std::chrono::high_resolution_clock::now();
     auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
-    return elapsedSeconds >= timeout;
+    return elapsedSeconds;
+}
+
+bool isTimeout(std::chrono::_V2::system_clock::time_point start, uint timeout) {
+    return getElapsed(start) >= timeout;
+}
+
+std::string getTimestamp() {
+    auto currentTime = std::chrono::system_clock::now();
+    auto UTC = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
+    return std::to_string(UTC);
 }
 
 int main(int argc, char **argv) {
@@ -23,7 +33,7 @@ int main(int argc, char **argv) {
     std::mt19937 gen(rd());
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Stage 0 -- Load instance and optimization parameters" << std::endl;
+        std::cout << std::endl << "Phase 0 -- Load instance and optimization parameters" << std::endl;
     #endif
 
     Instance *l = 0;
@@ -112,9 +122,8 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Stage 1 -- Build clusters (reacheability tensor)" << std::endl;
+        std::cout << std::endl << "Phase 1 -- Build clusters (reacheability tensor) -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
-
     std::vector<std::vector<std::vector<uint>>> clusters(6); // Clusters tensor (SF x GW x ED)
     int minCoverage = 7; // Min SF value with full coverage
     for (uint s = 7; s <= 12; s++) {
@@ -146,9 +155,8 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Stage 2 -- Find and allocate essential nodes" << std::endl;
+        std::cout << std::endl << "Phase 2 -- Find and allocate essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
-
     Allocation bestAllocation(l); // Allocation (initially empty)
     // Essential and non essential gw
     std::vector<uint> essGW;
@@ -187,7 +195,6 @@ int main(int argc, char **argv) {
             std::cout << "Essential GW " << g << " has " << edsOfCurrentGW.size() << " reachable nodes, " << bestAllocation.connectedCount << " total nodes connected." << std::endl;
         #endif
     }
-
     #ifdef VERBOSE
         std::cout << std::endl << "Essential GWs: " << essGW.size() << " (of " << l->gwCount << "):" << std::endl;
         for(uint i = 0; i < essGW.size(); i++)
@@ -199,7 +206,28 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Stage 3 -- Allocation of non essential nodes" << std::endl;
+        std::cout << std::endl << "Phase 3 -- Sort nodes by reachable gateways -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+    #endif 
+    std::vector<uint> reachGW(nEssED.size());
+    for (uint ei = 0; ei < nEssED.size(); ei++) {
+        const uint e = nEssED[ei];
+        reachGW[ei] = l->getGWList(e).size(); // Number of gws
+    }
+    std::sort(
+        nEssED.begin(),
+        nEssED.end(),
+        [&reachGW](const uint & a, const uint & b) {
+            return reachGW[a] < reachGW[b];
+        }
+    );
+    #ifdef VERBOSE
+        std::cout << "Sorting finished." << std::endl;
+    #endif 
+
+
+
+    #ifdef VERBOSE
+        std::cout << std::endl << "Phase 4 -- Allocation of non essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
         std::cout << "Start allocation from SF " << minCoverage << std::endl;
     #endif
 
@@ -214,7 +242,7 @@ int main(int argc, char **argv) {
 
             if (isTimeout(start, timeout)) { // Check time limit
                 #ifdef VERBOSE
-                    std::cout << "Time limit reached in allocation stage." << std::endl;
+                    std::cout << std::endl << "Time limit reached in allocation stage." << std::endl;
                 #endif
                 exitCond = 1;
                 break;
@@ -246,11 +274,12 @@ int main(int argc, char **argv) {
                     const double diff = minimumCost - res.cost;
                     const double improvement = round((diff/loopsWithoutImprovement)/(double) res.cost * 100);
                     #ifdef VERBOSE
-                        std::cout 
-                            << "New best for SF = " << s 
+                        std::cout << std::endl
+                            << "Iteration " << totalLoops << ". New best for SF = " << s 
                             << " after " << loopsWithoutImprovement << " attempts. " 
-                            << "Cost = " << res.cost << " (prev = " << minimumCost << ") "
-                            << "improvement = " << improvement << std::endl;
+                            << "Improvement = " << improvement << "%" << std::endl;
+                        std::cout << "Prev Cost=" << minimumCost << ", New ";
+                        o->printSolution(tempAlloc, res, false, false, false);
                     #endif
                     loopsWithoutImprovement = 1;
                     minimumCost = res.cost;
@@ -258,7 +287,7 @@ int main(int argc, char **argv) {
                     if(improvement < stallMax){
                         exitCond = 2;
                         #ifdef VERBOSE
-                            std::cout << "Stagnation at iteration " << totalLoops << std::endl;
+                            std::cout << std::endl << "Stagnation at iteration " << totalLoops << std::endl;
                         #endif
                     }
                 }else{
@@ -266,14 +295,14 @@ int main(int argc, char **argv) {
                     if(loopsWithoutImprovement > maxLoops){
                         exitCond = 3;
                         #ifdef VERBOSE
-                            std::cout << "Stagnation after " << maxLoops << " loops" << std::endl;
+                            std::cout << std::endl << "Stagnation after " << maxLoops << " loops" << std::endl;
                         #endif
                     }
                 }
             }
             #ifdef VERBOSE
             else // There are not connected nodes
-                std::cout << "Attempt " << totalLoops << ", connected nodes: " << tempAlloc.connectedCount << " (of " << l->edCount << ")" << std::endl;
+                std::cout << "Attempt " << totalLoops << ", connected nodes: " << tempAlloc.connectedCount << " (out of " << l->edCount << ")" << std::endl;
             #endif
 
             totalLoops++; 
@@ -282,16 +311,104 @@ int main(int argc, char **argv) {
     }
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Stage 4 -- Reallocation" << std::endl;
-        std::cout << "Pending..." << std::endl << std::endl;
+        std::cout << std::endl << "Phase 5 -- Reallocation -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
+    // Eval objective function (to get number of GWs)
+    EvalResults bestRes = o->eval(bestAllocation);
+    Allocation tempAlloc = bestAllocation;
+
+    // Sort non essential GWs by number of EDs
+    std::vector<uint> usedGWList;
+    std::vector<std::vector<uint>> edsOfGW(bestRes.gwUsed); 
+    for (uint e = 0; e < l->edCount; e++) { // Transverse all nodes
+        const uint g = tempAlloc.gw[e];        
+        auto it = std::find(usedGWList.begin(), usedGWList.end(), g); // Find gw of ED e
+        if (it != usedGWList.end()) { // If gw already in list, add its ED (e)
+            uint gwIndex = std::distance(usedGWList.begin(), it);
+            edsOfGW[gwIndex].push_back(e); // Add ED to GW
+        }else{ // If not, add
+            usedGWList.push_back(g); // Add gw index to list
+            edsOfGW[usedGWList.size() - 1].push_back(e); // Add first ED to gw
+        }
+    }
+
+    // Sort indirection array in ascending order of number of EDs
+    std::vector<uint> indirection(bestRes.gwUsed);
+    std::sort(
+        indirection.begin(),
+        indirection.end(),
+        [&edsOfGW](const uint & a,
+            const uint & b) {
+            return edsOfGW[a].size() < edsOfGW[b].size();
+        }
+    );
+
+    // Sort non essential GWs arrays by number of EDs
+    std::vector<uint> sortedGWList(bestRes.gwUsed);
+    std::vector<std::vector<uint>> sortedGWEDs(bestRes.gwUsed);
+    for (uint gi = 0; gi < bestRes.gwUsed; gi++) {
+        sortedGWList[gi] = usedGWList[indirection[gi]];
+        sortedGWEDs[gi] = edsOfGW[indirection[gi]];
+    }
+    // Start from first GW and try to reallocate all of its EDs to any of the following
+	const uint nEssGWUsed = bestRes.gwUsed - essGW.size();
+    for (uint gi = 0; gi < nEssGWUsed; gi++) {
+        uint g1 = sortedGWList[gi];
+        uint ei = 0;
+        while (ei < sortedGWEDs[gi].size()) { // For each ED of GW g
+            uint e = sortedGWEDs[gi][ei]; // Number of ED
+            std::vector<uint> availablesGWs = l->getSortedGWList(e); // List of GW in range of this ED
+            if (availablesGWs.size() > 1) {
+                for (uint gi2 = 0; gi2 < bestRes.gwUsed; gi2++) { // Search if possible to allocate to another used GW
+                    const uint g2 = sortedGWList[gi2];
+                    if (g1 != g2) {
+                        auto it = std::find(availablesGWs.begin(), availablesGWs.end(), g2);
+                        if (it != availablesGWs.end()) { // g2 is in available list, check if enough UF
+                            if(tempAlloc.checkUFAndMove(e, g2)){ // If moved e, remove from gw and sort arrays again
+                                sortedGWEDs[gi].erase(std::remove(sortedGWEDs[gi].begin(), sortedGWEDs[gi].end(), e), sortedGWEDs[gi].end()); // Remove ED e from GW g
+                                std::sort(
+                                    indirection.begin(),
+                                    indirection.end(),
+                                    [&edsOfGW](const uint & a,
+                                        const uint & b) {
+                                        return edsOfGW[a].size() < edsOfGW[b].size();
+                                    }
+                                );
+                                for (uint gii = 0; gii < nEssGWUsed; gii++) {
+                                    sortedGWList[gii] = usedGWList[indirection[gii]];
+                                    sortedGWEDs[gii] = edsOfGW[indirection[gii]];
+                                }
+                                #ifdef VERBOSE
+                                    std::cout << "Reallocated ED " << e << ": GW " << g1 << " --> " << g2 << ", with new SF: " << tempAlloc.sf[e] << std::endl;
+                                #endif
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            ei++;
+        }
+    }
+
+    EvalResults tempRes = o->eval(tempAlloc);
+    #ifdef VERBOSE
+        std::cout << "Cost change after reallocation:" << std::endl;
+        std::cout << "GW = " << bestRes.gwUsed << " --> " << tempRes.gwUsed << std::endl;
+        std::cout << "E = " << bestRes.energy << " --> " << tempRes.energy << std::endl;
+    #endif
+    if(tempRes.cost < bestRes.cost){
+        bestAllocation = tempAlloc;
+        bestRes = tempRes;
+    }
 
 
 
-
+    #ifdef VERBOSE
+        std::cout << std::endl << "Phase 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+    #endif
     // Print results and exit
-    EvalResults res = o->eval(bestAllocation);
-    o->printSolution(bestAllocation, res, true, true, true);
+    o->printSolution(bestAllocation, bestRes, true, true, true);
 
     OptimizationResults results;
     results.solverName = strdup("Greedy");
