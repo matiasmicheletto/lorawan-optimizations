@@ -20,9 +20,9 @@ struct TunningParameters {
     double beta;
     double gamma;
     TunningParameters( // Default tunning parameters
-        double alpha = 1.0,
+        double alpha = 1,
         double beta = 0.1,
-        double gamma = 1000.0
+        double gamma = 7.8
     ) : 
         alpha(alpha),
         beta(beta),

@@ -1,6 +1,7 @@
 bin/obj/
 bin/gpprs
 bin/datgen
+bin/greedy
 bin/summary.csv
 dat/
 doc/ 

@@ -309,12 +309,17 @@ int main(int argc, char **argv) {
         }
         if(exitCond != 0) break;
     }
+    // Eval objective function (to get number of GWs)
+    EvalResults bestRes = o->eval(bestAllocation);
+    if(!bestRes.feasible){
+        std::cerr << std::endl << "System not feasible after allocation of non essential nodes. Exiting program..." << std::endl;
+        exit(1);
+    }
+
 
     #ifdef VERBOSE
         std::cout << std::endl << "Phase 5 -- Reallocation -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
-    // Eval objective function (to get number of GWs)
-    EvalResults bestRes = o->eval(bestAllocation);
     Allocation tempAlloc = bestAllocation;
 
     // Sort non essential GWs by number of EDs
@@ -392,16 +397,19 @@ int main(int argc, char **argv) {
     }
 
     EvalResults tempRes = o->eval(tempAlloc);
-    #ifdef VERBOSE
-        std::cout << "Cost change after reallocation:" << std::endl;
-        std::cout << "GW = " << bestRes.gwUsed << " --> " << tempRes.gwUsed << std::endl;
-        std::cout << "E = " << bestRes.energy << " --> " << tempRes.energy << std::endl;
-    #endif
     if(tempRes.cost < bestRes.cost){
+        #ifdef VERBOSE
+            std::cout << "Cost change after reallocation:" << std::endl;
+            std::cout << "GW = " << bestRes.gwUsed << " --> " << tempRes.gwUsed << std::endl;
+            std::cout << "E = " << bestRes.energy << " --> " << tempRes.energy << std::endl;
+        #endif
         bestAllocation = tempAlloc;
         bestRes = tempRes;
+    }else{
+        #ifdef VERBOSE
+            std::cout << "No improvement after reallocation" << std::endl;
+        #endif
     }
-
 
 
     #ifdef VERBOSE
