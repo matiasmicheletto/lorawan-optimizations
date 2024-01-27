@@ -14,8 +14,8 @@ OPTIONS:
    -r, --requirements   Real-time requirements for end-devices: 0=soft, 1=intermediate, 2=hard, 3=fixed (add value after the 3). Default is soft.  
    -p, --positions      Placement of nodes: 0=uniform, 1=normal, 2=clouds. Default is uniform. Gateways possible positions are generated with this function too.  
    -m, --map            Map size. Default is 1000.  
-   -o, --oputput        Output file name.  
-   -f, --format         Output file format: TXT, HTML (for plot ED and GW distribution), XML (not implemented yet). Default is NONE (print to terminal).  
+   -o, --oputput        Output file name (if format is not NONE).  
+   -f, --format         Output file format: NONE, TXT, HTML (for plot ED and GW distribution), XML (not implemented yet). Default is NONE (print to terminal).  
    -s, --scaled         Scale spread factor range (instance scaling).  
 
 EXAMPLES:
@@ -27,11 +27,11 @@ EXAMPLES:
       - Prints raw data to file with name "instance.dat"
    4. datgen -m 100 -e 1000 -g 50 -r 1 -p 2
       - Generate the instance for a network of 1050 nodes (1000 end devices and 50 gateways) with cloud distribution of positions over a 100x100 map. Time requirements are intermediate.
-   5. datgen -m 100 -e 5000 -g 10 -r 3 1600 -p 2
-      - Generate a similar instance as the previous example and using a fixed value for periods (1600).  
+   5. datgen -m 100 -e 5000 -g 10 -r 3 1600 -p 2 -o instance -f TXT  
+      - Generate a similar instance as the previous example and using a fixed value for periods (1600). Output file will be "instance.dat"   
 
 AUTHORS
-   Code was written by Dr. Matias J. Micheletto from CIT-GSJ and supervised by Dr. Rodrigo M. Santos from DIEC-UNS and Dr. Javier Marenco from UTDT.
+   Code was written by Dr. Matias J. Micheletto from IIDEPYS (CONICET-UNPSJB) and supervised by Dr. Rodrigo M. Santos from DIEC-UNS and Dr. Javier Marenco from UTDT.
 
 REPORTING BUGS
    Guidelines will soon be available at <https://github.com/matiasmicheletto/lorawan-optimizations>.
