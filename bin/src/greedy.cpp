@@ -238,6 +238,7 @@ int main(int argc, char **argv) {
         uint totalLoops = 0;
         uint loopsWithoutImprovement = 1;
         const uint maxLoops = 1000; // Stop after this number of loops without improvement
+        const Allocation essentials = bestAllocation;
         while(exitCond == 0) { // Until exit condition is met
 
             if (isTimeout(start, timeout)) { // Check time limit
@@ -253,7 +254,7 @@ int main(int argc, char **argv) {
             std::shuffle(nEssGW.begin(), nEssGW.end(), gen);
             
             // Start allocation of non essential EDs (essential gws first)
-            Allocation tempAlloc = bestAllocation;
+            Allocation tempAlloc = essentials;
             for (uint ei = 0; ei < nEssED.size(); ei++) {    
                 const uint e = nEssED[ei];
                 for (uint gi = 0; gi < l->gwCount; gi++) {
@@ -416,7 +417,7 @@ int main(int argc, char **argv) {
         std::cout << std::endl << "Phase 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
     // Print results and exit
-    o->printSolution(bestAllocation, bestRes, true, true, true);
+    o->printSolution(bestAllocation, bestRes, false, true, true);
 
     OptimizationResults results;
     results.solverName = strdup("Greedy");

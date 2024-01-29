@@ -173,6 +173,16 @@ int main(int argc, char **argv) {
             results.solverName = strdup("Greedy Minimization");
             break;
         }
+        case 11: {
+            results = greedy4(l, o, maxIters, timeout, verbose, wst);
+            results.solverName = strdup("Greedy 4");
+            break;
+        }
+        case 15: {
+            results = greedy8(l, o, maxIters, timeout, verbose, wst);
+            results.solverName = strdup("Greedy 8");
+            break;
+        }
         /*
         case 6: {
             results = greedy1(l, o, MIN::GW, verbose, wst);
@@ -197,11 +207,6 @@ int main(int argc, char **argv) {
         case 10: {
             results = greedy3(l, o, maxIters, timeout, verbose, wst);
             results.solverName = strdup("Greedy 3");
-            break;
-        }
-        case 11: {
-            results = greedy4(l, o, maxIters, timeout, verbose, wst);
-            results.solverName = strdup("Greedy 4");
             break;
         }
         case 12: {
