@@ -12,20 +12,12 @@ int main(int argc, char **argv) {
     InstanceConfig config; // Default configuration
 
     char* outputFileName = nullptr;
+    bool fileNameConfigured = false;
 
     // Program arguments
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
-        if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
-            if(i+1 < argc) {
-                size_t len = strlen(argv[i+1]);
-                outputFileName = new char[len+1];
-                strcpy(outputFileName, argv[i+1]);
-            }else{
-                printHelp(MANUAL);
-            }
-        }
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--format") == 0) {
             if(i+1 < argc){
                 if(std::strcmp(argv[i+1], "HTML") == 0)
@@ -34,6 +26,16 @@ int main(int argc, char **argv) {
                     config.outputFormat = OUTPUTFORMAT::TXT;
             }else
                 printHelp(MANUAL);
+        }
+        if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
+            if(i+1 < argc) {
+                size_t len = strlen(argv[i+1]);
+                outputFileName = new char[len+1];
+                strcpy(outputFileName, argv[i+1]);
+                fileNameConfigured = true;
+            }else{
+                printHelp(MANUAL);
+            }
         }
         if(strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--enddevices") == 0) {
             if(i+1 < argc)
@@ -83,10 +85,16 @@ int main(int argc, char **argv) {
         l->printRawData();
         break;
     case OUTPUTFORMAT::TXT:
-        l->exportRawData(outputFileName);
+        if(fileNameConfigured)
+            l->exportRawData(outputFileName);
+        else
+            std::cerr << "File name not set for TXT output format. Use -f filename" << std::endl;
         break;
     case OUTPUTFORMAT::HTML:
-        l->generateHtmlPlot(outputFileName);
+        if(fileNameConfigured)
+            l->generateHtmlPlot(outputFileName);
+        else
+            std::cerr << "File name not set for HTML output format. Use -f filename" << std::endl;
         break;
     default:
         break;
