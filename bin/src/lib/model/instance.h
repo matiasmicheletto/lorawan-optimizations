@@ -24,7 +24,7 @@
 
 enum POSDIST {UNIFORM, NORMAL, CLOUDS}; 
 enum PERIODIST {SOFT, MEDIUM, HARD, FIXED}; 
-enum OUTPUTFORMAT {NONE, TXT, HTML};
+enum OUTPUTFORMAT {NONE, TXT, HTML, ALL};
 
 struct InstanceConfig { // This is for instance generation
     uint mapSize; // Map size

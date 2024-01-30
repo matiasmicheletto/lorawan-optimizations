@@ -12,7 +12,7 @@
 
 auto getElapsed(std::chrono::_V2::system_clock::time_point start) {
     auto currentTime = std::chrono::high_resolution_clock::now();
-    auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
+    auto elapsedSeconds = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - start).count();
     return elapsedSeconds;
 }
 

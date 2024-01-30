@@ -24,6 +24,8 @@ int main(int argc, char **argv) {
                     config.outputFormat = OUTPUTFORMAT::HTML;
                 if(std::strcmp(argv[i+1], "TXT") == 0)
                     config.outputFormat = OUTPUTFORMAT::TXT;
+                if(std::strcmp(argv[i+1], "ALL") == 0)
+                    config.outputFormat = OUTPUTFORMAT::ALL;
             }else
                 printHelp(MANUAL);
         }
@@ -95,6 +97,13 @@ int main(int argc, char **argv) {
             l->generateHtmlPlot(outputFileName);
         else
             std::cerr << "File name not set for HTML output format. Use -f filename" << std::endl;
+        break;
+    case OUTPUTFORMAT::ALL:
+        if(fileNameConfigured){
+            l->exportRawData(outputFileName);
+            l->generateHtmlPlot(outputFileName);
+        }else
+            std::cerr << "File name not set for ALL (HTML+TXT) output format. Use -f filename" << std::endl;
         break;
     default:
         break;

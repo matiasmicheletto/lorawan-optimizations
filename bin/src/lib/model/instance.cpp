@@ -189,6 +189,8 @@ void Instance::exportRawData(const char* filename) {
 
     if (filename != nullptr) 
         dynamic_cast<std::ofstream&>(output).close();
+
+    std::cout << "Plain text file generated: " << (std::string(filename) + ".dat") << std::endl;
 }
 
 void Instance::generateHtmlPlot(const char* filename) {
@@ -268,7 +270,7 @@ void Instance::generateHtmlPlot(const char* filename) {
     htmlFile << "\t</html>\n";
 
     htmlFile.close();
-    std::cout << "HTML file generated: " << filename << std::endl;
+    std::cout << "HTML file generated: " << (std::string(filename) + ".html") << std::endl;
 }
 
 void Instance::copySFDataTo(std::vector<std::vector<uint>>& destination) {
