@@ -12,19 +12,21 @@
 
 auto getElapsed(std::chrono::_V2::system_clock::time_point start) {
     auto currentTime = std::chrono::high_resolution_clock::now();
-    auto elapsedSeconds = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - start).count();
+    auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
     return elapsedSeconds;
+}
+
+auto getElapsedMs(std::chrono::_V2::system_clock::time_point start) {
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - start).count();
+    return elapsedMs;
 }
 
 bool isTimeout(std::chrono::_V2::system_clock::time_point start, uint timeout) {
     return getElapsed(start) >= timeout;
 }
 
-std::string getTimestamp() {
-    auto currentTime = std::chrono::system_clock::now();
-    auto UTC = std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
-    return std::to_string(UTC);
-}
+
 
 int main(int argc, char **argv) {
     
@@ -285,7 +287,7 @@ int main(int argc, char **argv) {
                     loopsWithoutImprovement = 1;
                     minimumCost = res.cost;
                     bestAllocation = tempAlloc;
-                    if(improvement < stallMax){
+                    if(improvement < (double)stallMax){
                         exitCond = 2;
                         #ifdef VERBOSE
                             std::cout << std::endl << "Stagnation at iteration " << totalLoops << std::endl;
@@ -421,7 +423,7 @@ int main(int argc, char **argv) {
 
     OptimizationResults results;
     results.solverName = strdup("Greedy");
-    results.execTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count();
+    results.execTime = getElapsedMs(start);
     results.ready = true;
     results.instanceName = l->getInstanceFileName();
     logResultsToCSV(results, LOGFILE);
