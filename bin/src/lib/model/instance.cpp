@@ -5,7 +5,7 @@ const uint Instance::pw[6] = {1, 2, 4, 8, 16, 32}; // Time window values for spr
 Instance::Instance(char* filename) {
     std::ifstream file(filename);
     if (!file) {
-        std::cerr << "Failed to open input file." << std::endl;
+        std::cerr << "Failed to open input file. Check filename or file location." << std::endl;
         exit(1);
     }
 

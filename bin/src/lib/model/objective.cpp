@@ -84,11 +84,11 @@ EvalResults Objective::eval(Allocation alloc) {
             }
 
             // Compute GW UF
-            if(alloc.uf[alloc.gw[i]].isFull()){ // Unfeasibility condition: UF > 1 for some SF
+            if(alloc.ufGW[alloc.gw[i]].isFull()){ // Unfeasibility condition: UF > 1 for some SF
                 res.feasible = false;
                 res.cost += unfeasibleIncrement;
             }
-            double maxUFTemp = alloc.uf[alloc.gw[i]].getMax(); // Max UF value between all SF
+            double maxUFTemp = alloc.ufGW[alloc.gw[i]].getMax(); // Max UF value between all SF
             if(maxUFTemp > res.uf) // Update max UF
                 res.uf = maxUFTemp;
 
@@ -101,7 +101,7 @@ EvalResults Objective::eval(Allocation alloc) {
 
     // Count number of used gw
     for(uint j = 0; j < this->instance->gwCount; j++)
-        if(alloc.uf[j].isUsed()) 
+        if(alloc.ufGW[j].isUsed()) 
             res.gwUsed++;
 
     // If solution is feasible, at this point (before following equation), cost should equal 0.0

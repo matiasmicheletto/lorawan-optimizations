@@ -28,6 +28,7 @@ DESCRIPTION:
 OPTIONS:
    -h, --help     Display this help message.
    -t, --timeout  Timeout in seconds. Default is 60.  
+   -i, --iters    Max iterations to run in allocation phase.
    -s, --stall    Stagnation threshold (for 10 iterations).  
    -a, --alpha    Alpha tunning parameter. Default is 1.  
    -b, --beta     Beta tunning parameter. Default is 0.01.  
@@ -38,8 +39,8 @@ EXAMPLES:
    1. greedy -f input.dat
       - Run the program using the default options.
 
-   2. greedy -f input.dat --iter 1000 -a 1 -b 0.1 -g 1000
-      - Execute 1 thousand iterations using 1, 0.1 and 1000 for alpha, beta and gamma parameters.
+   2. greedy -f input.dat --iters 50 -a 1 -b 0.1 -g 1000
+      - Execute 50 iterations using 1, 0.1 and 1000 for alpha, beta and gamma parameters.
 
    3. greedy -f input.dat -m GA > outputs.log 
       - Run the program using the GA method with default configurations and append complete results to "outputs.log" text file. Text may contain terminal formatting escape characters, so it is recommended to show results using the "cat" program instead of "less".

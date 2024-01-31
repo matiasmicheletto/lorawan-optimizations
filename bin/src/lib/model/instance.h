@@ -109,7 +109,8 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
 	std::vector<uint> sf;
     std::vector<bool> connected;
     uint connectedCount;
-    std::vector<UtilizationFactor> uf;
+    std::vector<UtilizationFactor> ufGW; // Total UF of each GW
+    std::vector<UtilizationFactor> ufED; // Using UF of each ED
     Instance *l;
 
 	Allocation(Instance* l) {
@@ -117,7 +118,8 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
 		sf.resize(l->edCount);
         connected.resize(l->edCount);
         connectedCount = 0;
-        uf.resize(l->gwCount);
+        ufGW.resize(l->gwCount);
+        ufED.resize(l->edCount);
         this->l = l;
 	}
 
@@ -126,10 +128,11 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
         UtilizationFactor nextUF;
         while(sf2 <= 12) {
             nextUF = l->getUF(e, sf2); // UF of node e for g
-            if(!(uf[g] + nextUF).isFull()){ // If available UF, use it
+            if(!(ufGW[g] + nextUF).isFull()){ // If available UF, use it
                 gw[e] = g;
                 sf[e] = sf2;
-                uf[g] += nextUF;
+                ufGW[g] += nextUF;
+                ufED[e] = nextUF;
                 if(!connected[e]){ // May be previously connected
                     connected[e] = true;
                     connectedCount++;
@@ -149,11 +152,14 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
             const uint sf2 = l->getMinSF(e, g);
             if(sf2 < sf[e]){
                 const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
-                if(!(uf[g] + nextUF).isFull()){ // If g available for e with sf2
-                    uf[gw[e]] -= uf[gw[e]];
+                if(!(ufGW[g] + nextUF).isFull()){ // If g available for e with sf2
+                    const uint prevGW = gw[e];
+                    const UtilizationFactor prevUF = ufED[e];
+                    ufGW[prevGW] -= prevUF;
                     gw[e] = g;
                     sf[e] = sf2;
-                    uf[g] += nextUF;
+                    ufGW[g] += nextUF;
+                    ufED[e] = nextUF;
                     return true;
                 }
             }
@@ -163,9 +169,11 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
 
     void connect(uint e, uint g, int asf = -1) { // Unvalidated operation
         const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+        const UtilizationFactor nextUF = l->getUF(e, sf2);
         gw[e] = g;
         sf[e] = sf2;
-        uf[g] += l->getUF(e, sf2);
+        ufGW[g] += nextUF;
+        ufED[e] = nextUF;
         connected[e] = true;
         connectedCount++;
     }
@@ -173,11 +181,12 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
     void move(uint e, uint g, int asf = -1) { // Unvalidated operation
         const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
         const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
-        uf[gw[e]] -= uf[gw[e]];
+        ufGW[gw[e]] -= ufGW[gw[e]];
         gw[e] = g;
         sf[e] = sf2;
         connected[e] = true;
-        uf[g] += nextUF;
+        ufGW[g] += nextUF;
+        ufED[e] = nextUF;
     }
 };
 
