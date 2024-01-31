@@ -1,9 +1,9 @@
 bin/obj/
-bin/gpprs
-bin/datgen
-bin/greedy
-bin/summary.csv
-dat/
+bin/gpprs 
+bin/datgen 
+bin/greedy 
+bin/summary.csv 
+dat/ 
 doc/ 
-python/venv/
-.vscode
+python/venv/ 
+.vscode 
