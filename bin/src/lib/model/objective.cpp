@@ -132,16 +132,28 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
                 << ")" << std::endl;
     
     if(showGWs) {
-        std::vector<uint> gwList;
-        for(uint i = 0; i < edCount; i++){
+        std::vector<uint> gwList; // Gws used
+        for(uint i = 0; i < edCount; i++) {
             auto it = std::find(gwList.begin(), gwList.end(), gw[i]);
             if(it == gwList.end()){ // If the gw of node "i" isnt in list
                 gwList.push_back(gw[i]);
             }
         }
+        std::vector<uint> gwList2; // Gws not used
+        for (uint gi = 0; gi < this->instance->gwCount; gi++) {
+            auto it = std::find(gwList.begin(), gwList.end(), gi);
+            if(it == gwList.end()){ // If the gw of node "i" isnt in list
+                gwList2.push_back(gi);
+            }
+        }
+        
         std::cout << "GWs used: "; 
         for(uint i = 0; i < gwList.size(); i++)
             std::cout << gwList[i] << " ";
+        std::cout << std::endl;
+        std::cout << "GWs not used: "; 
+        for(uint i = 0; i < gwList2.size(); i++)
+            std::cout << gwList2[i] << " ";
         std::cout << std::endl;
     }
 
@@ -171,16 +183,27 @@ void Objective::printSolution(const Allocation alloc, const EvalResults results,
                   << ")" << std::endl;
 
         if(showGWs) {
-            std::vector<uint> gwList;
+            std::vector<uint> gwList; // Used
+            std::vector<uint> gwList2; // Unused
             for(uint i = 0; i < alloc.gw.size(); i++){
                 auto it = std::find(gwList.begin(), gwList.end(), alloc.gw[i]);
                 if(it == gwList.end()){ // If the gw of node "i" isnt in list
                     gwList.push_back(alloc.gw[i]);
                 }
             }
+            for (uint gi = 0; gi < this->instance->gwCount; gi++) {
+                auto it = std::find(gwList.begin(), gwList.end(), gi);
+                if(it == gwList.end()){ // If the gw of node "i" isnt in list
+                    gwList2.push_back(gi);
+                }
+            }
             std::cout << "GWs used: "; 
             for(uint i = 0; i < gwList.size(); i++)
                 std::cout << gwList[i] << " ";
+            std::cout << std::endl;
+            std::cout << "GWs not used: "; 
+            for(uint i = 0; i < gwList2.size(); i++)
+                std::cout << gwList2[i] << " ";
             std::cout << std::endl;
         }
 

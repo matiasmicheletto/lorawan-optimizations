@@ -220,17 +220,22 @@ int main(int argc, char **argv) {
         std::cout << std::endl << "Phase 3 -- Sort nodes by reachable gateways -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif 
     std::vector<uint> reachGW(nEssED.size());
-    for (uint ei = 0; ei < nEssED.size(); ei++) {
-        const uint e = nEssED[ei];
-        reachGW[ei] = l->getGWList(e).size(); // Number of gws
+    std::vector<uint> indirection(nEssED.size());
+    for (uint ei = 0; ei < nEssED.size(); ei++){
+        indirection[ei] = ei;
+        reachGW[ei] = l->getGWList(nEssED[ei]).size(); // Number of gws
     }
+
+
     std::sort(
-        nEssED.begin(),
-        nEssED.end(),
+        indirection.begin(),
+        indirection.end(),
         [&reachGW](const uint & a, const uint & b) {
             return reachGW[a] < reachGW[b];
         }
     );
+
+
     #ifdef VERBOSE
         std::cout << "Sorting finished." << std::endl;
     #endif 
@@ -266,8 +271,8 @@ int main(int argc, char **argv) {
             
             // Start allocation of non essential EDs (essential gws first)
             Allocation tempAlloc = essentials;
-            for (uint ei = 0; ei < nEssED.size(); ei++) {    
-                const uint e = nEssED[ei];
+            for (uint ei = 0; ei < nEssED.size(); ei++) {
+                const uint e = nEssED[indirection[ei]];
                 for (uint gi = 0; gi < l->gwCount; gi++) {
                     const uint g = gi < essGW.size() ? essGW[gi] : nEssGW[gi - essGW.size()];
                     // Check if ED e can be connected to GW g
@@ -357,10 +362,10 @@ int main(int argc, char **argv) {
     }
 
     // Sort indirection array in ascending order of number of EDs
-    std::vector<uint> indirection(bestRes.gwUsed);
+    std::vector<uint> indirection2(bestRes.gwUsed);
     std::sort(
-        indirection.begin(),
-        indirection.end(),
+        indirection2.begin(),
+        indirection2.end(),
         [&edsOfGW](const uint & a,
             const uint & b) {
             return edsOfGW[a].size() < edsOfGW[b].size();
@@ -371,8 +376,8 @@ int main(int argc, char **argv) {
     std::vector<uint> sortedGWList(bestRes.gwUsed);
     std::vector<std::vector<uint>> sortedGWEDs(bestRes.gwUsed);
     for (uint gi = 0; gi < bestRes.gwUsed; gi++) {
-        sortedGWList[gi] = usedGWList[indirection[gi]];
-        sortedGWEDs[gi] = edsOfGW[indirection[gi]];
+        sortedGWList[gi] = usedGWList[indirection2[gi]];
+        sortedGWEDs[gi] = edsOfGW[indirection2[gi]];
     }
     // Start from first GW and try to reallocate all of its EDs to any of the following
 	const uint nEssGWUsed = bestRes.gwUsed - essGW.size();
@@ -391,16 +396,16 @@ int main(int argc, char **argv) {
                             if(tempAlloc.checkUFAndMove(e, g2)){ // If moved e, remove from gw and sort arrays again
                                 sortedGWEDs[gi].erase(std::remove(sortedGWEDs[gi].begin(), sortedGWEDs[gi].end(), e), sortedGWEDs[gi].end()); // Remove ED e from GW g
                                 std::sort(
-                                    indirection.begin(),
-                                    indirection.end(),
+                                    indirection2.begin(),
+                                    indirection2.end(),
                                     [&edsOfGW](const uint & a,
                                         const uint & b) {
                                         return edsOfGW[a].size() < edsOfGW[b].size();
                                     }
                                 );
-                                for (uint gii = 0; gii < nEssGWUsed; gii++) {
-                                    sortedGWList[gii] = usedGWList[indirection[gii]];
-                                    sortedGWEDs[gii] = edsOfGW[indirection[gii]];
+                                for (uint gii = 0; gii < nEssGWUsed; gii++) { 
+                                    sortedGWList[gii] = usedGWList[indirection2[gii]];
+                                    sortedGWEDs[gii] = edsOfGW[indirection2[gii]];
                                 }
                                 #ifdef VERBOSE
                                     std::cout << "Reallocated ED " << e << ": GW " << g1 << " --> " << g2 << ", with new SF: " << tempAlloc.sf[e] << std::endl;

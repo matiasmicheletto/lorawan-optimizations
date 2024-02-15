@@ -216,6 +216,12 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                                         //	(gwUF[g]).printUFValues();
 
                                         edAllocated = true;
+                                        if(e == 8829){
+                                            std::cout << "Node 8829 connected to GW " << g << std::endl;
+                                            l->getUF(e, minsf).printUFValues();
+                                            gwUF[g].printUFValues();
+                                            exit(1);
+                                        }
                                         break; // Go to next ed
                                     }
                                 }
@@ -241,7 +247,7 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                         feasibleFound = true;
                         if (verbose) {
                             std::cout << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
-                            o->printSolution(gw, sf, false);
+                            o->printSolution(gw, sf);
                             std::cout << std::endl << std::endl;
                         }
                     }
@@ -507,8 +513,7 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                         feasibleFound = true;
                         if (verbose) {
                             std::cout << "New best at iteration: " << iter << " (SF = " << s << ")" << std::endl;
-                            o->printSolution(gw, sf, false);
-                            std::cout << std::endl;
+                            o->printSolution(gw, sf);
                         }
                     }
 
