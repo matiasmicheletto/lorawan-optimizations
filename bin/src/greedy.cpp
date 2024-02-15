@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     std::mt19937 gen(rd());
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 0 -- Load instance and optimization parameters" << std::endl;
+        std::cout << std::endl << "Step 0 -- Load instance and optimization parameters" << std::endl;
     #endif
 
     Instance *l = nullptr;
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     auto start = std::chrono::high_resolution_clock::now();
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 1 -- Build clusters (reacheability tensor) -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        std::cout << std::endl << "Step 1 -- Build clusters (reacheability tensor) -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
     std::vector<std::vector<std::vector<uint>>> clusters(6); // Clusters tensor (SF x GW x ED)
     int minCoverage = 7; // Min SF value with full coverage
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 2 -- Find and allocate essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        std::cout << std::endl << "Step 2 -- Find and allocate essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
     Allocation bestAllocation(l); // Allocation (initially empty)
     // Essential and non essential gw
@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 3 -- Sort nodes by reachable gateways -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        std::cout << std::endl << "Step 3 -- Sort nodes by reachable gateways -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif 
     std::vector<uint> reachGW(nEssED.size());
     std::vector<uint> indirection(nEssED.size());
@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 4 -- Allocation of non essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        std::cout << std::endl << "Step 4 -- Allocation of non essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
         std::cout << "Start allocation from SF " << minCoverage << std::endl;
     #endif
 
@@ -342,15 +342,15 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 5 -- Reallocation -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        std::cout << std::endl << "Step 5 -- Reallocation -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
     Allocation tempAlloc = bestAllocation;
 
     // Sort non essential GWs by number of EDs
     std::vector<uint> usedGWList;
     std::vector<std::vector<uint>> edsOfGW(bestRes.gwUsed); 
-    for (uint e = 0; e < l->edCount; e++) { // Transverse all nodes
-        const uint g = tempAlloc.gw[e];        
+    for (uint e = 0; e < l->edCount; e++) { // Traverse all nodes
+        const uint g = tempAlloc.gw[e];
         auto it = std::find(usedGWList.begin(), usedGWList.end(), g); // Find gw of ED e
         if (it != usedGWList.end()) { // If gw already in list, add its ED (e)
             uint gwIndex = std::distance(usedGWList.begin(), it);
@@ -363,26 +363,29 @@ int main(int argc, char **argv) {
 
     // Sort indirection array in ascending order of number of EDs
     std::vector<uint> indirection2(bestRes.gwUsed);
+    std::iota(indirection2.begin(), indirection2.end(), 0);
     std::sort(
         indirection2.begin(),
         indirection2.end(),
-        [&edsOfGW](const uint & a,
-            const uint & b) {
+        [&edsOfGW](const uint & a, const uint & b) {
             return edsOfGW[a].size() < edsOfGW[b].size();
         }
     );
-
     // Sort non essential GWs arrays by number of EDs
     std::vector<uint> sortedGWList(bestRes.gwUsed);
     std::vector<std::vector<uint>> sortedGWEDs(bestRes.gwUsed);
     for (uint gi = 0; gi < bestRes.gwUsed; gi++) {
-        sortedGWList[gi] = usedGWList[indirection2[gi]];
-        sortedGWEDs[gi] = edsOfGW[indirection2[gi]];
+        const uint g = indirection2[gi];
+        sortedGWList[gi] = usedGWList[g];
+        sortedGWEDs[gi] = edsOfGW[g];
     }
+
+
+
     // Start from first GW and try to reallocate all of its EDs to any of the following
 	const uint nEssGWUsed = bestRes.gwUsed - essGW.size();
     for (uint gi = 0; gi < nEssGWUsed; gi++) {
-        uint g1 = sortedGWList[gi];
+        uint g1 = sortedGWList[gi];    
         uint ei = 0;
         while (ei < sortedGWEDs[gi].size()) { // For each ED of GW g
             uint e = sortedGWEDs[gi][ei]; // Number of ED
@@ -437,7 +440,7 @@ int main(int argc, char **argv) {
 
 
     #ifdef VERBOSE
-        std::cout << std::endl << "Phase 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        std::cout << std::endl << "Step 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
         std::cout << std::endl << "Total execution time = " << getElapsedMs(start) << " ms" << std::endl;
     #endif
     // Print results and exit
