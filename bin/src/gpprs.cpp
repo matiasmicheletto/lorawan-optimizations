@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
         }
         case 5: {
             results = greedy(l, o, maxIters, timeout, verbose);
-            results.solverName = strdup("Greedy Minimization");
+            results.solverName = strdup("Greedy (GD)");
             break;
         }
         case 11: {

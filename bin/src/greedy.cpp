@@ -423,6 +423,7 @@ int main(int argc, char **argv) {
         }
     }
 
+    
     EvalResults tempRes = o->eval(tempAlloc);
     if(tempRes.cost < bestRes.cost){
         #ifdef VERBOSE
@@ -438,20 +439,25 @@ int main(int argc, char **argv) {
         #endif
     }
 
+    OptimizationResults results;
+    results.instanceName = l->getInstanceFileName();
+    results.solverName = strdup("Greedy (./greedy)");
+    results.tp = 
+    results.execTime = getElapsedMs(start);
+    results.feasible = tempRes.feasible;
+    results.cost = tempRes.cost;
+    results.gwUsed = tempRes.gwUsed;
+    results.energy = tempRes.energy;
+    results.uf = tempRes.uf;
+    results.ready = true;
+    logResultsToCSV(results, LOGFILE);
 
     #ifdef VERBOSE
         std::cout << std::endl << "Step 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
-        std::cout << std::endl << "Total execution time = " << getElapsedMs(start) << " ms" << std::endl;
+        std::cout << std::endl << "Total execution time = " << results.execTime << " ms" << std::endl;
     #endif
     // Print results and exit
     o->printSolution(bestAllocation, bestRes, false, true, true);
-
-    OptimizationResults results;
-    results.solverName = strdup("Greedy");
-    results.execTime = getElapsedMs(start);
-    results.ready = true;
-    results.instanceName = l->getInstanceFileName();
-    logResultsToCSV(results, LOGFILE);
 
     if(xml) o->exportWST(bestAllocation.gw.data(), bestAllocation.sf.data());
     
