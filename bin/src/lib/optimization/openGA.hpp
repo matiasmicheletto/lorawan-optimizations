@@ -59,7 +59,7 @@ struct GenerationType
 
 	int best_chromosome_index=-1; // for single objective
 	vector<int> sorted_indices; // for single objective
-	vector<vector<unsigned int>> fronts; // for multi-objective
+	vector<vector<uint>> fronts; // for multi-objective
 	vector<double> selection_chance_cumulative;
 	double exe_time;
 };
@@ -79,7 +79,7 @@ struct GenerationType_SO_abstract
 
 class Matrix
 {
-	unsigned int n_rows,n_cols;
+	uint n_rows,n_cols;
 	vector<double> data;
 public:
 
@@ -90,7 +90,7 @@ public:
 	{
 	}
 
-	Matrix(unsigned int n_rows,unsigned int n_cols):
+	Matrix(uint n_rows,uint n_cols):
 		n_rows(n_rows),
 		n_cols(n_cols),
 		data(n_rows*n_cols)
@@ -102,7 +102,7 @@ public:
 		std::fill(data.begin(), data.end(), 0);
 	}
 
-	void zeros(unsigned int rows,unsigned int cols)
+	void zeros(uint rows,uint cols)
 	{
 		n_rows=rows;
 		n_cols=cols;
@@ -114,8 +114,8 @@ public:
 		return (!n_rows)||(!n_cols);
 	}
 
-	unsigned int get_n_rows() const { return n_rows; }
-	unsigned int get_n_cols() const { return n_cols; }
+	uint get_n_rows() const { return n_rows; }
+	uint get_n_cols() const { return n_cols; }
 
 	void clear()
 	{
@@ -125,56 +125,56 @@ public:
 	}
 
 	void set_col(
-		unsigned int col_idx,
+		uint col_idx,
 		const vector<double> &col_vector)
 	{
 		assert(col_vector.size()==n_rows && "Assigned column vector size mismatch.");
-		for(unsigned int i=0;i<n_rows;i++)
+		for(uint i=0;i<n_rows;i++)
 			(*this)(i,col_idx)=col_vector[i];
 	}
 
 	void set_row(
-		unsigned int row_idx,
+		uint row_idx,
 		const vector<double> &row_vector)
 	{
 		assert(row_vector.size()==n_cols && "Assigned row vector size mismatch.");
-		for(unsigned int i=0;i<n_cols;i++)
+		for(uint i=0;i<n_cols;i++)
 			(*this)(row_idx,i)=row_vector[i];
 	}
 
 	void get_col(
-		unsigned int col_idx,
+		uint col_idx,
 		vector<double> &col_vector) const
 	{
 		col_vector.resize(n_rows);
-		for(unsigned int i=0;i<n_rows;i++)
+		for(uint i=0;i<n_rows;i++)
 			col_vector[i]=(*this)(i,col_idx);
 	}
 
 	void get_row(
-		unsigned int row_idx,
+		uint row_idx,
 		vector<double> &row_vector) const
 	{
 		row_vector.resize(n_cols);
-		for(unsigned int i=0;i<n_cols;i++)
+		for(uint i=0;i<n_cols;i++)
 			row_vector[i]=(*this)(row_idx,i);
 	}
 
 	void operator=(const vector<vector<double>> &A)
 	{
-		unsigned int A_rows=(unsigned int)A.size();
-		unsigned int A_cols=0;
+		uint A_rows=(uint)A.size();
+		uint A_cols=0;
 		if(A_rows>0)
-			A_cols=(unsigned int)A[0].size();
+			A_cols=(uint)A[0].size();
 		n_rows=A_rows;
 		n_cols=A_cols;
 		if(n_rows>0 && n_cols>0)
 		{
 			data.resize(n_rows*n_cols);
-			for(unsigned int i=0;i<n_rows;i++)
+			for(uint i=0;i<n_rows;i++)
 			{
 				assert(A[i].size()==A_cols && "Vector of vector does not have a constant row size! A21654616");
-				for(unsigned int j=0;j<n_cols;j++)
+				for(uint j=0;j<n_cols;j++)
 					(*this)(i,j)=A[i][j];
 			}
 		}
@@ -184,9 +184,9 @@ public:
 
 	void print()
 	{
-		for(unsigned int i=0;i<n_rows;i++)
+		for(uint i=0;i<n_rows;i++)
 		{
-			for(unsigned int j=0;j<n_cols;j++)
+			for(uint j=0;j<n_cols;j++)
 				cout<<"\t"<<(*this)(i,j);
 			
 			cout<<endl;
@@ -194,8 +194,8 @@ public:
 		data.clear();
 	}
 
-	inline double& operator()(unsigned int row,unsigned int col) {return data[row*n_cols+col];}
-	inline double  operator()(unsigned int row,unsigned int col) const {return data[row*n_cols+col];}
+	inline double& operator()(uint row,uint col) {return data[row*n_cols+col];}
+	inline double  operator()(uint row,uint col) const {return data[row*n_cols+col];}
 };
 
 inline double norm2(const vector<double> &x_vec)
@@ -276,7 +276,7 @@ private:
 	Matrix extreme_objectives;	// for multi-objective
 	vector<double> scalarized_objectives_min;	// for multi-objective
 	Matrix reference_vectors;
-	unsigned int N_robj;
+	uint N_robj;
 
 public:
 
@@ -288,7 +288,7 @@ public:
 	////////////////////////////////////////////////////
 
 	GA_MODE problem_mode;
-	unsigned int population;
+	uint population;
 	double crossover_fraction;
 	double mutation_rate;
 	bool verbose;
@@ -299,7 +299,7 @@ public:
 	int average_stall_max;
 	double tol_stall_best;
 	int best_stall_max;
-	unsigned int reference_vector_divisions;
+	uint reference_vector_divisions;
 	bool enable_reference_vectors;
 	bool multi_threading;
 	bool dynamic_threading;
@@ -319,7 +319,7 @@ public:
 	function<GeneType(const GeneType&,const function<double(void)> &rnd01,double shrink_scale)> mutate;
 	function<GeneType(const GeneType&,const GeneType&,const function<double(void)> &rnd01)> crossover;
 	function<void(int,const thisGenerationType&,const GeneType&)> SO_report_generation;
-	function<void(int,const thisGenerationType&,const vector<unsigned int>&)> MO_report_generation;
+	function<void(int,const thisGenerationType&,const vector<uint>&)> MO_report_generation;
 	function<void(void)> custom_refresh;
 	function<double(int,const function<double(void)> &rnd01)> get_shrink_scale;
 	vector<thisGenSOAbs> generations_so_abs;
@@ -387,9 +387,9 @@ public:
 		if(!g.chromosomes.size())
 			throw runtime_error("Code should not reach here. A87946516564");
 		if(distribution_objective_reductions)
-			N_robj=(unsigned int)distribution_objective_reductions(g.chromosomes[0].objectives).size();
+			N_robj=(uint)distribution_objective_reductions(g.chromosomes[0].objectives).size();
 		else
-			N_robj=(unsigned int)g.chromosomes[0].objectives.size();
+			N_robj=(uint)g.chromosomes[0].objectives.size();
 		if(!N_robj)
 			throw runtime_error("Number of the reduced objective is zero");
 	}
@@ -603,7 +603,7 @@ protected:
 			double sum=0;
 			new_generation.best_chromosome_index=0;
 
-			for(unsigned int i=0;i<new_generation.chromosomes.size();i++)
+			for(uint i=0;i<new_generation.chromosomes.size();i++)
 			{
 				double current_cost=new_generation.chromosomes[i].total_cost;
 				sum+=current_cost;
@@ -722,7 +722,7 @@ protected:
 			else
 				ideal_objectives=g.chromosomes[0].objectives;
 		}
-		unsigned int N_r_objectives=(unsigned int)ideal_objectives.size();
+		uint N_r_objectives=(uint)ideal_objectives.size();
 		for(thisChromosomeType x:g.chromosomes)
 		{
 			vector<double> obj_reduced;
@@ -730,7 +730,7 @@ protected:
 				obj_reduced=distribution_objective_reductions(x.objectives);
 			else
 				obj_reduced=x.objectives;
-			for(unsigned int i=0;i<N_r_objectives;i++)
+			for(uint i=0;i<N_r_objectives;i++)
 				if(obj_reduced[i]<ideal_objectives[i])
 					ideal_objectives[i]=obj_reduced[i];
 		}
@@ -747,9 +747,9 @@ protected:
 		g2.chromosomes.clear();
 		if(!N_robj)
 			throw runtime_error("Number of the reduced objectives is zero. A68756541321");
-		const unsigned int N_chromosomes=(unsigned int)g.chromosomes.size();
+		const uint N_chromosomes=(uint)g.chromosomes.size();
 		Matrix zb_objectives(N_chromosomes,N_robj);
-		for(unsigned int i=0;i<N_chromosomes;i++)
+		for(uint i=0;i<N_chromosomes;i++)
 		{
 			vector<double> robj_x;
 			if(distribution_objective_reductions)
@@ -757,15 +757,15 @@ protected:
 			else
 				robj_x=g.chromosomes[i].objectives;
 
-			for(unsigned int j=0;j<N_robj;j++)
+			for(uint j=0;j<N_robj;j++)
 				zb_objectives(i,j)=(robj_x[j]-ideal_objectives[j]);
 		}
 		scalarize_objectives(zb_objectives);
 		vector<double> intercepts;
 		build_hyperplane_intercepts(intercepts);
-		Matrix norm_objectives((unsigned int)g.chromosomes.size(),(unsigned int)intercepts.size());
-		for(unsigned int i=0;i<N_chromosomes;i++)
-			for(unsigned int j=0;j<N_robj;j++)
+		Matrix norm_objectives((uint)g.chromosomes.size(),(uint)intercepts.size());
+		for(uint i=0;i<N_chromosomes;i++)
+			for(uint j=0;j<N_robj;j++)
 				norm_objectives(i,j)=zb_objectives(i,j)/intercepts[j];
 		if(g.chromosomes.size()==population)
 		{
@@ -774,17 +774,17 @@ protected:
 		}
 		if(reference_vectors.empty())
 		{
-			unsigned int obj_dept;
+			uint obj_dept;
 			if(distribution_objective_reductions)
-				obj_dept=(unsigned int)distribution_objective_reductions(g.chromosomes[0].objectives).size();
+				obj_dept=(uint)distribution_objective_reductions(g.chromosomes[0].objectives).size();
 			else
-				obj_dept=(unsigned int)g.chromosomes[0].objectives.size();
+				obj_dept=(uint)g.chromosomes[0].objectives.size();
 			reference_vectors=generate_referenceVectors(obj_dept,reference_vector_divisions);
 		}
-		vector<unsigned int> associated_ref_vector;
+		vector<uint> associated_ref_vector;
 		vector<double> distance_ref_vector;
 
-		vector<unsigned int> niche_count;
+		vector<uint> niche_count;
 		Matrix distances; // row: pop, col: ref_vec
 		associate_to_references(
 			g,
@@ -794,23 +794,23 @@ protected:
 			niche_count,
 			distances);
 
-		unsigned int last_front_index=0;
+		uint last_front_index=0;
 		// select from best fronts as long as they are accommodated in the population
 		while(g2.chromosomes.size()+g.fronts[last_front_index].size()<=population)
 		{
-			for(unsigned int i:g.fronts[last_front_index])
+			for(uint i:g.fronts[last_front_index])
 				g2.chromosomes.push_back(g.chromosomes[i]);
 			last_front_index++;
 		}
-		vector<unsigned int> last_front=g.fronts[last_front_index];
+		vector<uint> last_front=g.fronts[last_front_index];
 		// select randomly from the next front
-		vector<unsigned int> to_add;
+		vector<uint> to_add;
 		while(g2.chromosomes.size()+to_add.size()<population)
 		{
 			if(!enable_reference_vectors)
 			{ // disabling reference points
-				unsigned int msz=(unsigned int)last_front.size();
-				unsigned int to_add_index=(unsigned int)std::floor(msz*random01());
+				uint msz=(uint)last_front.size();
+				uint to_add_index=(uint)std::floor(msz*random01());
 				if(to_add_index>=msz)
 					to_add_index=0;
 				to_add.push_back(last_front[to_add_index]);
@@ -818,23 +818,23 @@ protected:
 				continue ;
 			}
 
-			unsigned int min_niche_index=index_of_min(niche_count);
-			vector<unsigned int> min_vec_neighbors;
-			for(unsigned int i:last_front)
+			uint min_niche_index=index_of_min(niche_count);
+			vector<uint> min_vec_neighbors;
+			for(uint i:last_front)
 			{
 				if(associated_ref_vector[i]==min_niche_index)
 					min_vec_neighbors.push_back(i);
 			}
 			if(min_vec_neighbors.size()==0)
 			{
-				niche_count[min_niche_index]=(unsigned int)(10*g.chromosomes.size()); // inf
+				niche_count[min_niche_index]=(uint)(10*g.chromosomes.size()); // inf
 				continue;
 			}
-			unsigned int next_member_index=0; // The assignment is redundant but ok.
+			uint next_member_index=0; // The assignment is redundant but ok.
 			if(niche_count[min_niche_index]==0)
 			{
 				double min_val=distances(min_vec_neighbors[0],min_niche_index);
-				for(unsigned int i:min_vec_neighbors)
+				for(uint i:min_vec_neighbors)
 					if(distances(i,min_niche_index)<min_val)
 					{
 						next_member_index=i;
@@ -843,15 +843,15 @@ protected:
 			}
 			else
 			{
-				unsigned int msz=(unsigned int)min_vec_neighbors.size();
-				next_member_index=(unsigned int)(std::floor(msz*random01()));
+				uint msz=(uint)min_vec_neighbors.size();
+				next_member_index=(uint)(std::floor(msz*random01()));
 				if(next_member_index>=msz)
 					next_member_index=0;
 			}
-			unsigned int to_add_index=min_vec_neighbors[next_member_index];
+			uint to_add_index=min_vec_neighbors[next_member_index];
 			to_add.push_back(to_add_index);
 			int to_del_front=-1;
-			for(unsigned int i=0;i<last_front.size();i++)
+			for(uint i=0;i<last_front.size();i++)
 				if(last_front[i]==to_add_index)
 					to_del_front=i;
 
@@ -860,29 +860,29 @@ protected:
 
 			niche_count[min_niche_index]++;
 		}
-		for(unsigned int i:to_add)
+		for(uint i:to_add)
 			g2.chromosomes.push_back(g.chromosomes[i]);
 	}
 
 	void associate_to_references(
 		const thisGenerationType &gen,
 		const Matrix &norm_objectives,
-		vector<unsigned int> &associated_ref_vector,
+		vector<uint> &associated_ref_vector,
 		vector<double> &distance_ref_vector,
-		vector<unsigned int> &niche_count,
+		vector<uint> &niche_count,
 		Matrix &distances)
 	{
-		unsigned int N_ref=reference_vectors.get_n_rows();
-		unsigned int N_x=(unsigned int)gen.chromosomes.size();
+		uint N_ref=reference_vectors.get_n_rows();
+		uint N_x=(uint)gen.chromosomes.size();
 		niche_count.assign(N_ref, 0);
 		distances.zeros(N_x,N_ref); // row: pop, col: ref_vec
 		associated_ref_vector.assign(gen.chromosomes.size(),0);
 		distance_ref_vector.assign(gen.chromosomes.size(),0.0);
-		for(unsigned int i=0;i<N_x;i++)
+		for(uint i=0;i<N_x;i++)
 		{
 			double dist_min=0.0;   // to avoid uninitialization warning
-			unsigned int dist_min_index=0; // to avoid uninitialization warning
-			for(unsigned int j=0;j<N_ref;j++)
+			uint dist_min_index=0; // to avoid uninitialization warning
+			for(uint j=0;j<N_ref;j++)
 			{
 				vector<double> reference_vectors_row_j;
 				reference_vectors.get_row(j,reference_vectors_row_j);
@@ -894,10 +894,10 @@ protected:
 				norm_objectives.get_row(i,norm_obj);
 				assert(w.size()==norm_obj.size() && "Vector size mismatch! A349687921");
 				double scalar_wtnorm=0.0;
-				for(unsigned int k=0;k<norm_obj.size();k++)
+				for(uint k=0;k<norm_obj.size();k++)
 					scalar_wtnorm+=w[k]*norm_obj[k];
 				double dist2=0.0;
-				for(unsigned int k=0;k<norm_obj.size();k++)
+				for(uint k=0;k<norm_obj.size();k++)
 				{
 					double dist_x=norm_obj[k]-scalar_wtnorm*w[k];
 					dist2+=dist_x*dist_x;
@@ -972,20 +972,20 @@ protected:
 	}
 
 	template<typename T>
-	unsigned int index_of_min(const vector<T> &v)
+	uint index_of_min(const vector<T> &v)
 	{
-		return (unsigned int)(std::distance(v.begin(), std::min_element(v.begin(), v.end())));
+		return (uint)(std::distance(v.begin(), std::min_element(v.begin(), v.end())));
 	}
 
 	void scalarize_objectives(const Matrix &zb_objectives)
 	{
-		unsigned int N_objectives=zb_objectives.get_n_cols();
+		uint N_objectives=zb_objectives.get_n_cols();
 		if(scalarized_objectives_min.empty())
 		{
 			extreme_objectives.zeros(N_objectives,N_objectives);
 			scalarized_objectives_min.assign(N_objectives,std::numeric_limits<double>::infinity());
 		}
-		for(unsigned int i=0;i<N_objectives;i++)
+		for(uint i=0;i<N_objectives;i++)
 		{
 			vector<double> w;
 			w.assign(N_objectives,1e-10);
@@ -995,7 +995,7 @@ protected:
 			for(int j=0;j<Nx;j++)
 			{
 				double val_max=-1.0e300;
-				for(unsigned int k=0;k<N_objectives;k++)
+				for(uint k=0;k<N_objectives;k++)
 					val_max=std::max(val_max,zb_objectives(j,k)/w[k]);
 				s[j]=val_max;
 			}
@@ -1005,7 +1005,7 @@ protected:
 			if(min_sc<scalarized_objectives_min[i])
 			{
 				scalarized_objectives_min[i]=min_sc;
-				for(unsigned int j=0;j<N_objectives;j++)
+				for(uint j=0;j<N_objectives;j++)
 					extreme_objectives(i,j)=zb_objectives(min_sc_idx,j);
 			}
 		}
@@ -1117,7 +1117,7 @@ protected:
 
 		vector<int> ranks;
 		ranks.assign(gen.chromosomes.size(),0);
-		for(unsigned int i=0;i<gen.chromosomes.size();i++)
+		for(uint i=0;i<gen.chromosomes.size();i++)
 				ranks[gen.sorted_indices[i]]=i;
 
 		generate_selection_chance(gen,ranks);
@@ -1126,15 +1126,15 @@ protected:
 	void generate_selection_chance(thisGenerationType &gen,const vector<int> &rank)
 	{
 		double chance_cumulative=0.0;
-		unsigned int N=(unsigned int)gen.chromosomes.size();
+		uint N=(uint)gen.chromosomes.size();
 		gen.selection_chance_cumulative.clear();
 		gen.selection_chance_cumulative.reserve(N);
-		for(unsigned int i=0;i<N;i++)
+		for(uint i=0;i<N;i++)
 		{
 			chance_cumulative+=1.0/sqrt(double(rank[i]+1));
 			gen.selection_chance_cumulative.push_back(chance_cumulative);
 		}
-		for(unsigned int i=0;i<N;i++)
+		for(uint i=0;i<N;i++)
 		{	// normalizing
 			gen.selection_chance_cumulative[i]=gen.selection_chance_cumulative[i]/gen.selection_chance_cumulative[population-1];
 		}
@@ -1142,20 +1142,20 @@ protected:
 
 	void rank_population_MO(thisGenerationType &gen)
 	{
-		vector<vector<unsigned int>> domination_set;
+		vector<vector<uint>> domination_set;
 		vector<int> dominated_count;
 		domination_set.reserve(gen.chromosomes.size());
 		dominated_count.reserve(gen.chromosomes.size());
-		for(unsigned int i=0;i<gen.chromosomes.size();i++)
+		for(uint i=0;i<gen.chromosomes.size();i++)
 		{
 			domination_set.push_back({});
 			dominated_count.push_back(0);
 		}
-		vector<unsigned int> pareto_front;
+		vector<uint> pareto_front;
 
-		for(unsigned int i=0;i<gen.chromosomes.size();i++)
+		for(uint i=0;i<gen.chromosomes.size();i++)
 		{
-			for(unsigned int j=i+1;j<gen.chromosomes.size();j++)
+			for(uint j=i+1;j<gen.chromosomes.size();j++)
 			{
 				if(dominates(gen.chromosomes[i],gen.chromosomes[j]))
 				{
@@ -1173,13 +1173,13 @@ protected:
 		}
 		gen.fronts.clear();
 		gen.fronts.push_back(pareto_front);
-		vector<unsigned int> next_front;
+		vector<uint> next_front;
 		do
 		{
 			next_front.clear();
-			vector<unsigned int> &last_front=gen.fronts[gen.fronts.size()-1];
-			for(unsigned int i:last_front)
-				for(unsigned int j:domination_set[i])
+			vector<uint> &last_front=gen.fronts[gen.fronts.size()-1];
+			for(uint i:last_front)
+				for(uint j:domination_set[i])
 					if(--dominated_count[j]==0)
 						next_front.push_back(j);
 			if(!next_front.empty())
@@ -1187,8 +1187,8 @@ protected:
 		} while (!next_front.empty());
 		vector<int> ranks;
 		ranks.assign(gen.chromosomes.size(),0);
-		for(unsigned int i=0;i<gen.fronts.size();i++)
-			for(unsigned int j=0;j<gen.fronts[i].size();j++)
+		for(uint i=0;i<gen.fronts.size();i++)
+			for(uint j=0;j<gen.fronts[i].size();j++)
 				ranks[gen.fronts[i][j]]=i;
 		generate_selection_chance(gen,ranks);
 	}
@@ -1197,10 +1197,10 @@ protected:
 	{
 		if(a.objectives.size()!=b.objectives.size())
 			throw runtime_error("vector size mismatch A73592753!");
-		for(unsigned int i=0;i<a.objectives.size();i++)
+		for(uint i=0;i<a.objectives.size();i++)
 			if(a.objectives[i]>b.objectives[i])
 				return false;
-		for(unsigned int i=0;i<a.objectives.size();i++)
+		for(uint i=0;i<a.objectives.size();i++)
 			if(a.objectives[i]<b.objectives[i])
 				return true;
 		return false;
@@ -1240,8 +1240,8 @@ protected:
 	{
 		Matrix A;
 		A=generate_integerReferenceVectors(dept,N_division);
-		for(unsigned int i=0;i<A.get_n_rows();i++)
-			for(unsigned int j=0;j<A.get_n_cols();j++)
+		for(uint i=0;i<A.get_n_rows();i++)
+			for(uint j=0;j<A.get_n_cols();j++)
 				A(i,j)/=double(N_division);
 		return A;
 	}
@@ -1306,7 +1306,7 @@ protected:
 		thisGenerationType *p_generation0,
 		int index_from,
 		int index_to,
-		unsigned int *attemps,
+		uint *attemps,
 		std::atomic<bool> &active_thread)
 	{
 		for(int index=index_from;index<=index_to;index++)
@@ -1337,13 +1337,13 @@ protected:
 	* The method is called one-by-one as much as the
 	* specified solutions are generated
 	****************************************************/
-	template <void (thisType::*action_function)(thisGenerationType *p_generation0,int index_from,int index_to,unsigned int *attemps,std::atomic<bool> &active_thread)>
+	template <void (thisType::*action_function)(thisGenerationType *p_generation0,int index_from,int index_to,uint *attemps,std::atomic<bool> &active_thread)>
 	void sequential_action(
 		thisGenerationType &generation,
-		unsigned int N_add, unsigned int &total_attempts)
+		uint N_add, uint &total_attempts)
 	{
 		std::atomic<bool> dummy;
-		for(unsigned int i=0;i<N_add && !user_request_stop;i++)
+		for(uint i=0;i<N_add && !user_request_stop;i++)
 			(this->*action_function)(&generation,-1,-1,&total_attempts,dummy);
 	}
 
@@ -1352,16 +1352,16 @@ protected:
 	* initialization, or mutation/crossover) in a thread pool.
 	* The method is called by any available thread.
 	****************************************************/
-	template <void (thisType::*action_function)(thisGenerationType *p_generation0,int index_from,int index_to,unsigned int *attemps,std::atomic<bool> &active_thread)>
+	template <void (thisType::*action_function)(thisGenerationType *p_generation0,int index_from,int index_to,uint *attemps,std::atomic<bool> &active_thread)>
 	void dynamic_thread_action(
 		thisGenerationType &generation,
-		unsigned int N_add, unsigned int &total_attempts)
+		uint N_add, uint &total_attempts)
 	{
 		vector<atomic<bool>> active_threads(N_threads);
 		for (auto& at : active_threads)
 			std::atomic_init(&at, false);
 
-		vector<unsigned int> attempts;
+		vector<uint> attempts;
 		attempts.assign(N_threads,0);
 
 		// Initialize the thread pool
@@ -1379,15 +1379,15 @@ protected:
 			}
 		}
 
-		unsigned int offset = (unsigned int)generation.chromosomes.size();
+		uint offset = (uint)generation.chromosomes.size();
 
 		// Pre-fill the new solutions
-		for(unsigned int i=0;i<N_add;i++)
+		for(uint i=0;i<N_add;i++)
 		{
 			generation.chromosomes.push_back(thisChromosomeType());
 		}
 
-		unsigned int x_index=0;
+		uint x_index=0;
 		while(x_index<N_add && !user_request_stop)
 		{
 			int free_thread=-1;
@@ -1437,7 +1437,7 @@ protected:
 			if(th.joinable())
 				th.join();
 
-		for(unsigned int ac:attempts)
+		for(uint ac:attempts)
 			total_attempts+=ac;
 	}
 
@@ -1451,16 +1451,16 @@ protected:
 	* allocation is not dynamic, the whole process waits 
 	* for the worst-case-scenario thread. 
 	****************************************************/
-	template <void (thisType::*action_function)(thisGenerationType *p_generation0,int index_from,int index_to,unsigned int *attemps,std::atomic<bool> &active_thread)>
+	template <void (thisType::*action_function)(thisGenerationType *p_generation0,int index_from,int index_to,uint *attemps,std::atomic<bool> &active_thread)>
 	void static_thread_action(
 		thisGenerationType &generation,
-		unsigned int N_add, unsigned int &total_attempts)
+		uint N_add, uint &total_attempts)
 	{
 		vector<atomic<bool>> active_threads(N_threads);
 		for (auto& at : active_threads)
 			std::atomic_init(&at, false);
 
-		vector<unsigned int> attempts;
+		vector<uint> attempts;
 		attempts.assign(N_threads,0);
 
 		// Initialize the thread pool
@@ -1472,9 +1472,9 @@ protected:
 			if(th.joinable())
 				th.join();
 
-		unsigned int offset = (unsigned int)generation.chromosomes.size();
+		uint offset = (uint)generation.chromosomes.size();
 		// Pre-fill the new solutions
-		for(unsigned int i=0;i<N_add;i++)
+		for(uint i=0;i<N_add;i++)
 			generation.chromosomes.push_back(thisChromosomeType());
 
 		// Use determined thread pools
@@ -1521,7 +1521,7 @@ protected:
 			if(th.joinable())
 				th.join();
 
-		for(unsigned int ac:attempts)
+		for(uint ac:attempts)
 			total_attempts+=ac;
 	}
 
@@ -1533,8 +1533,8 @@ protected:
 		generation0.chromosomes.clear();
 		generation0.chromosomes.reserve(population); // push_back can invalidate the vector
 
-		unsigned int new_solutions_offset = (unsigned int) generation0.chromosomes.size();
-		unsigned int N_add=(unsigned int) std::max(0, int(population)-int(new_solutions_offset));
+		uint new_solutions_offset = (uint) generation0.chromosomes.size();
+		uint N_add=(uint) std::max(0, int(population)-int(new_solutions_offset));
 
 		// Evaluate and add the user defined population
 		for(const GeneType &solution:user_initial_solutions)
@@ -1547,7 +1547,7 @@ protected:
 				break;
 		}
 
-		unsigned int total_attempts=0;
+		uint total_attempts=0;
 		if(!multi_threading || N_threads==1 || is_interactive())
 		{
 			sequential_action<&thisType::init_population_range>(
@@ -1591,7 +1591,7 @@ protected:
 		thisGenerationType *p_new_generation,
 		int x_index_begin,
 		int x_index_end,
-		unsigned int *attemps,
+		uint *attemps,
 		std::atomic<bool> &active_thread)
 	{
 		for(int index=x_index_begin;index<=x_index_end;index++)
@@ -1660,8 +1660,8 @@ protected:
 			throw runtime_error("Wrong mutation rate");
 		if(generation_step<=0)
 			return ;
-		unsigned int N_add=(unsigned int)(std::round(double(population)*(crossover_fraction)));
-		unsigned int total_attempts=0;
+		uint N_add=(uint)(std::round(double(population)*(crossover_fraction)));
+		uint total_attempts=0;
 
 		if(is_interactive())
 		{
@@ -1748,7 +1748,7 @@ protected:
 				calculate_IGA_total_fitness(g);
 				break;
 			case GA_MODE::NSGA_III:
-				for(unsigned int i=0;i<g.chromosomes.size();i++)
+				for(uint i=0;i<g.chromosomes.size();i++)
 					g.chromosomes[i].objectives=calculate_MO_objectives(g.chromosomes[i]);
 				break;
 			default:

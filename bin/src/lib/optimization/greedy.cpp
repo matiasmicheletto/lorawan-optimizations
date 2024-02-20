@@ -254,7 +254,7 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                     // Check if out of time
                     auto currentTime = std::chrono::high_resolution_clock::now();
                     auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds > (currentTime - start).count();
-                    if (elapsedSeconds >= timeout) {
+                    if (elapsedSeconds >= (int64_t) timeout) {
                         if (verbose) std::cout << "Time limit reached." << std::endl;
                         timedout = true;
                         break;
@@ -435,7 +435,22 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
         uint gw[edCount];
         uint sf[edCount];
 
+
+
+
+
+
+
         if (verbose) std::cout << "Step 1: G4 allocation" << std::endl << std::endl;
+
+
+
+
+
+
+
+
+
 
         std::vector<std::vector<std::vector<uint>>> clusters; // Clusters tensor (SF x GW x ED)
         clusters.resize(6); // Initialize list of matrices (GW x ED)
@@ -465,12 +480,12 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
             if (!hasCoverage) continue; // Next SF
             else { // Has coverage --> make allocation and eval objective function
 
-                // Initialize GW List
-                std::vector<uint> gwList(gwCount);
-                for (uint i = 0; i < gwCount; i++) gwList[i] = i;
-
                 std::random_device rd;
                 std::mt19937 gen(rd());
+
+                // Initialize GW List
+                std::vector<uint> gwList(gwCount);
+                std::iota(gwList.begin(), gwList.end(), 0);
 
                 for (uint iter = 0; iter < iters; iter++) { // Try many times 
 
@@ -506,6 +521,17 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                     double uf;
                     bool feasible;
                     const double cost = o->eval(gw, sf, gwUsed, energy, uf, feasible);
+
+
+//DEBUG
+                    std::cout << "Iter " << iter << std::endl;
+                    std::cout << "SF " << s << std::endl;
+                    std::cout << "connected " << l->edCount << std::endl;
+                    std::cout << "Gws " << gwUsed << std::endl;
+                    std::cout << std::endl;
+                    
+
+
                     if (feasible && cost < minimumCost) { // New optimum
                         minimumCost = cost;
                         std::copy(gw, gw + edCount, gwBest);
@@ -520,7 +546,7 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
                     // Check if out of time
                     auto currentTime = std::chrono::high_resolution_clock::now();
                     auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds > (currentTime - start).count();
-                    if (elapsedSeconds >= timeout) {
+                    if (elapsedSeconds >= (int64_t) timeout) {
                         if (verbose) std::cout << "Time limit reached." << std::endl;
                         timedout = true;
                         break;
@@ -536,6 +562,22 @@ OptimizationResults greedy(Instance * l, Objective * o, uint iters, uint timeout
         results.tp = o->tp;
         results.execTime = std::chrono::duration_cast<std::chrono::milliseconds > (std::chrono::high_resolution_clock::now() - start).count();
         results.ready = true; // Set export flag to ready
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         if (verbose) {
             std::cout << "First step: (G4) finished in " << results.execTime << " ms" << std::endl;

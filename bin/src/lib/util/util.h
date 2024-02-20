@@ -8,7 +8,7 @@
 #include <math.h>
 
 //using uint = unsigned int; // Just for shorten the code
-#define uint unsigned int
+#define uint size_t
 
 void printHelp(const char* file);
 char* extractFileName(const char* path);

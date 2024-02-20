@@ -4,7 +4,7 @@
 #include <iostream>
 
 // UF value for a GW to be considered as "used"
-#define UFTHRES .0000001
+#define UFTHRES 1e-6
 #define SF_NUM 6
 
 class UtilizationFactor {

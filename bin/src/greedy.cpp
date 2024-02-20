@@ -23,7 +23,7 @@ auto getElapsedMs(std::chrono::_V2::system_clock::time_point start) {
 }
 
 bool isTimeout(std::chrono::_V2::system_clock::time_point start, uint timeout) {
-    return getElapsed(start) >= timeout;
+    return getElapsed(start) >= (int64_t)timeout;
 }
 
 
@@ -246,21 +246,21 @@ int main(int argc, char **argv) {
     #endif
 
     double minimumCost = __DBL_MAX__;
+    
+    bool timedout = false;
+    const Allocation essentials = bestAllocation;
     for(uint s = minCoverage; s <= 12; s++){
-
-        int exitCond = 0; // 1 -> timeout, 2 -> stagnation, 3-> max iteration
-        uint totalLoops = 0;
+        
         uint attemts = 1; // Attempts without improvement
         double improvement = 100.0;
-        const Allocation essentials = bestAllocation;
-        while(exitCond == 0) { // Until exit condition is met
+        for(uint i = 0; i < maxIterations; i++) {
 
-            if (isTimeout(start, timeout)) { // Check time limit
+            if (isTimeout(start, (unsigned long int)timeout)) { // Check time limit
                 #ifdef VERBOSE
                     std::cout << std::endl << "Time limit reached in allocation phase. Breaking phase." << std::endl;
                 #endif
-                exitCond = 1;
-                break;
+                timedout = true;
+                break; // for iter
             }
 
             // Shuffle list of essential and non-essential gws
@@ -269,6 +269,7 @@ int main(int argc, char **argv) {
             
             // Start allocation of non essential EDs (essential gws first)
             Allocation tempAlloc = essentials;
+
             for (uint ei = 0; ei < nEssED.size(); ei++) {
                 const uint e = nEssED[indirection[ei]]; // First nodes have less gws in range
                 for (uint gi = 0; gi < l->gwCount; gi++) {
@@ -276,34 +277,34 @@ int main(int argc, char **argv) {
                     const uint g = gi < essGW.size() ? essGW[gi] : nEssGW[gi - essGW.size()];
                     // Check if ED e can be connected to GW g
                     auto it = std::find(clusters[s - 7][g].begin(), clusters[s - 7][g].end(), e);
-                    if (it != clusters[s - 7][g].end()) 
-                        if(tempAlloc.checkUFAndConnect(e, g)) // If reachable, check uf and then connect
+                    if (it != clusters[s - 7][g].end())
+                        if(tempAlloc.checkUFAndConnect(e, g, 0, true)) // If reachable, check uf and then connect
                             break; // If connected, go to next ED
                 }
-                if(!tempAlloc.connected[e]) break; // If a node cannot be connected, break ED loop
+                if(!tempAlloc.connected[e]) break; // If a node cannot be connected, break ED loop --> next iter
             }
 
             // If all nodes connected, eval solution
             if(tempAlloc.connectedCount == l->edCount){ 
                 EvalResults res = o->eval(tempAlloc);
+
                 if(res.feasible && res.cost < minimumCost){ // New minimum found
-                    if(totalLoops > 0){ // Compute const improvement after first iteration
+                    if(i > 0){ // Compute const improvement after first iteration
                         const double diff = minimumCost - res.cost;
                         improvement = round(diff/res.cost * 100);
                     }
                     #ifdef VERBOSE
                         std::cout << std::endl
-                            << "Iteration " << totalLoops << ". New best for SF = " << s 
+                            << "Iteration " << i << ". New best for SF = " << s 
                             << " after " << attemts << " attempts. " 
                             << "Improvement = " << improvement << "\%" << std::endl;
-                        if(totalLoops > 0) std::cout << "Prev Cost=" << minimumCost << ", New ";
+                        if(i > 0) std::cout << "Prev Cost=" << minimumCost << ", New ";
                         o->printSolution(tempAlloc, res, false, false, false);
                     #endif
                     minimumCost = res.cost;
                     bestAllocation = tempAlloc;
                     attemts = 1;
                     if(improvement < minImprovement){
-                        exitCond = 2;
                         #ifdef VERBOSE
                             std::cout << std::endl 
                                     << "Improvement is below "  
@@ -311,26 +312,19 @@ int main(int argc, char **argv) {
                                     << "\% in allocation phase. Breaking phase." 
                                     << std::endl;
                         #endif
+                        break; // Next SF
                     }
                 }else{
                     attemts++;
-                    if(totalLoops > maxIterations){
-                        #ifdef VERBOSE
-                            std::cout << std::endl << "Iterations limit reached in allocation phase. Breaking phase."<< std::endl;
-                        #endif
-                        exitCond = 3;
-                        break;
-                    }
                 }
             }
             #ifdef VERBOSE
             else // There are not connected nodes
-                std::cout << "Attempt " << totalLoops << ", connected nodes: " << tempAlloc.connectedCount << " (out of " << l->edCount << ")" << std::endl;
+                std::cout << "Iteration " << i << ", connected nodes: " << tempAlloc.connectedCount << " (out of " << l->edCount << ")" << std::endl;
             #endif
-
-            totalLoops++; 
         }
-        if(exitCond != 0) break;
+
+        if(timedout) break; // Do not go to next SF
     }
     // Eval objective function (to get number of GWs)
     EvalResults bestRes = o->eval(bestAllocation);
@@ -385,8 +379,8 @@ int main(int argc, char **argv) {
         uint g1 = sortedUsedGWList[gi];    
         for (uint ei = 0; ei < srtedGWbyEDs[gi].size(); ei++) { // For each ED of GW g
             uint e = srtedGWbyEDs[gi][ei]; // Number of ED
-            std::vector<uint> availablesGWs = l->getSortedGWList(e); // List of GW in range of this ED
-            for(uint gi2 = 0; gi2 < availablesGWs.size(); gi2++){
+            std::vector<uint> availablesGWs = l->getGWList(e); // List of GW in range of this ED
+            for(long int gi2 = availablesGWs.size()-1; gi2 >= 0; gi2--){
                 const uint g2 = availablesGWs[gi2];
                 if(g2 != g1){
                     auto it = std::find(sortedUsedGWList.begin(), sortedUsedGWList.end(), g2);

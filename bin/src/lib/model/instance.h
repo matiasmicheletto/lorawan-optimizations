@@ -115,11 +115,23 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
 	Allocation(Instance* l) {
 		gw.resize(l->edCount);
 		sf.resize(l->edCount);
-        connected.resize(l->edCount);
+        connected.resize(l->edCount, false);
         connectedCount = 0;
-        ufGW.resize(l->gwCount);
+        ufGW.resize(l->gwCount, UtilizationFactor());
         this->l = l;
 	}
+
+    void printAlloc() {
+        std::cout << "Node allocation:" << std::endl;
+        for(uint e = 0; e < l->edCount; e++)
+            std::cout << gw[e] << "(" << sf[e] << ")\t";
+        std::cout << std::endl;
+        std::cout << std::endl << "GW allocation:" << std::endl;
+        for(uint g = 0; g < l->gwCount; g++){
+            std::cout << "Gw " << g << ":  ";
+            ufGW[g].printUFValues();
+        }
+    }
 
     bool checkUFAndConnect(uint e, uint g, uint asf = 0, bool incremental = false) {
         uint sf2 = (asf == 0 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default

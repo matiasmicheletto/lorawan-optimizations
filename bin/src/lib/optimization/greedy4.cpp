@@ -110,7 +110,7 @@ OptimizationResults greedy4(Instance* l, Objective* o, uint iters, uint timeout,
                 // Check if out of time
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
-                if (elapsedSeconds >= timeout) {
+                if (elapsedSeconds >= (int64_t)timeout) {
                     if(verbose) std::cout << "Time limit reached." << std::endl;
                     timedout = true;
                     break;

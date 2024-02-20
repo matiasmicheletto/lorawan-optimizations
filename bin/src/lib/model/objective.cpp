@@ -75,6 +75,7 @@ EvalResults Objective::eval(Allocation alloc) {
 
     for(uint i = 0; i < this->instance->edCount; i++){ // For each ED
         if(alloc.connected[i]){
+
             // Check if feasible SF
             uint minSF = this->instance->getMinSF(i, alloc.gw[i]);
             uint maxSF = this->instance->getMaxSF(i);
@@ -88,6 +89,7 @@ EvalResults Objective::eval(Allocation alloc) {
                 res.feasible = false;
                 res.cost += unfeasibleIncrement;
             }
+
             double maxUFTemp = alloc.ufGW[alloc.gw[i]].getMax(); // Max UF value between all SF
             if(maxUFTemp > res.uf) // Update max UF
                 res.uf = maxUFTemp;
@@ -101,7 +103,7 @@ EvalResults Objective::eval(Allocation alloc) {
 
     // Count number of used gw
     for(uint j = 0; j < this->instance->gwCount; j++)
-        if(alloc.ufGW[j].isUsed()) 
+        if(alloc.ufGW[j].isUsed())
             res.gwUsed++;
 
     // If solution is feasible, at this point (before following equation), cost should equal 0.0
@@ -164,7 +166,6 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
             std::cout << gw[i] << "[" << sf[i] << "]\t";
         }
         std::cout << std::endl;
-        //this->printSol(gw, sf); // Export file
     }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
@@ -197,11 +198,11 @@ void Objective::printSolution(const Allocation alloc, const EvalResults results,
                     gwList2.push_back(gi);
                 }
             }
-            std::cout << "GWs used: "; 
+            std::cout << "Indexes of GWs used: "; 
             for(uint i = 0; i < gwList.size(); i++)
                 std::cout << gwList[i] << " ";
             std::cout << std::endl;
-            std::cout << "GWs not used: "; 
+            std::cout << "Indexes of GWs not used: "; 
             for(uint i = 0; i < gwList2.size(); i++)
                 std::cout << gwList2[i] << " ";
             std::cout << std::endl;
@@ -218,21 +219,6 @@ void Objective::printSolution(const Allocation alloc, const EvalResults results,
     }
     
     if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
-}
-
-void Objective::printSol(const uint* gw, const uint* sf) {
-    std::ofstream outFile("last.out", std::ios::app); 
-
-    if (!outFile) {
-        std::cerr << "Error: Unable to open CSV file." << std::endl;
-        return;
-    }
-    
-    for(uint i = 0; i < this->instance->edCount; i++) // For each ED    
-        outFile << i+1 << "\t" << gw[i]+1 << "\t" << sf[i] << std::endl;
-    
-    outFile.flush();
-    outFile.close();
 }
 
 void Objective::exportWST(const uint* gw, const uint* sf) {

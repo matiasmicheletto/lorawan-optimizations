@@ -52,7 +52,7 @@ OptimizationResults randomSearch(Instance* l, Objective* o, uint maxIters, uint 
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
-        if (elapsedSeconds >= timeout) {
+        if (elapsedSeconds >= (int64_t)timeout) {
             if(verbose) std::cout << "Time limit reached." << std::endl;
             break;
         }
@@ -141,7 +141,7 @@ OptimizationResults improvedRandomSearch(Instance* l, Objective* o, uint maxIter
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - start).count();
-        if (elapsedSeconds >= timeout) {
+        if (elapsedSeconds >= (int64_t)timeout) {
             if(verbose) std::cout << "Time limit reached." << std::endl;
             break;
         }
