@@ -219,13 +219,12 @@ int main(int argc, char **argv) {
     #ifdef VERBOSE
         std::cout << std::endl << "Step 3 -- Sort nodes by reachable gateways -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif 
+
     std::vector<uint> reachGW(nEssED.size());
     std::vector<uint> indirection(nEssED.size());
-    for (uint ei = 0; ei < nEssED.size(); ei++){
-        indirection[ei] = ei;
+    std::iota(indirection.begin(), indirection.end(), 0);
+    for (uint ei = 0; ei < nEssED.size(); ei++)
         reachGW[ei] = l->getGWList(nEssED[ei]).size(); // Number of gws
-    }
-
 
     std::sort(
         indirection.begin(),
@@ -234,7 +233,6 @@ int main(int argc, char **argv) {
             return reachGW[a] < reachGW[b];
         }
     );
-
 
     #ifdef VERBOSE
         std::cout << "Sorting finished." << std::endl;
@@ -272,16 +270,17 @@ int main(int argc, char **argv) {
             // Start allocation of non essential EDs (essential gws first)
             Allocation tempAlloc = essentials;
             for (uint ei = 0; ei < nEssED.size(); ei++) {
-                const uint e = nEssED[indirection[ei]];
+                const uint e = nEssED[indirection[ei]]; // First nodes have less gws in range
                 for (uint gi = 0; gi < l->gwCount; gi++) {
+                    // g is the index of gw from the arrays essGW or nEssGW
                     const uint g = gi < essGW.size() ? essGW[gi] : nEssGW[gi - essGW.size()];
                     // Check if ED e can be connected to GW g
                     auto it = std::find(clusters[s - 7][g].begin(), clusters[s - 7][g].end(), e);
                     if (it != clusters[s - 7][g].end()) 
                         if(tempAlloc.checkUFAndConnect(e, g)) // If reachable, check uf and then connect
-                            break; 
+                            break; // If connected, go to next ED
                 }
-                if(!tempAlloc.connected[e]) break;
+                if(!tempAlloc.connected[e]) break; // If a node cannot be connected, break ED loop
             }
 
             // If all nodes connected, eval solution
@@ -372,57 +371,37 @@ int main(int argc, char **argv) {
         }
     );
     // Sort non essential GWs arrays by number of EDs
-    std::vector<uint> sortedGWList(bestRes.gwUsed);
-    std::vector<std::vector<uint>> sortedGWEDs(bestRes.gwUsed);
+    std::vector<uint> sortedUsedGWList(bestRes.gwUsed);
+    std::vector<std::vector<uint>> srtedGWbyEDs(bestRes.gwUsed);
     for (uint gi = 0; gi < bestRes.gwUsed; gi++) {
         const uint g = indirection2[gi];
-        sortedGWList[gi] = usedGWList[g];
-        sortedGWEDs[gi] = edsOfGW[g];
+        sortedUsedGWList[gi] = usedGWList[g];
+        srtedGWbyEDs[gi] = edsOfGW[g];
     }
 
-
-
-    // Start from first GW and try to reallocate all of its EDs to any of the following
+    // Start from first GW and try to connect all of its EDs to any of the following
 	const uint nEssGWUsed = bestRes.gwUsed - essGW.size();
     for (uint gi = 0; gi < nEssGWUsed; gi++) {
-        uint g1 = sortedGWList[gi];    
-        uint ei = 0;
-        while (ei < sortedGWEDs[gi].size()) { // For each ED of GW g
-            uint e = sortedGWEDs[gi][ei]; // Number of ED
+        uint g1 = sortedUsedGWList[gi];    
+        for (uint ei = 0; ei < srtedGWbyEDs[gi].size(); ei++) { // For each ED of GW g
+            uint e = srtedGWbyEDs[gi][ei]; // Number of ED
             std::vector<uint> availablesGWs = l->getSortedGWList(e); // List of GW in range of this ED
-            if (availablesGWs.size() > 1) {
-                for (uint gi2 = 0; gi2 < bestRes.gwUsed; gi2++) { // Search if possible to allocate to another used GW
-                    const uint g2 = sortedGWList[gi2];
-                    if (g1 != g2) {
-                        auto it = std::find(availablesGWs.begin(), availablesGWs.end(), g2);
-                        if (it != availablesGWs.end()) { // g2 is in available list, check if enough UF
-                            if(tempAlloc.checkUFAndMove(e, g2)){ // If moved e, remove from gw and sort arrays again
-                                sortedGWEDs[gi].erase(std::remove(sortedGWEDs[gi].begin(), sortedGWEDs[gi].end(), e), sortedGWEDs[gi].end()); // Remove ED e from GW g
-                                std::sort(
-                                    indirection2.begin(),
-                                    indirection2.end(),
-                                    [&edsOfGW](const uint & a,
-                                        const uint & b) {
-                                        return edsOfGW[a].size() < edsOfGW[b].size();
-                                    }
-                                );
-                                for (uint gii = 0; gii < nEssGWUsed; gii++) { 
-                                    sortedGWList[gii] = usedGWList[indirection2[gii]];
-                                    sortedGWEDs[gii] = edsOfGW[indirection2[gii]];
-                                }
-                                #ifdef VERBOSE
-                                    std::cout << "Reallocated ED " << e << ": GW " << g1 << " --> " << g2 << ", with new SF: " << tempAlloc.sf[e] << std::endl;
-                                #endif
-                                break;
-                            }
+            for(uint gi2 = 0; gi2 < availablesGWs.size(); gi2++){
+                const uint g2 = availablesGWs[gi2];
+                if(g2 != g1){
+                    auto it = std::find(sortedUsedGWList.begin(), sortedUsedGWList.end(), g2);
+                    if(it != sortedUsedGWList.end()){
+                        if(tempAlloc.checkUFAndMove(e, g2)){ // If moved e, remove from gw and sort arrays again
+                            #ifdef VERBOSE
+                                std::cout << "Reallocated ED " << e << ": GW " << g1 << " --> " << g2 << ", with new SF: " << tempAlloc.sf[e] << std::endl;
+                            #endif
+                            break;
                         }
                     }
                 }
             }
-            ei++;
         }
     }
-
     
     EvalResults tempRes = o->eval(tempAlloc);
     if(tempRes.cost < bestRes.cost){
@@ -439,10 +418,15 @@ int main(int argc, char **argv) {
         #endif
     }
 
+
+
+    #ifdef VERBOSE
+        std::cout << std::endl << "Step 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+    #endif
     OptimizationResults results;
     results.instanceName = l->getInstanceFileName();
     results.solverName = strdup("Greedy (./greedy)");
-    results.tp = 
+    results.tp = o->tp;
     results.execTime = getElapsedMs(start);
     results.feasible = tempRes.feasible;
     results.cost = tempRes.cost;
@@ -452,12 +436,11 @@ int main(int argc, char **argv) {
     results.ready = true;
     logResultsToCSV(results, LOGFILE);
 
-    #ifdef VERBOSE
-        std::cout << std::endl << "Step 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
-        std::cout << std::endl << "Total execution time = " << results.execTime << " ms" << std::endl;
-    #endif
     // Print results and exit
     o->printSolution(bestAllocation, bestRes, false, true, true);
+    #ifdef VERBOSE
+        std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
+    #endif
 
     if(xml) o->exportWST(bestAllocation.gw.data(), bestAllocation.sf.data());
     

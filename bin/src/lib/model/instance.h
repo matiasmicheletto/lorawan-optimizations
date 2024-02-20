@@ -147,7 +147,7 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
     bool checkUFAndMove(uint e, uint g) {
         if(gw[e] != g && connected[e]){
             const uint sf2 = l->getMinSF(e, g);
-            if(sf2 < sf[e]){
+            if(sf2 < sf[e]){ // If new SF is smaller
                 const UtilizationFactor nextUF = l->getUF(e, sf2); // UF of node e for g
                 if(!(ufGW[g] + nextUF).isFull()){ // If g available for e with sf2
                     ufGW[gw[e]] -= l->getUF(e, sf[e]); // Substract previous UF to prev GW
@@ -161,6 +161,7 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
         return false;
     }
 
+    /*
     void connect(uint e, uint g, int asf = -1) { // Unvalidated operation
         const uint sf2 = (asf == -1 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
         const UtilizationFactor nextUF = l->getUF(e, sf2);
@@ -179,6 +180,7 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
         connected[e] = true;
         ufGW[g] += l->getUF(e, sf2);
     }
+    */
 };
 
 #endif // INSTANCE_H
