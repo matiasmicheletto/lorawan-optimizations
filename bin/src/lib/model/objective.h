@@ -15,6 +15,8 @@
 #include "uf.h"
 #include "instance.h"
 
+enum FEAS_CODE {FEASIBLE, SF_RANGE, UF_VALUE, ED_COVERAGE};
+
 struct TunningParameters {
     double alpha;
     double beta;
@@ -46,6 +48,7 @@ struct EvalResults {
     uint gwUsed; // Optimal number of used gw
     uint energy; // Energy of solution
     bool feasible; // Feasible solution
+    FEAS_CODE unfeasibleCode; // Unfeasibility condition
     double uf; // Max. utilization factor of solution
     double cost; // Objective cost
 };
@@ -56,7 +59,7 @@ class Objective {
         ~Objective();
         
         double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
-        EvalResults eval(Allocation alloc);
+        EvalResults eval(Allocation alloc, bool comparable = false);
 
         void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false, bool showGWs = false);
         void printSolution(const Allocation alloc, const EvalResults results, bool allocation = true, bool highlight = false, bool showGWs = false);

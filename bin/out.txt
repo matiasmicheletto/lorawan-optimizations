@@ -1,0 +1,51 @@
+
+Step 0 -- Load instance and optimization parameters
+Input file loaded.
+GW Count: 50
+ED Count: 5000
+Exit conditions: 
+ Timeout: 120 seconds.
+ Stagnation limit: 1%
+ Max iterations: 10
+Tunning parameters:
+  Alpha: 1
+  Beta: 0.01
+  Gamma: 0.001
+
+Step 1 -- Build clusters (reacheability tensor) -- elapsed = 0 sec.
+No coverage for SF 7: ED 0 cannot be assigned to any GW.
+No coverage for SF 8: ED 0 cannot be assigned to any GW.
+No coverage for SF 9: ED 0 cannot be assigned to any GW.
+
+Step 2 -- Find and allocate essential nodes -- elapsed = 1 sec.
+
+Essential GWs: 21 (of 50):
+8 10 12 14 15 16 22 23 26 27 29 31 33 35 36 37 38 40 41 42 46 
+
+Total connected nodes to essential GWs: 345 (4655 left).
+
+Step 3 -- Sort nodes by reachable gateways -- elapsed = 3 sec.
+Sorting finished.
+
+Step 4 -- Allocation of non essential nodes -- elapsed = 3 sec.
+Start allocation from SF 10
+
+Iteration 0. New best for SF = 11 after 1 attempts. Improvement = 100%
+Cost=235.831 (Feasible), (GW=35,E=20083,U=1)
+
+Iteration 1. New best for SF = 11 after 1 attempts. Improvement = 4%
+Prev Cost=235.831, New Cost=227.211 (Feasible), (GW=33,E=19421,U=1)
+
+Step 5 -- Reallocation -- elapsed = 7 sec.
+
+Reallocated 20 nodes
+Cost change after reallocation:
+  GW = 33 --> 33
+  E = 19421 --> 19401
+
+Step 6 -- Print results -- elapsed = 7 sec.
+[1;31mCost=227.011 (Feasible), (GW=33,E=19401,U=1)
+Indexes of GWs used: 29 16 40 25 27 23 33 37 8 38 26 10 41 15 36 46 11 12 22 31 42 2 3 49 24 14 35 48 44 17 43 5 9 
+Indexes of GWs not used: 0 1 4 6 7 13 18 19 20 21 28 30 32 34 39 45 47 
+[0m
+Total execution time = 7687 ms

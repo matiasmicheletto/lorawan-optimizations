@@ -64,11 +64,12 @@ double Objective::eval(const uint* gw, const uint* sf, uint &gwCount, uint &ener
     return cost; 
 }
 
-EvalResults Objective::eval(Allocation alloc) {
+EvalResults Objective::eval(Allocation alloc, bool comparable) {
     EvalResults res = {
         0, // gwUsed
         0, // energy
         true, // feasible
+        FEAS_CODE::FEASIBLE, // unfeasible code
         0.0, // uf
         0.0 // cost
     };
@@ -82,12 +83,16 @@ EvalResults Objective::eval(Allocation alloc) {
             if(alloc.sf[i] > maxSF || alloc.sf[i] < minSF){ // Unfeasibility condition: not valid SF available for this GW
                 res.feasible = false;
                 res.cost += unfeasibleIncrement;
+                res.unfeasibleCode = FEAS_CODE::SF_RANGE;
+                if(!comparable) break;
             }
 
             // Compute GW UF
             if(alloc.ufGW[alloc.gw[i]].isFull()){ // Unfeasibility condition: UF > 1 for some SF
                 res.feasible = false;
                 res.cost += unfeasibleIncrement;
+                res.unfeasibleCode = FEAS_CODE::UF_VALUE;
+                if(!comparable) break;
             }
 
             double maxUFTemp = alloc.ufGW[alloc.gw[i]].getMax(); // Max UF value between all SF
@@ -98,6 +103,8 @@ EvalResults Objective::eval(Allocation alloc) {
         }else{
             res.feasible = false;
             res.cost += 3*unfeasibleIncrement;
+            res.unfeasibleCode = FEAS_CODE::ED_COVERAGE;
+            if(!comparable) break;
         }
     }
 
@@ -107,9 +114,10 @@ EvalResults Objective::eval(Allocation alloc) {
             res.gwUsed++;
 
     // If solution is feasible, at this point (before following equation), cost should equal 0.0
-    res.cost += this->tp.alpha * (double) res.gwUsed + 
-            this->tp.beta * (double) res.energy + 
-            this->tp.gamma * res.uf;    
+    if(res.feasible)
+        res.cost = this->tp.alpha * (double) res.gwUsed + 
+                this->tp.beta * (double) res.energy + 
+                this->tp.gamma * res.uf;    
 
     return res;
 }

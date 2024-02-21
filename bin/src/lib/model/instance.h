@@ -135,8 +135,9 @@ struct Allocation { // Models a candidate solution (allocation of gw and sf for 
 
     bool checkUFAndConnect(uint e, uint g, uint asf = 0, bool incremental = false) {
         uint sf2 = (asf == 0 ? l->getMinSF(e, g) : asf); // Use provided or min SF as default
+        uint maxSF = l->getMaxSF(e);
         UtilizationFactor nextUF;
-        while(sf2 <= 12) {
+        while(sf2 <= maxSF) {
             nextUF = l->getUF(e, sf2); // UF of node e for g
             if(!(ufGW[g] + nextUF).isFull()){ // If available UF, use it
                 gw[e] = g;

@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
                 l = new Instance(argv[i + 1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -f (--file)" << std::endl;
+                std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stall") == 0) {
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
                 minImprovement = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -s (--stall)" << std::endl;
+                std::cout << std::endl << "Error in argument -s (--stall)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
                 timeout = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -t (--timeout)" << std::endl;
+                std::cout << std::endl << "Error in argument -t (--timeout)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iters") == 0) {
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
                 maxIterations = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -i (--iters)" << std::endl;
+                std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--alpha") == 0){
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
                 tp.alpha = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -a (--alpha)" << std::endl;
+                std::cout << std::endl << "Error in argument -a (--alpha)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--beta") == 0){
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
                 tp.beta = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -b (--beta)" << std::endl;
+                std::cout << std::endl << "Error in argument -b (--beta)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gamma") == 0){
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
                 tp.gamma = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cerr << std::endl << "Error in argument -g (--gamma)" << std::endl;
+                std::cout << std::endl << "Error in argument -g (--gamma)" << std::endl;
             }
         }
         xml = strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0;
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 
     if(l == nullptr){
         printHelp(MANUAL);
-        std::cerr << std::endl << "Invalid instance model. Must specify --file or -f argument and file name." << std::endl << std::endl;
+        std::cout << std::endl << "Invalid instance model. Must specify --file or -f argument and file name." << std::endl << std::endl;
         exit(1);
     }
     
@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
         }
     }
     if(minCoverage == 13){ // If not coverage reached, exit
-        std::cerr << "System is not feasible (no coverage for SF 12). Exiting program..." << std::endl;
+        std::cout << "System is not feasible (no coverage for SF 12). Exiting program..." << std::endl;
         exit(1);
     }
 
@@ -187,10 +187,10 @@ int main(int argc, char **argv) {
                     essGW.push_back(g);
                 // Try to allocate essential ed to essential gw
                 if(!bestAllocation.checkUFAndConnect(e, g)){
-                    std::cerr << "ED " << e << " cannot be connected to essential GW " << g << std::endl;
-                    std::cerr << "Not enough UF available:" << std::endl;
+                    std::cout << "ED " << e << " cannot be connected to essential GW " << g << std::endl;
+                    std::cout << "Not enough UF available:" << std::endl;
                     bestAllocation.ufGW[g].printUFValues();
-                    std::cerr << "Unfeasible system. Exiting program..." << std::endl;
+                    std::cout << "Unfeasible system. Exiting program..." << std::endl;
                     exit(1);
                 }
             }else{ // Add non essential node to list (to allocate later)
@@ -201,10 +201,12 @@ int main(int argc, char **argv) {
         }
         if(!gIsEssential)
             nEssGW.push_back(g);
+        /*
         #ifdef VERBOSE
         else
             std::cout << "Essential GW " << g << " has " << edsOfCurrentGW.size() << " reachable nodes, " << bestAllocation.connectedCount << " total nodes connected." << std::endl;
         #endif
+        */
     }
     #ifdef VERBOSE
         std::cout << std::endl << "Essential GWs: " << essGW.size() << " (of " << l->gwCount << "):" << std::endl;
@@ -278,7 +280,7 @@ int main(int argc, char **argv) {
                     // Check if ED e can be connected to GW g
                     auto it = std::find(clusters[s - 7][g].begin(), clusters[s - 7][g].end(), e);
                     if (it != clusters[s - 7][g].end())
-                        if(tempAlloc.checkUFAndConnect(e, g, 0, true)) // If reachable, check uf and then connect
+                        if(tempAlloc.checkUFAndConnect(e, g)) // If reachable, check uf and then connect
                             break; // If connected, go to next ED
                 }
                 if(!tempAlloc.connected[e]) break; // If a node cannot be connected, break ED loop --> next iter
@@ -286,8 +288,7 @@ int main(int argc, char **argv) {
 
             // If all nodes connected, eval solution
             if(tempAlloc.connectedCount == l->edCount){ 
-                EvalResults res = o->eval(tempAlloc);
-
+                EvalResults res = o->eval(tempAlloc, false); // Use true to compute cost according to feasibility level
                 if(res.feasible && res.cost < minimumCost){ // New minimum found
                     if(i > 0){ // Compute const improvement after first iteration
                         const double diff = minimumCost - res.cost;
@@ -315,13 +316,23 @@ int main(int argc, char **argv) {
                         break; // Next SF
                     }
                 }else{
+                    /*
+                    #ifdef VERBOSE
+                        std::cout << "SF " << s << ", iteration " << i << ", coverage 100\%"
+                                << ", feasibility: " << (res.feasible ? "yes" : "no")
+                                << ", unfeasible type: " << res.unfeasibleCode
+                                << ", cost: " << res.cost << std::endl;
+                    #endif
+                    */
                     attemts++;
                 }
             }
+            /*
             #ifdef VERBOSE
             else // There are not connected nodes
-                std::cout << "Iteration " << i << ", connected nodes: " << tempAlloc.connectedCount << " (out of " << l->edCount << ")" << std::endl;
+                std::cout << "SF " << s << ", iteration " << i << ", connected nodes: " << tempAlloc.connectedCount << " (out of " << l->edCount << ")" << std::endl;
             #endif
+            */
         }
 
         if(timedout) break; // Do not go to next SF
@@ -329,7 +340,8 @@ int main(int argc, char **argv) {
     // Eval objective function (to get number of GWs)
     EvalResults bestRes = o->eval(bestAllocation);
     if(!bestRes.feasible){
-        std::cerr << std::endl << "System not feasible after allocation of non essential nodes. Exiting program..." << std::endl;
+        std::cout << std::endl << "System not feasible after allocation of non essential nodes. Exiting program..." << std::endl;
+        std::cout << "Unfeasibility code: " << bestRes.unfeasibleCode << std::endl;
         exit(1);
     }
 
@@ -374,6 +386,7 @@ int main(int argc, char **argv) {
     }
 
     // Start from first GW and try to connect all of its EDs to any of the following
+    uint reallocationCount = 0;
 	const uint nEssGWUsed = bestRes.gwUsed - essGW.size();
     for (uint gi = 0; gi < nEssGWUsed; gi++) {
         uint g1 = sortedUsedGWList[gi];    
@@ -386,9 +399,12 @@ int main(int argc, char **argv) {
                     auto it = std::find(sortedUsedGWList.begin(), sortedUsedGWList.end(), g2);
                     if(it != sortedUsedGWList.end()){
                         if(tempAlloc.checkUFAndMove(e, g2)){ // If moved e, remove from gw and sort arrays again
+                            /*
                             #ifdef VERBOSE
                                 std::cout << "Reallocated ED " << e << ": GW " << g1 << " --> " << g2 << ", with new SF: " << tempAlloc.sf[e] << std::endl;
                             #endif
+                            */
+                            reallocationCount++;
                             break;
                         }
                     }
@@ -400,9 +416,10 @@ int main(int argc, char **argv) {
     EvalResults tempRes = o->eval(tempAlloc);
     if(tempRes.cost < bestRes.cost){
         #ifdef VERBOSE
+            std::cout << std::endl << "Reallocated " << reallocationCount << " nodes" << std::endl;
             std::cout << "Cost change after reallocation:" << std::endl;
-            std::cout << "GW = " << bestRes.gwUsed << " --> " << tempRes.gwUsed << std::endl;
-            std::cout << "E = " << bestRes.energy << " --> " << tempRes.energy << std::endl;
+            std::cout << "  GW = " << bestRes.gwUsed << " --> " << tempRes.gwUsed << std::endl;
+            std::cout << "  E = " << bestRes.energy << " --> " << tempRes.energy << std::endl;
         #endif
         bestAllocation = tempAlloc;
         bestRes = tempRes;
