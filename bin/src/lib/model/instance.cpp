@@ -440,14 +440,12 @@ std::vector<uint> Instance::getEDList(uint gw, uint sf) {
 
 std::vector<uint> Instance::getAllEDList(uint gw, uint maxSF) {
     // Returns all ED that can be connected to GW using given SF from 7 to maxSF
-    std::vector<uint> edList;     
+    std::unordered_set<uint> edSet;
     for(uint s = 7; s < maxSF; s++){
         std::vector<uint> tempList = this->getEDList(gw, s);
-        for(uint ee = 0; ee < tempList.size(); ee++){
-            auto it = std::find(edList.begin(), edList.end(), tempList[ee]);
-            if(it == edList.end())
-                edList.push_back(tempList[ee]);
-        }
+        for(uint ee = 0; ee < tempList.size(); ee++)
+            edSet.insert(tempList[ee]);
     }
+    std::vector<uint> edList(edSet.begin(), edSet.end());
     return edList;
 }

@@ -1,7 +1,6 @@
 #define MANUAL "readme_greedy.txt"
 #define LOGFILE "summary.csv"
 
-#include <cstring>
 #include "lib/util/util.h"
 #include "lib/model/instance.h"
 #include "lib/model/objective.h"
@@ -139,7 +138,7 @@ int main(int argc, char **argv) {
     #endif
     Allocation bestAllocation(l); // Allocation (initially empty)
     // Essential and non essential gw
-    std::vector<uint> essGW;
+    std::unordered_set<uint> essGWSet; // Using set for unique values insertion
     std::vector<uint> nEssGW;
     // Non essential nodes
     std::vector<uint> nEssED;
@@ -147,17 +146,18 @@ int main(int argc, char **argv) {
     std::vector<uint> reachGW; // This structure is used in following step
     for(uint e = 0; e < l->edCount; e++){
         std::vector<uint> gwsOfE = l->getGWList(e);
-        if(gwsOfE.size() == 1){ // e is essential, add gw to essential list
-            if(std::find(essGW.begin(), essGW.end(), gwsOfE[0]) == essGW.end())
-                essGW.push_back(gwsOfE[0]);
+        if(gwsOfE.size() == 1){ // e is essential, add gw to essential gw list
+            essGWSet.insert(gwsOfE[0]);
             bestAllocation.checkUFAndConnect(e, gwsOfE[0]); // Connect node to essential gw
         }else{
             reachGW.push_back(gwsOfE.size()); // Add gw count of this non essential node
             nEssED.push_back(e);
         }
     }
+    std::vector<uint> essGW(essGWSet.begin(), essGWSet.end());
     // Initialize list of non essential gws
     if(essGW.size() == 0){ // If no essential gws, initialize 
+        nEssGW.resize(l->gwCount);
         std::iota(nEssGW.begin(), nEssGW.end(), 0);
     }else{ // Add the other gws to non essential list
         for(uint g = 0; g < l->gwCount; g++)
@@ -187,6 +187,7 @@ int main(int argc, char **argv) {
             return reachGW[a] < reachGW[b];
         }
     );
+
     #ifdef VERBOSE
         std::cout << "Sorting finished." << std::endl;
     #endif 
@@ -223,7 +224,9 @@ int main(int argc, char **argv) {
             }
         }
         if(!hasCoverage) continue; // Go to next SF
-
+        #ifdef VERBOSE
+            std::cout << "Coverage 100% reached at SF " << s << std::endl;
+        #endif
         
         double improvement = 100.0;
         for(uint i = 0; i < maxIterations; i++) {
@@ -235,7 +238,7 @@ int main(int argc, char **argv) {
                 timedout = true;
                 break; // for iter and then for sf
             }
-
+            
             // Shuffle list of essential and non-essential gws
             std::shuffle(essGW.begin(), essGW.end(), gen); 
             std::shuffle(nEssGW.begin(), nEssGW.end(), gen);

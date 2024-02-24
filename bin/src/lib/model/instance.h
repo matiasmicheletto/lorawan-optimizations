@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cstring>
 #include <algorithm>
+#include <unordered_set>
 
 #include "uf.h"
 #include "../util/util.h"
