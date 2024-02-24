@@ -3,6 +3,7 @@ bin/gpprs
 bin/datgen 
 bin/greedy 
 bin/summary.csv 
+bin/*.txt
 dat/ 
 doc/ 
 python/venv/ 

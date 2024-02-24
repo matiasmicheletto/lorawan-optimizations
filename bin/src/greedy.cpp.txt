@@ -113,6 +113,8 @@ int main(int argc, char **argv) {
         std::cout << std::endl << "Invalid instance model. Must specify --file or -f argument and file name." << std::endl << std::endl;
         exit(1);
     }
+
+    Objective *o = new Objective(l, tp);
     
     #ifdef VERBOSE
         std::cout << "Input file loaded." << std::endl;
@@ -128,11 +130,9 @@ int main(int argc, char **argv) {
             std::cout << "  Gamma: " << tp.gamma << std::endl;
     #endif
 
-    Objective *o = new Objective(l, tp);
+    
 
     auto start = std::chrono::high_resolution_clock::now();
-
-
 
     #ifdef VERBOSE
         std::cout << std::endl << "Step 2 -- Find and allocate essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
@@ -144,27 +144,33 @@ int main(int argc, char **argv) {
     // Non essential nodes
     std::vector<uint> nEssED;
     // Find essential gws and allocate essential nodes
-    std::vector<uint> reachGW; // This structure is used in following step
-    for(uint e = 0; e < l->edCount; e++){
-        std::vector<uint> gwsOfE = l->getGWList(e);
-        if(gwsOfE.size() == 1){ // e is essential, add gw to essential list
-            if(std::find(essGW.begin(), essGW.end(), gwsOfE[0]) == essGW.end())
-                essGW.push_back(gwsOfE[0]);
-            bestAllocation.checkUFAndConnect(e, gwsOfE[0]); // Connect node to essential gw
-        }else{
-            reachGW.push_back(gwsOfE.size()); // Add gw count of this non essential node
-            nEssED.push_back(e);
+    for(uint g = 0; g < l->gwCount; g++){
+        bool gIsEssential = false;
+        const std::vector<uint> edsOfCurrentGW = l->getAllEDList(g, 12);
+        for(uint i = 0; i < edsOfCurrentGW.size(); i++){ 
+            const uint e = edsOfCurrentGW[i];
+            if(l->getGWList(e).size() == 1){ // GW g is essential for node e
+                gIsEssential = true;
+                auto it = std::find(essGW.begin(), essGW.end(), g);
+                if(it == essGW.end())
+                    essGW.push_back(g);
+                // Try to allocate essential ed to essential gw
+                if(!bestAllocation.checkUFAndConnect(e, g)){
+                    std::cout << "ED " << e << " cannot be connected to essential GW " << g << std::endl;
+                    std::cout << "Not enough UF available:" << std::endl;
+                    bestAllocation.ufGW[g].printUFValues();
+                    std::cout << "Unfeasible system. Exiting program..." << std::endl;
+                    exit(1);
+                }
+            }else{ // Add non essential node to list (to allocate later)
+                auto it = std::find(nEssED.begin(), nEssED.end(), e);
+                if(it == nEssED.end())
+                    nEssED.push_back(e);
+            }
         }
+        if(!gIsEssential)
+            nEssGW.push_back(g);
     }
-    // Initialize list of non essential gws
-    if(essGW.size() == 0){ // If no essential gws, initialize 
-        std::iota(nEssGW.begin(), nEssGW.end(), 0);
-    }else{ // Add the other gws to non essential list
-        for(uint g = 0; g < l->gwCount; g++)
-            if(std::find(essGW.begin(), essGW.end(), g) == essGW.end())
-                nEssGW.push_back(g);
-    }
-
     #ifdef VERBOSE
         std::cout << std::endl << "Essential GWs: " << essGW.size() << " (of " << l->gwCount << "):" << std::endl;
         for(uint i = 0; i < essGW.size(); i++)
@@ -178,8 +184,13 @@ int main(int argc, char **argv) {
     #ifdef VERBOSE
         std::cout << std::endl << "Step 3 -- Sort nodes by reachable gateways -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif 
+
+    std::vector<uint> reachGW(nEssED.size());
     std::vector<uint> indirection(nEssED.size());
     std::iota(indirection.begin(), indirection.end(), 0);
+    for (uint ei = 0; ei < nEssED.size(); ei++)
+        reachGW[ei] = l->getGWList(nEssED[ei]).size(); // Number of gws
+
     std::sort(
         indirection.begin(),
         indirection.end(),
@@ -187,6 +198,7 @@ int main(int argc, char **argv) {
             return reachGW[a] < reachGW[b];
         }
     );
+
     #ifdef VERBOSE
         std::cout << "Sorting finished." << std::endl;
     #endif 
@@ -195,36 +207,16 @@ int main(int argc, char **argv) {
 
     #ifdef VERBOSE
         std::cout << std::endl << "Step 4 -- Allocation of non essential nodes -- elapsed = " << getElapsed(start) << " sec." << std::endl;
+        //std::cout << "Start allocation from SF " << minCoverage << std::endl;
     #endif
 
     double minimumCost = __DBL_MAX__;
+    
     bool timedout = false;
     const Allocation essentials = bestAllocation;
     for(uint s = 7; s <= 12; s++){
-
-        std::vector<std::vector<uint>> cluster;
-        // Build cluster for this SF
-        for (uint g = 0; g < l->gwCount; g++)
-            cluster.push_back(l->getAllEDList(g, s));
-        // Check if SF has coverage
-        bool hasCoverage = false;
-        for (uint ei = 0; ei < nEssED.size(); ei++) {
-            const uint e = nEssED[ei];
-            for (uint g = 0; g < l->gwCount; g++) {
-                auto it = std::find(cluster[g].begin(), cluster[g].end(), e);
-                hasCoverage = (it != cluster[g].end());
-                if(hasCoverage) break; // Next ED
-            }
-            if (!hasCoverage){
-                #ifdef VERBOSE    
-                    std::cout << "No coverage for SF " << s << ": ED " << e << " cannot be assigned to any GW." << std::endl;
-                #endif
-                break;
-            }
-        }
-        if(!hasCoverage) continue; // Go to next SF
-
         
+        uint attemts = 1; // Attempts without improvement
         double improvement = 100.0;
         for(uint i = 0; i < maxIterations; i++) {
 
@@ -246,13 +238,13 @@ int main(int argc, char **argv) {
             for (uint ei = 0; ei < nEssED.size(); ei++) {
                 const uint e = nEssED[indirection[ei]]; // First nodes have less gws in range
                 for (uint gi = 0; gi < l->gwCount; gi++) {
+                    
                     // g is the index of gw from the arrays essGW or nEssGW
                     const uint g = gi < essGW.size() ? essGW[gi] : nEssGW[gi - essGW.size()];
+                    
                     // Check if ED e can be connected to GW g
-                    auto it = std::find(cluster[g].begin(), cluster[g].end(), e);
-                    if (it != cluster[g].end())
-                        if(tempAlloc.checkUFAndConnect(e, g)) // If reachable, check uf and then connect
-                            break; // If connected, go to next ED
+                    if(tempAlloc.checkUFAndConnect(e, g)) // If reachable, check uf and then connect
+                        break; // If connected, go to next ED
                 }
                 if(!tempAlloc.connected[e]) break; // If a node cannot be connected, break ED loop --> next iter
             }
@@ -267,13 +259,15 @@ int main(int argc, char **argv) {
                     }
                     #ifdef VERBOSE
                         std::cout << std::endl
-                            << "Iteration " << i << ". New best for SF = " << s  
-                            << ". Improvement = " << improvement << "\%" << std::endl;
+                            << "Iteration " << i << ". New best for SF = " << s 
+                            << " after " << attemts << " attempts. " 
+                            << "Improvement = " << improvement << "\%" << std::endl;
                         if(i > 0) std::cout << "Prev Cost=" << minimumCost << ", New ";
                         o->printSolution(tempAlloc, res, false, false, false);
                     #endif
                     minimumCost = res.cost;
                     bestAllocation = tempAlloc;
+                    attemts = 1;
                     if(improvement < minImprovement){
                         #ifdef VERBOSE
                             std::cout << std::endl 
@@ -284,6 +278,16 @@ int main(int argc, char **argv) {
                         #endif
                         break; // Next SF
                     }
+                }else{
+                    /*
+                    #ifdef VERBOSE
+                        std::cout << "SF " << s << ", iteration " << i << ", coverage 100\%"
+                                << ", feasibility: " << (res.feasible ? "yes" : "no")
+                                << ", unfeasible type: " << res.unfeasibleCode
+                                << ", cost: " << res.cost << std::endl;
+                    #endif
+                    */
+                    attemts++;
                 }
             }
             #ifdef VERBOSE
