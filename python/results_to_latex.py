@@ -1,63 +1,31 @@
-import pandas as pd
-import to_latex_table
+import os
+from utils import *
 
 
 input_file_name = '../results/all.csv'
+output_file_name = 'tables.tex'
 
+# Remove latex file before starting
+os.remove(output_file_name)
 
-def average_group(data, method, dist, rt, esc): # Filter, group and average
-    filtered_df = data[(data['Dist'] == dist) & (data['RT'] == rt) & (data['Method'] == method) & (data['Escenc'] == esc)]
-    grouped_df = filtered_df.groupby(['Map', 'ED'])[['FO', 'G', 'E', 'U', 'T']]
-    averaged_df = grouped_df.mean().reset_index()
-    return averaged_df
+# Load dataframe from file and prepare columns
+data = init_dataframe(input_file_name)
 
+# Build each table averaging values
+df_heu_u_s_s = average_group(data, 'HEU', 'UNIFORM', 'SOFT', 'SI')
+df_cplex_u_s_s = average_group(data, 'CPLEX', 'UNIFORM', 'SOFT', 'SI')
 
-def to_latex(dfl, dfr, caption, label, filename): # Convert to LaTeX table
-    header = ('\\begin{table}[htb]\n'  
-        '\t\\centering\n'  
-        '\t\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}\n'  
-        '\t\t\\hline\n'  
-        '\t\t\\multirow{2}{*}{ED} & \\multirow{2}{*}{Map} & \\multicolumn{5}{c|}{Greedy Heuristic} & \\multicolumn{5}{c|}{CPLEX}\\\\ \n'  
-        '\t\t\\cline{3-12}\n'  
-        '&& OF & G & E & U & Time & OF & G & E & U & Time\\\\ \n'
-        '\t\t\\hline\n')  
-    footer = ('\t\t\\hline \n'  
-        '\t\\end{tabular} \n'  
-        '\t\\caption{'+caption+'} \n'  
-        '\t\\label{'+label+'} \n'  
-        '\\end{table} \n')  
-    content = ''  
-    for row in dfl.index:  
-        row_str = str(row)
-        columndata_l = " & ".join([str(round(dfl.loc[row, col],3)) for col in dfl.columns]) 
-        columndata_r = " & ".join([str(round(dfr.loc[row, col],3)) for col in dfr.columns[2:]]) if row < len(dfr) else "& & & & "
-        content = content + "\t\t" + columndata_l + " & " + columndata_r + " \\\\ \n"  
-    with open(filename, 'a') as latexfile:  
-        latexfile.write(header+content+footer)
+df_heu_u_s_n = average_group(data, 'HEU', 'UNIFORM', 'SOFT', 'NO')
+df_cplex_u_s_n = average_group(data, 'CPLEX', 'UNIFORM', 'SOFT', 'NO')
 
+df_heu_u_m = average_group(data, 'HEU', 'UNIFORM', 'MEDIUM')
+df_cplex_u_m = average_group(data, 'CPLEX', 'UNIFORM', 'MEDIUM')
 
-# Load dataframe from file
-data = pd.read_csv(input_file_name)  
-# Rename columns  
-data.rename(columns = {  
-    'Metodo': 'Method',  
-    'Mapa': 'Map'
-    }, inplace = True)  
-# Rename categorical data
-data.replace({  
-    'Method': {  
-        'HEURISTICA': 'HEU'
-    },
-    'Dist': {
-        'UNIFORME': 'UNIFORM'
-    }
-}, inplace = True)
-# Zero imputation
-data['TO'] = data['TO'].fillna(0)
-data['Escenc'] = data['Escenc'].fillna('NO')
+df_heu_u_h = average_group(data, 'HEU', 'UNIFORM', 'HARD')
+df_cplex_u_h = average_group(data, 'CPLEX', 'UNIFORM', 'HARD')
 
-
-# Build each table
-df_heu = average_group(data, 'HEU', 'UNIFORM', 'SOFT', 'SI')
-df_cplex = average_group(data, 'CPLEX', 'UNIFORM', 'SOFT', 'SI')
-to_latex(df_heu, df_cplex, "Uniform distribution, soft real time constraints", "tab:unif_soft", "tablas.tex")
+# Write tables
+to_latex(df_heu_u_s_s, df_cplex_u_s_s, "Uniform distribution, soft real time constraints with essential gateways", "tab:unif_soft_esc", output_file_name)
+to_latex(df_heu_u_s_n, df_cplex_u_s_n, "Uniform distribution, soft real time constraints without essential gateways", "tab:unif_soft_n_esc", output_file_name)
+to_latex(df_heu_u_m, df_cplex_u_m, "Uniform distribution, medium real time constraints", "tab:unif_m", output_file_name)
+to_latex(df_heu_u_h, df_cplex_u_h, "Uniform distribution, medium real time constraints", "tab:unif_m", output_file_name)
