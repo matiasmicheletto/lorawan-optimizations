@@ -34,7 +34,7 @@ def to_latex(dfl, dfr, caption, label, filename): # Convert to LaTeX table
         '\t\\centering\n'  
         '\t\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}\n'  
         '\t\t\\hline\n'  
-        '\t\t\\multirow{2}{*}{ED} & \\multirow{2}{*}{Map} & \\multicolumn{5}{c|}{Greedy Heuristic} & \\multicolumn{5}{c|}{CPLEX}\\\\ \n'  
+        '\t\t\\multirow{2}{*}{Map} & \\multirow{2}{*}{ED} & \\multicolumn{5}{c|}{Greedy Heuristic} & \\multicolumn{5}{c|}{CPLEX}\\\\ \n'  
         '\t\t\\cline{3-12}\n'  
         '&& OF & G & E & U & Time & OF & G & E & U & Time\\\\ \n'
         '\t\t\\hline\n')  
