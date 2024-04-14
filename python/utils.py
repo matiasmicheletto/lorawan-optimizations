@@ -21,13 +21,13 @@ def init_dataframe(input_file):
     data['Escenc'] = data['Escenc'].fillna('NO')
     return data
 
-def average_group(data, method, dist, rt, esc = None): # Filter, group and average
-    filtered_df = data[(data['Dist'] == dist) & (data['RT'] == rt) & (data['Method'] == method)]
-    if(esc is not None):
-        filtered_df = filtered_df[filtered_df['Escenc'] == esc]
+
+def average_group(data, method, dist, rt, esc): # Filter, group and average
+    filtered_df = data[(data['Method'] == method) & (data['Dist'] == dist) & (data['RT'] == rt) & (data['Escenc'] == esc)]
     grouped_df = filtered_df.groupby(['Map', 'ED'])[['FO', 'G', 'E', 'U', 'T']]
     averaged_df = grouped_df.mean().reset_index()
     return averaged_df
+
 
 def to_latex(dfl, dfr, caption, label, filename): # Convert to LaTeX table
     header = ('\\begin{table}[htb]\n'  
