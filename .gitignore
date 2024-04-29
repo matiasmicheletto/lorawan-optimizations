@@ -7,4 +7,5 @@ bin/*.txt
 dat/ 
 doc/ 
 python/venv/ 
+article/
 .vscode 

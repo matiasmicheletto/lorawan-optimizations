@@ -22,9 +22,10 @@ def init_dataframe(input_file):
     return data
 
 
-def average_group(data, method, dist, rt, esc): # Filter, group and average
-    filtered_df = data[(data['Method'] == method) & (data['Dist'] == dist) & (data['RT'] == rt) & (data['Escenc'] == esc)]
-    grouped_df = filtered_df.groupby(['Map', 'ED'])[['FO', 'G', 'E', 'U', 'T']]
+def average_group(data, method, dist, rt, esc, map): # Filter, group and average
+    #print(method, dist, rt, esc, map)
+    filtered_df = data[(data['Method'] == method) & (data['Dist'] == dist) & (data['RT'] == rt) & (data['Escenc'] == esc) & (data['Map'] == map)]
+    grouped_df = filtered_df.groupby(['ED'])[['FO', 'G', 'E', 'U', 'T']]
     averaged_df = grouped_df.mean().reset_index()
     return averaged_df
 
@@ -32,11 +33,12 @@ def average_group(data, method, dist, rt, esc): # Filter, group and average
 def to_latex(dfl, dfr, caption, label, filename): # Convert to LaTeX table
     header = ('\\begin{table}[htb]\n'  
         '\t\\centering\n'  
-        '\t\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}\n'  
+        '\t\\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}\n'  
         '\t\t\\hline\n'  
-        '\t\t\\multirow{2}{*}{Map} & \\multirow{2}{*}{ED} & \\multicolumn{5}{c|}{Greedy Heuristic} & \\multicolumn{5}{c|}{CPLEX}\\\\ \n'  
-        '\t\t\\cline{3-12}\n'  
-        '&& OF & G & E & U & Time & OF & G & E & U & Time\\\\ \n'
+        #'\t\t\\multirow{2}{*}{Map} & \\multirow{2}{*}{ED} & \\multicolumn{5}{c|}{Greedy Heuristic} & \\multicolumn{5}{c|}{CPLEX}\\\\ \n'  
+        '\t\t\multirow{2}{*}{ED} & \\multicolumn{5}{c|}{Greedy Heuristic} & \\multicolumn{5}{c|}{CPLEX}\\\\ \n' 
+        '\t\t\\cline{2-11}\n'
+        '& OF & G & E & U & Time & OF & G & E & U & Time\\\\ \n'
         '\t\t\\hline\n')  
     footer = ('\t\t\\hline \n'  
         '\t\\end{tabular} \n'  
@@ -45,8 +47,8 @@ def to_latex(dfl, dfr, caption, label, filename): # Convert to LaTeX table
         '\\end{table} \n\n')  
     content = ''  
     for row in dfl.index:  
-        columndata_l = " & ".join([str(round(dfl.loc[row, col],3)) for col in dfl.columns]) 
-        columndata_r = " & ".join([str(round(dfr.loc[row, col],3)) for col in dfr.columns[2:]]) if row < len(dfr) else "& & & & "
+        columndata_l = " & ".join([str(round(dfl.loc[row, col],3)) for col in dfl.columns if col != 'Map']) 
+        columndata_r = " & ".join([str(round(dfr.loc[row, col],3)) for col in dfr.columns[1:]]) if row < len(dfr) else "& & & & "
         content = content + "\t\t" + columndata_l + " & " + columndata_r + " \\\\ \n"  
     with open(filename, 'a') as latexfile:  
         latexfile.write(header+content+footer)
