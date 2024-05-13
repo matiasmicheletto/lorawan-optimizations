@@ -193,7 +193,7 @@ void Instance::exportRawData(const char* filename) {
     std::cout << "Plain text file generated: " << (std::string(filename) + ".dat") << std::endl;
 }
 
-void Instance::generateHtmlPlot(const char* filename) {
+void Instance::generateHtmlPlot(const char* filename, bool svg) {
     // Compute canvas size:
 
     double minX = std::numeric_limits<double>::max();
@@ -223,12 +223,19 @@ void Instance::generateHtmlPlot(const char* filename) {
             maxY = gw.y;
     }
 
-    // Add padding to ensure all positions are visible
-    double padding = 10.0;
+    // Nodes positions to canvas coordinates
+    const double xPadding = 25.0;
+    const double yPadding = 25.0;
+    const int canvasWidth = 1000;
+    const int canvasHeight = 1000;
+    const double xScale = (canvasWidth-2*xPadding)/(maxX-minX);
+    const double yScale = (canvasHeight-2*yPadding)/(maxY-minY);
+    //const int dSize = xScale;
+    const int rSize = (xScale+yScale)/4;
 
     // Calculate canvas size based on the range of coordinates
-    int canvasWidth = static_cast<int>(maxX - minX + 2 * padding);
-    int canvasHeight = static_cast<int>(maxY - minY + 2 * padding);
+    //int canvasWidth = static_cast<int>(maxX - minX + 2 * padding);
+    //int canvasHeight = static_cast<int>(maxY - minY + 2 * padding);
     
     std::string filenameWithExtension = std::string(filename) + ".html";
     std::ofstream htmlFile(filenameWithExtension);
@@ -246,26 +253,64 @@ void Instance::generateHtmlPlot(const char* filename) {
     htmlFile << "\t\t</head>\n";
     htmlFile << "\t\t<body>\n";
     htmlFile << "\t\t\t<h3>LoRaWAN Generated network</h3>\n";
-    htmlFile << "\t\t\t<p>Map width = " << canvasWidth << "<br>\n";
-    htmlFile << "\t\t\tMap height = " << canvasHeight << "</p>\n";
-    htmlFile << "\t\t\t<canvas id='positionCanvas' width='" 
-        << canvasWidth << "' height='" 
-        << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'></canvas>\n";
-    htmlFile << "\t\t\t<script>\n";
-    htmlFile << "\t\t\t\tvar canvas = document.getElementById('positionCanvas');\n";
-    htmlFile << "\t\t\t\tvar ctx = canvas.getContext('2d');\n";
+    htmlFile << "\t\t\t<h5 style='margin-bottom:2px;'>Parameters:</h5>\n";
+    htmlFile << "\t\t\t<p style='margin-top:2px;'>GW count = " << this->gwCount << "<br>\n";
+    htmlFile << "\t\t\tED count = " << this->edCount << "</p>\n";
 
-    // Draw positions of End Devices
-    htmlFile << "\t\t\t\tctx.fillStyle = 'red';\n";
-    for (const EndDevice& ed : this->eds)
-        htmlFile << "\t\t\t\tctx.fillRect(" << ed.pos.x+maxX << ", " << ed.pos.y+maxY << ", 2, 2);\n";
+    
+    if(svg){
+        htmlFile << "\t\t\t<svg width='" 
+            << canvasWidth << "' height='" 
+            << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'>\n"; 
 
-    // Draw positions of Gateways
-    htmlFile << "\t\t\t\tctx.fillStyle = 'blue';\n";
-    for (const Position& gw : this->gws)
-        htmlFile << "\t\t\t\tctx.fillRect(" << gw.x+maxX << ", " << gw.y+maxY << ", 2, 2);\n";
+        for (const EndDevice& ed : this->eds){
+            const double x = (ed.pos.x+maxX)*xScale+xPadding;
+            const double y = (ed.pos.y+maxY)*yScale+yPadding;
+            htmlFile << "\t\t\t\t<circle cx=" << x <<" cy=" << y << " r='" << rSize << "' fill='red'/>\n";
+        }
+        for (const Position& gw : this->gws){
+            const double x = (gw.x + maxX)*xScale+xPadding;
+            const double y = (gw.y + maxY)*yScale+yPadding;
+            htmlFile << "\t\t\t\t<circle cx=" << x <<" cy=" << y << " r='" << rSize << "' fill='blue'/>\n";
+        }
+        htmlFile << "\t\t\t</svg>\n";
+    }else{
+    
+        htmlFile << "\t\t\t<canvas id='positionCanvas' width='" 
+            << canvasWidth << "' height='" 
+            << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'></canvas>\n";
+        htmlFile << "\t\t\t<script>\n";
+        htmlFile << "\t\t\t\tvar canvas = document.getElementById('positionCanvas');\n";
+        htmlFile << "\t\t\t\tvar ctx = canvas.getContext('2d');\n";
 
-    htmlFile << "\t\t\t</script>\n";
+        // Draw positions of End Devices
+        htmlFile << "\t\t\t\tctx.fillStyle = 'red';\n";
+        htmlFile << "\t\t\t\tctx.beginPath();\n";
+        for (const EndDevice& ed : this->eds){
+            const double x = (ed.pos.x+maxX)*xScale+xPadding;
+            const double y = (ed.pos.y+maxY)*yScale+yPadding;
+            htmlFile << "\t\t\t\tctx.moveTo(" << x+rSize << ", " << y << ");\n";
+            htmlFile << "\t\t\t\tctx.arc(" << x << ", " << y << ", " << rSize << ", " << "0, Math.PI*2);\n";
+            //htmlFile << "\t\t\t\tctx.fillRect(" << x << ", " << y << ", " << dSize << ", " << dSize << ");\n";
+        }
+        htmlFile << "\t\t\t\tctx.stroke();\n";
+        htmlFile << "\t\t\t\tctx.fill();\n";
+
+        // Draw positions of Gateways
+        htmlFile << "\t\t\t\tctx.fillStyle = 'blue';\n";
+        htmlFile << "\t\t\t\tctx.beginPath();\n";
+        for (const Position& gw : this->gws){
+            const double x = (gw.x+maxX)*xScale+xPadding;
+            const double y = (gw.y+maxY)*yScale+yPadding;
+            htmlFile << "\t\t\t\tctx.moveTo(" << x+rSize << ", " << y << ");\n";
+            htmlFile << "\t\t\t\tctx.arc(" << x << ", " << y << ", " << rSize*1.5 << ", " << "0, Math.PI*2);\n";
+            //htmlFile << "\t\t\t\tctx.fillRect(" << (gw.x+maxX)*xScale << ", " << (gw.y+maxY)*yScale << ", 2, 2);\n";
+        }
+        htmlFile << "\t\t\t\tctx.stroke();\n";
+        htmlFile << "\t\t\t\tctx.fill();\n";
+
+        htmlFile << "\t\t\t</script>\n";
+    }
     htmlFile << "\t\t</body>\n";
     htmlFile << "\t</html>\n";
 

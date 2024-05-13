@@ -94,14 +94,14 @@ int main(int argc, char **argv) {
         break;
     case OUTPUTFORMAT::HTML:
         if(fileNameConfigured)
-            l->generateHtmlPlot(outputFileName);
+            l->generateHtmlPlot(outputFileName, true);
         else
             std::cerr << "File name not set for HTML output format. Use -f filename" << std::endl;
         break;
     case OUTPUTFORMAT::ALL:
         if(fileNameConfigured){
             l->exportRawData(outputFileName);
-            l->generateHtmlPlot(outputFileName);
+            l->generateHtmlPlot(outputFileName, true);
         }else
             std::cerr << "File name not set for ALL (HTML+TXT) output format. Use -f filename" << std::endl;
         break;

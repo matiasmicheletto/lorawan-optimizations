@@ -76,7 +76,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         
         void printRawData();
         void exportRawData(const char* filename = nullptr);
-        void generateHtmlPlot(const char* filename);
+        void generateHtmlPlot(const char* filename, bool svg = false);
         void copySFDataTo(std::vector<std::vector<uint>>& destination);
         
         uint gwCount, edCount;
