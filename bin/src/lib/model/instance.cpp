@@ -193,9 +193,8 @@ void Instance::exportRawData(const char* filename) {
     std::cout << "Plain text file generated: " << (std::string(filename) + ".dat") << std::endl;
 }
 
-void Instance::generateHtmlPlot(const char* filename, bool svg) {
+void Instance::generateHtmlPlot(const char* filename) {
     // Compute canvas size:
-
     double minX = std::numeric_limits<double>::max();
     double minY = std::numeric_limits<double>::max();
     double maxX = -std::numeric_limits<double>::max();
@@ -257,65 +256,112 @@ void Instance::generateHtmlPlot(const char* filename, bool svg) {
     htmlFile << "\t\t\t<p style='margin-top:2px;'>GW count = " << this->gwCount << "<br>\n";
     htmlFile << "\t\t\tED count = " << this->edCount << "</p>\n";
 
-    
-    if(svg){
-        htmlFile << "\t\t\t<svg width='" 
-            << canvasWidth << "' height='" 
-            << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'>\n"; 
+    htmlFile << "\t\t\t<canvas id='positionCanvas' width='" 
+        << canvasWidth << "' height='" 
+        << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'></canvas>\n";
+    htmlFile << "\t\t\t<script>\n";
+    htmlFile << "\t\t\t\tvar canvas = document.getElementById('positionCanvas');\n";
+    htmlFile << "\t\t\t\tvar ctx = canvas.getContext('2d');\n";
 
-        for (const EndDevice& ed : this->eds){
-            const double x = (ed.pos.x+maxX)*xScale+xPadding;
-            const double y = (ed.pos.y+maxY)*yScale+yPadding;
-            htmlFile << "\t\t\t\t<circle cx=" << x <<" cy=" << y << " r='" << rSize << "' fill='red'/>\n";
-        }
-        for (const Position& gw : this->gws){
-            const double x = (gw.x + maxX)*xScale+xPadding;
-            const double y = (gw.y + maxY)*yScale+yPadding;
-            htmlFile << "\t\t\t\t<circle cx=" << x <<" cy=" << y << " r='" << rSize << "' fill='blue'/>\n";
-        }
-        htmlFile << "\t\t\t</svg>\n";
-    }else{
-    
-        htmlFile << "\t\t\t<canvas id='positionCanvas' width='" 
-            << canvasWidth << "' height='" 
-            << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'></canvas>\n";
-        htmlFile << "\t\t\t<script>\n";
-        htmlFile << "\t\t\t\tvar canvas = document.getElementById('positionCanvas');\n";
-        htmlFile << "\t\t\t\tvar ctx = canvas.getContext('2d');\n";
-
-        // Draw positions of End Devices
-        htmlFile << "\t\t\t\tctx.fillStyle = 'red';\n";
-        htmlFile << "\t\t\t\tctx.beginPath();\n";
-        for (const EndDevice& ed : this->eds){
-            const double x = (ed.pos.x+maxX)*xScale+xPadding;
-            const double y = (ed.pos.y+maxY)*yScale+yPadding;
-            htmlFile << "\t\t\t\tctx.moveTo(" << x+rSize << ", " << y << ");\n";
-            htmlFile << "\t\t\t\tctx.arc(" << x << ", " << y << ", " << rSize << ", " << "0, Math.PI*2);\n";
-            //htmlFile << "\t\t\t\tctx.fillRect(" << x << ", " << y << ", " << dSize << ", " << dSize << ");\n";
-        }
-        htmlFile << "\t\t\t\tctx.stroke();\n";
-        htmlFile << "\t\t\t\tctx.fill();\n";
-
-        // Draw positions of Gateways
-        htmlFile << "\t\t\t\tctx.fillStyle = 'blue';\n";
-        htmlFile << "\t\t\t\tctx.beginPath();\n";
-        for (const Position& gw : this->gws){
-            const double x = (gw.x+maxX)*xScale+xPadding;
-            const double y = (gw.y+maxY)*yScale+yPadding;
-            htmlFile << "\t\t\t\tctx.moveTo(" << x+rSize << ", " << y << ");\n";
-            htmlFile << "\t\t\t\tctx.arc(" << x << ", " << y << ", " << rSize*1.5 << ", " << "0, Math.PI*2);\n";
-            //htmlFile << "\t\t\t\tctx.fillRect(" << (gw.x+maxX)*xScale << ", " << (gw.y+maxY)*yScale << ", 2, 2);\n";
-        }
-        htmlFile << "\t\t\t\tctx.stroke();\n";
-        htmlFile << "\t\t\t\tctx.fill();\n";
-
-        htmlFile << "\t\t\t</script>\n";
+    // Draw positions of End Devices
+    htmlFile << "\t\t\t\tctx.fillStyle = 'red';\n";
+    htmlFile << "\t\t\t\tctx.beginPath();\n";
+    for (const EndDevice& ed : this->eds){
+        const double x = (ed.pos.x+maxX)*xScale+xPadding;
+        const double y = (ed.pos.y+maxY)*yScale+yPadding;
+        htmlFile << "\t\t\t\tctx.moveTo(" << x+rSize << ", " << y << ");\n";
+        htmlFile << "\t\t\t\tctx.arc(" << x << ", " << y << ", " << rSize << ", " << "0, Math.PI*2);\n";
+        //htmlFile << "\t\t\t\tctx.fillRect(" << x << ", " << y << ", " << dSize << ", " << dSize << ");\n";
     }
+    htmlFile << "\t\t\t\tctx.stroke();\n";
+    htmlFile << "\t\t\t\tctx.fill();\n";
+
+    // Draw positions of Gateways
+    htmlFile << "\t\t\t\tctx.fillStyle = 'blue';\n";
+    htmlFile << "\t\t\t\tctx.beginPath();\n";
+    for (const Position& gw : this->gws){
+        const double x = (gw.x+maxX)*xScale+xPadding;
+        const double y = (gw.y+maxY)*yScale+yPadding;
+        htmlFile << "\t\t\t\tctx.moveTo(" << x+rSize << ", " << y << ");\n";
+        htmlFile << "\t\t\t\tctx.arc(" << x << ", " << y << ", " << rSize*1.5 << ", " << "0, Math.PI*2);\n";
+        //htmlFile << "\t\t\t\tctx.fillRect(" << (gw.x+maxX)*xScale << ", " << (gw.y+maxY)*yScale << ", 2, 2);\n";
+    }
+    htmlFile << "\t\t\t\tctx.stroke();\n";
+    htmlFile << "\t\t\t\tctx.fill();\n";
+
+    htmlFile << "\t\t\t</script>\n";
     htmlFile << "\t\t</body>\n";
     htmlFile << "\t</html>\n";
 
     htmlFile.close();
     std::cout << "HTML file generated: " << (std::string(filename) + ".html") << std::endl;
+}
+
+void Instance::generateSvgPlot(const char* filename) {
+
+    double minX = std::numeric_limits<double>::max();
+    double minY = std::numeric_limits<double>::max();
+    double maxX = -std::numeric_limits<double>::max();
+    double maxY = -std::numeric_limits<double>::max();
+
+    for (const EndDevice& ed : eds) {
+        if (ed.pos.x < minX)
+            minX = ed.pos.x;
+        if (ed.pos.y < minY)
+            minY = ed.pos.y;
+        if (ed.pos.x > maxX)
+            maxX = ed.pos.x;
+        if (ed.pos.y > maxY)
+            maxY = ed.pos.y;
+    }
+
+    for (const Position& gw : gws) {
+        if (gw.x < minX)
+            minX = gw.x;
+        if (gw.y < minY)
+            minY = gw.y;
+        if (gw.x > maxX)
+            maxX = gw.x;
+        if (gw.y > maxY)
+            maxY = gw.y;
+    }
+
+    // Nodes positions to canvas coordinates
+    const double xPadding = 25.0;
+    const double yPadding = 25.0;
+    const int canvasWidth = 1000;
+    const int canvasHeight = 1000;
+    const double xScale = (canvasWidth-2*xPadding)/(maxX-minX);
+    const double yScale = (canvasHeight-2*yPadding)/(maxY-minY);
+    const int rSize = (xScale+yScale)/4;
+
+    std::string filenameWithExtension = std::string(filename) + ".svg";
+    std::ofstream svgFile(filenameWithExtension);
+
+
+    if (!svgFile.is_open()) {
+        std::cerr << "Failed to open SVG file." << std::endl;
+        return;
+    }
+    
+    svgFile << "\t\t\t<svg width='" 
+        << canvasWidth << "' height='" 
+        << canvasHeight << "' style='margin-top:20px; margin-left:20px; border: 1px solid black'>\n"; 
+
+    for (const EndDevice& ed : this->eds){
+        const double x = (ed.pos.x+maxX)*xScale+xPadding;
+        const double y = (ed.pos.y+maxY)*yScale+yPadding;
+        svgFile << "\t\t<circle cx='" << x <<"' cy='" << y << "' r='" << rSize << "' fill='red'/>\n";
+    }
+    for (const Position& gw : this->gws){
+        const double x = (gw.x + maxX)*xScale+xPadding;
+        const double y = (gw.y + maxY)*yScale+yPadding;
+        svgFile << "\t\t<circle cx='" << x <<"' cy='" << y << "' r='" << rSize << "' fill='blue'/>\n";
+    }
+    svgFile << "</svg>\n";
+
+    svgFile.close();
+    std::cout << "SVG image generated: " << (std::string(filename) + ".svg") << std::endl;
 }
 
 void Instance::copySFDataTo(std::vector<std::vector<uint>>& destination) {

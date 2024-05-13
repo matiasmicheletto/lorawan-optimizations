@@ -24,6 +24,8 @@ int main(int argc, char **argv) {
                     config.outputFormat = OUTPUTFORMAT::HTML;
                 if(std::strcmp(argv[i+1], "TXT") == 0)
                     config.outputFormat = OUTPUTFORMAT::TXT;
+                if(std::strcmp(argv[i+1], "SVG") == 0)
+                    config.outputFormat = OUTPUTFORMAT::SVG;
                 if(std::strcmp(argv[i+1], "ALL") == 0)
                     config.outputFormat = OUTPUTFORMAT::ALL;
             }else
@@ -90,20 +92,26 @@ int main(int argc, char **argv) {
         if(fileNameConfigured)
             l->exportRawData(outputFileName);
         else
-            std::cerr << "File name not set for TXT output format. Use -f filename" << std::endl;
+            std::cerr << "File name not set for TXT output format. Use -o filename" << std::endl;
         break;
     case OUTPUTFORMAT::HTML:
         if(fileNameConfigured)
-            l->generateHtmlPlot(outputFileName, true);
+            l->generateHtmlPlot(outputFileName);
         else
-            std::cerr << "File name not set for HTML output format. Use -f filename" << std::endl;
+            std::cerr << "File name not set for HTML output format. Use -o filename" << std::endl;
+        break;
+    case OUTPUTFORMAT::SVG:
+        if(fileNameConfigured)
+            l->generateSvgPlot(outputFileName);
+        else
+            std::cerr << "File name not set for SVG output format. Use -o filename" << std::endl;
         break;
     case OUTPUTFORMAT::ALL:
         if(fileNameConfigured){
             l->exportRawData(outputFileName);
-            l->generateHtmlPlot(outputFileName, true);
+            l->generateHtmlPlot(outputFileName);
         }else
-            std::cerr << "File name not set for ALL (HTML+TXT) output format. Use -f filename" << std::endl;
+            std::cerr << "File name not set for ALL (HTML+TXT+SVG) output format. Use -o filename" << std::endl;
         break;
     default:
         break;

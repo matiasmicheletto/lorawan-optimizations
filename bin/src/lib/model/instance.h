@@ -25,7 +25,7 @@
 
 enum POSDIST {UNIFORM, NORMAL, CLOUDS}; 
 enum PERIODIST {SOFT, MEDIUM, HARD, FIXED}; 
-enum OUTPUTFORMAT {NONE, TXT, HTML, ALL};
+enum OUTPUTFORMAT {NONE, TXT, HTML, SVG, ALL};
 
 struct InstanceConfig { // This is for instance generation
     uint mapSize; // Map size
@@ -76,7 +76,8 @@ class Instance { // Provides attributes and funcions related to problem formulat
         
         void printRawData();
         void exportRawData(const char* filename = nullptr);
-        void generateHtmlPlot(const char* filename, bool svg = false);
+        void generateHtmlPlot(const char* filename);
+        void generateSvgPlot(const char* filename);
         void copySFDataTo(std::vector<std::vector<uint>>& destination);
         
         uint gwCount, edCount;
