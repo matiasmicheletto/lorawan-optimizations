@@ -333,7 +333,7 @@ void Instance::generateSvgPlot(const char* filename) {
     const int canvasHeight = 1000;
     const double xScale = (canvasWidth-2*xPadding)/(maxX-minX);
     const double yScale = (canvasHeight-2*yPadding)/(maxY-minY);
-    const int rSize = (xScale+yScale)/4;
+    const int rSize = (xScale+yScale)/3;
 
     std::string filenameWithExtension = std::string(filename) + ".svg";
     std::ofstream svgFile(filenameWithExtension);
@@ -356,7 +356,7 @@ void Instance::generateSvgPlot(const char* filename) {
     for (const Position& gw : this->gws){
         const double x = (gw.x + maxX)*xScale+xPadding;
         const double y = (gw.y + maxY)*yScale+yPadding;
-        svgFile << "\t\t<circle cx='" << x <<"' cy='" << y << "' r='" << rSize << "' fill='blue'/>\n";
+        svgFile << "\t\t<circle cx='" << x <<"' cy='" << y << "' r='" << rSize*1.3 << "' fill='blue'/>\n";
     }
     svgFile << "</svg>\n";
 
