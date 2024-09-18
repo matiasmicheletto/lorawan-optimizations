@@ -61,9 +61,9 @@ class Objective {
         double eval(const uint* gw, const uint* sf, uint &gwCount, uint &energy, double &totalUF, bool &feasible);
         EvalResults eval(Allocation alloc, bool comparable = false);
 
-        void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false, bool showGWs = false);
-        void printSolution(const Allocation alloc, const EvalResults results, bool allocation = true, bool highlight = false, bool showGWs = false);
-        void exportWST(const uint* gw, const uint* sf);
+        void printSolution(const uint* gw, const uint* sf, bool allocation = true, bool highlight = false, bool showGWs = false, std::ostream& os = std::cout);
+        void printSolution(const Allocation alloc, const EvalResults results, bool allocation = true, bool highlight = false, bool showGWs = false, std::ostream& os = std::cout);
+        void exportWST(const uint* gw, const uint* sf, std::ostream& os = std::cout);
 
         TunningParameters tp;
     private:

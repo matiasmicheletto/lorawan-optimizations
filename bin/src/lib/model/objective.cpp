@@ -122,7 +122,7 @@ EvalResults Objective::eval(Allocation alloc, bool comparable) {
     return res;
 }
 
-void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight, bool showGWs){
+void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, bool highlight, bool showGWs, std::ostream& os){
     
     uint gwCount;
     uint energy;
@@ -132,9 +132,9 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
 
     const double result = this->eval(gw, sf, gwCount, energy, maxUF, feasible);
 
-    if(highlight) std::cout << "\033[1;31m"; // Switch to red font
+    if(highlight) os << "\033[1;31m"; // Switch to red font
 
-    std::cout << "Cost=" << result 
+    os << "Cost=" << result 
                 << (feasible ? " (Feasible)" : " (Unfeasible)")
                 << ", (GW=" << gwCount 
                 << ",E=" << energy 
@@ -157,36 +157,36 @@ void Objective::printSolution(const uint* gw, const uint* sf, bool allocation, b
             }
         }
         
-        std::cout << "GWs used: "; 
+        os << "GWs used: "; 
         for(uint i = 0; i < gwList.size(); i++)
-            std::cout << gwList[i] << " ";
-        std::cout << std::endl;
-        std::cout << "GWs not used: "; 
+            os << gwList[i] << " ";
+        os << std::endl;
+        os << "GWs not used: "; 
         for(uint i = 0; i < gwList2.size(); i++)
-            std::cout << gwList2[i] << " ";
-        std::cout << std::endl;
+            os << gwList2[i] << " ";
+        os << std::endl;
     }
 
     if(allocation){
-        std::cout << "Allocation (GW[SF]):" << std::endl;
+        os << "Allocation (GW[SF]):" << std::endl;
         for(uint i = 0; i < edCount; i++){ // For each ED    
-            if(i % 10 == 0) std::cout << std::endl;
-            std::cout << gw[i] << "[" << sf[i] << "]\t";
+            if(i % 10 == 0) os << std::endl;
+            os << gw[i] << "[" << sf[i] << "]\t";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
     
-    if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
+    if(highlight) os << "\033[0m\n"; // Switch to normal text font
 }
 
-void Objective::printSolution(const Allocation alloc, const EvalResults results, bool allocation, bool highlight, bool showGWs) {
+void Objective::printSolution(const Allocation alloc, const EvalResults results, bool allocation, bool highlight, bool showGWs, std::ostream& os) {
 
-    if(highlight) std::cout << "\033[1;31m"; // Switch to red font
+    if(highlight) os << "\033[1;31m"; // Switch to red font
     
-    std::cout << "Cost=" << results.cost << (results.feasible ? " (Feasible)" : " (Unfeasible)");
+    os << "Cost=" << results.cost << (results.feasible ? " (Feasible)" : " (Unfeasible)");
 
     if(results.feasible){
-        std::cout << ", (GW=" << results.gwUsed
+        os << ", (GW=" << results.gwUsed
                   << ",E=" << results.energy 
                   << ",U=" << results.uf
                   << ")" << std::endl;
@@ -206,31 +206,31 @@ void Objective::printSolution(const Allocation alloc, const EvalResults results,
                     gwList2.push_back(gi);
                 }
             }
-            std::cout << "Indexes of GWs used: "; 
+            os << "Indexes of GWs used: "; 
             for(uint i = 0; i < gwList.size(); i++)
-                std::cout << gwList[i] << " ";
-            std::cout << std::endl;
-            std::cout << "Indexes of GWs not used: "; 
+                os << gwList[i] << " ";
+            os << std::endl;
+            os << "Indexes of GWs not used: "; 
             for(uint i = 0; i < gwList2.size(); i++)
-                std::cout << gwList2[i] << " ";
-            std::cout << std::endl;
+                os << gwList2[i] << " ";
+            os << std::endl;
         }
 
         if(allocation){
-            std::cout << "Allocation (GW[SF]):" << std::endl;
+            os << "Allocation (GW[SF]):" << std::endl;
             for(uint i = 0; i < alloc.gw.size(); i++){ // For each ED    
-                if(i % 10 == 0) std::cout << std::endl;
-                std::cout << alloc.gw[i] << "[" << alloc.sf[i] << "]\t";
+                if(i % 10 == 0) os << std::endl;
+                os << alloc.gw[i] << "[" << alloc.sf[i] << "]\t";
             }
-            std::cout << std::endl;
+            os << std::endl;
         }
     }
     
-    if(highlight) std::cout << "\033[0m\n"; // Switch to normal text font
+    if(highlight) os << "\033[0m\n"; // Switch to normal text font
 }
 
-void Objective::exportWST(const uint* gw, const uint* sf) {
-    std::cout << "<?xml version = \"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" << std::endl
+void Objective::exportWST(const uint* gw, const uint* sf, std::ostream& os) {
+    os << "<?xml version = \"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" << std::endl
             << "<CPLEXSolutions version=\"1.2\">" << std::endl
             << "  <CPLEXSolution version=\"1.2\">" << std::endl
             << "   <header" << std::endl
@@ -253,7 +253,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
             }
         }
         for(int ch = 15; ch >= 0; ch--){
-            std::cout << "    <variable name=\"w#" << g << "#" << ch 
+            os << "    <variable name=\"w#" << g << "#" << ch 
                     << "\" index=\"" << index
                     << "\" value=\"" << (selected && (uint)ch == lastch ? 1 : 0)
                     << "\"/>" << std::endl;
@@ -267,7 +267,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
         for(uint g = this->instance->gwCount; g > 0 ; g--)   
             for(uint s = 12; s >= 7; s--){
                 selected = gw[e-1] == g-1 && sf[e-1] == s;
-                std::cout << "    <variable name=\"x#" 
+                os << "    <variable name=\"x#" 
                         << e << "#" << g << "#" << s
                         << "\" index=\"" << index
                         << "\" value=\"" << (selected ? 1 : 0)
@@ -275,7 +275,7 @@ void Objective::exportWST(const uint* gw, const uint* sf) {
                 index++;
             }
 
-    std::cout << "  </variables>" << std::endl
+    os << "  </variables>" << std::endl
             << " </CPLEXSolution>" << std::endl
             << "</CPLEXSolutions>" << std::endl;
 }

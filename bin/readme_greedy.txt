@@ -33,7 +33,8 @@ OPTIONS:
    -a, --alpha    Alpha tunning parameter. Default is 1.  
    -b, --beta     Beta tunning parameter. Default is 0.01.  
    -g, --gamma    Gamma tunning parameter. Default is 7.8.  
-   -w, --wst      Export wst file. 
+   -w, --wst      Export mst file. 
+   -o, --output   Save results to ouput file.
 
 EXAMPLES:
    1. greedy -f input.dat
@@ -42,11 +43,14 @@ EXAMPLES:
    2. greedy -f input.dat --iters 50 -a 1 -b 0.1 -g 1000
       - Execute 50 iterations using 1, 0.1 and 1000 for alpha, beta and gamma parameters.
 
-   3. greedy -f input.dat -m GA > outputs.log 
-      - Run the program using the GA method with default configurations and append complete results to "outputs.log" text file. Text may contain terminal formatting escape characters, so it is recommended to show results using the "cat" program instead of "less".
+   3. greedy -f input.dat > outputs.log 
+      - Run the program with default configurations and append complete results to "outputs.log" text file. Text may contain terminal formatting escape characters, so it is recommended to show results using the "cat" program instead of "less".
 
-   4. greedy -f input.dat -m G3 -w solution.wst  
-      - Run the Greedy method and export the solution using the wst (xml) format.  
+   4. greedy -f input.dat -w solution.mst  
+      - Run and export the solution using the mst (xml) format.  
+   
+   5. greedy -f input.dat -w solution.mst -o solution.sol
+      - Run the Greedy method and export both the solution and wst file.  
 
 AUTHORS
    Code was written by Dr. Matias J. Micheletto from CIT-GSJ (CONICET) and supervised by Dr. Rodrigo M. Santos from DIEC (UNS) - ICIC (CONICET) and Dr. Javier Marenco from UTDT.

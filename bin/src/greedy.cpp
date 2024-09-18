@@ -43,6 +43,11 @@ int main(int argc, char **argv) {
     uint maxIterations = 10; // Stop after this number of loops without improvement
     TunningParameters tp; // alpha, beta and gamma
     bool xml = false; // XML file export
+    bool output = false; // Output to console
+
+    char *xmlFileName;
+    char *outputFileName;
+
     
     // Program arguments
     for(int i = 0; i < argc; i++) {    
@@ -104,7 +109,25 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -g (--gamma)" << std::endl;
             }
         }
-        xml = strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0;
+        //xml = strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0;
+        if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0){
+            if(i+1 < argc){
+                xmlFileName = argv[i+1];
+                xml = true;
+            }else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -w (--xml)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0){
+            if(i+1 < argc){
+                outputFileName = argv[i+1];
+                output = true;
+            }else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -o (--output)" << std::endl;
+            }
+        }
     }
 
     if(l == nullptr){
@@ -406,10 +429,22 @@ int main(int argc, char **argv) {
     logResultsToCSV(results, LOGFILE);
 
     // Print results and exit
-    o->printSolution(bestAllocation, bestRes, false, false, false);
-    std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
+    #ifdef VERBOSE
+        o->printSolution(bestAllocation, bestRes, true, true, true);
+        std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
+    #endif
 
-    if(xml) o->exportWST(bestAllocation.gw.data(), bestAllocation.sf.data());
+    if(xml) {
+        std::ofstream xmlOS(xmlFileName);
+        o->exportWST(bestAllocation.gw.data(), bestAllocation.sf.data(), xmlOS);
+    }
+
+    if(output) {
+        std::ofstream outputOS(outputFileName);
+        o->printSolution(bestAllocation, bestRes, false, false, false, outputOS);
+    }
+
+
     
     delete o;
     delete l;
