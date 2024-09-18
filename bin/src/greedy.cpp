@@ -428,12 +428,7 @@ int main(int argc, char **argv) {
     results.ready = true;
     logResultsToCSV(results, LOGFILE);
 
-    // Print results and exit
-    #ifdef VERBOSE
-        o->printSolution(bestAllocation, bestRes, true, true, true);
-        std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
-    #endif
-
+    
     if(xml) {
         std::ofstream xmlOS(xmlFileName);
         o->exportWST(bestAllocation.gw.data(), bestAllocation.sf.data(), xmlOS);
@@ -442,6 +437,9 @@ int main(int argc, char **argv) {
     if(output) {
         std::ofstream outputOS(outputFileName);
         o->printSolution(bestAllocation, bestRes, false, false, false, outputOS);
+    }else{
+        o->printSolution(bestAllocation, bestRes, false, false, false);
+        std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
     }
 
 
