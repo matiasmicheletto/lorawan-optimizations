@@ -66,6 +66,8 @@ class Objective {
         void exportWST(const uint* gw, const uint* sf, std::ostream& os = std::cout);
 
         TunningParameters tp;
+
+        inline Instance *getInstance() const { return instance; }
     private:
         Instance* instance;
         static const uint unfeasibleIncrement;

@@ -6,7 +6,6 @@
 #include "lib/model/objective.h"
 #include "lib/optimization/greedy.h"
 #include "lib/optimization/random.h"
-#include "lib/optimization/ga.h"
 #include "lib/optimization/siman.h"
 
 auto getElapsed(std::chrono::_V2::system_clock::time_point start) {
@@ -29,7 +28,7 @@ bool isTimeout(std::chrono::_V2::system_clock::time_point start, uint timeout) {
 
 int main(int argc, char **argv) {
     
-    srand(time(NULL));
+    srand(time(nullptr));
     std::random_device rd;
     std::mt19937 gen(rd());
 
@@ -415,7 +414,7 @@ int main(int argc, char **argv) {
     #ifdef VERBOSE
         std::cout << std::endl << "Step 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
-    OptimizationResults results;
+    OptimizationResults results; // For logging results
     results.instanceName = l->getInstanceFileName();
     results.solverName = strdup("Greedy (./greedy)");
     results.tp = o->tp;
@@ -441,8 +440,6 @@ int main(int argc, char **argv) {
         o->printSolution(bestAllocation, bestRes, false, false, false);
         std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
     }
-
-
     
     delete o;
     delete l;
