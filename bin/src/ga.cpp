@@ -1,4 +1,4 @@
-#define MANUAL "readme_greedy.txt"
+#define MANUAL "readme_ga.txt"
 #define LOGFILE "summary.csv"
 
 #include "lib/util/util.h"
@@ -71,7 +71,7 @@ class AllocationChromosome : public Chromosome { // Network allocation
             std::cout << std::endl;
         }
 
-        void printPhenotype() const override {
+        void getPhenotype(double &cost, uint &gwCount, uint &energy, double &totalUF, bool &feasible) const {
             unsigned int edCount = genes.size();
             uint* gw = new uint[edCount];
             uint* sf = new uint[edCount];
@@ -80,13 +80,17 @@ class AllocationChromosome : public Chromosome { // Network allocation
                 gw[i] = gene->getGW();
                 sf[i] = gene->getSF();
             }
+            // Evaluate cost and objectives
+            cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
+        }
 
-            // Evaluate cost
+        void printPhenotype() const override {
+            double cost;
             uint gwCount;
             uint energy;
             double totalUF;
             bool feasible;
-            double cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);            
+            getPhenotype(cost, gwCount, energy, totalUF, feasible);
             /*
             std::cout << "  Cost: " << cost << std::endl;
             std::cout << "  GW used: " << gwCount << std::endl;
@@ -242,6 +246,30 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -g (--gamma)" << std::endl;
             }
         }
+        if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mut") == 0){
+            if(i+1 < argc)
+                config.mutationRate = atof(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -m (--mut)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--cross") == 0){
+            if(i+1 < argc)
+                config.crossoverRate = atof(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -c (--cross)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--elite") == 0){
+            if(i+1 < argc)
+                config.elitismRate = atof(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -e (--elit)" << std::endl;
+            }
+        }
         //xml = strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0;
         if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0){
             if(i+1 < argc){
@@ -288,10 +316,35 @@ int main(int argc, char **argv) {
 
     GeneticAlgorithm *ga = new GeneticAlgorithm(config);
     GAResults results = ga->run();
-
-    //results.print();
     results.best->printPhenotype();
     std::cout << "Total execution time = " << results.elapsed << " ms" << std::endl;
+
+
+    // Log results to summary file
+    OptimizationResults oResults; // For logging results
+    oResults.instanceName = l->getInstanceFileName();
+    oResults.solverName = strdup("GA (./ga)");
+    oResults.tp = o->tp;
+    oResults.execTime = results.elapsed;
+    oResults.cost = results.bestFitnessValue;
+    oResults.ready = true;
+    AllocationChromosome* bestChromosome = (AllocationChromosome*) results.best;
+    bestChromosome->getPhenotype(oResults.cost, oResults.gwUsed, oResults.energy, oResults.uf, oResults.feasible);
+    logResultsToCSV(oResults, LOGFILE);
+
+    if(xml){
+        std::ofstream xmlOS(xmlFileName);
+        std::vector<Gene*> genes = bestChromosome->getGenes();
+        unsigned int edCount = genes.size();
+        uint* gw = new uint[edCount];
+        uint* sf = new uint[edCount];
+        for (unsigned int i = 0; i < edCount; i++) {
+            EdGene* gene = (EdGene*) genes[i];
+            gw[i] = gene->getGW();
+            sf[i] = gene->getSF();
+        }
+        o->exportWST(gw, sf, xmlOS);
+    }
 
     return 0;
 }

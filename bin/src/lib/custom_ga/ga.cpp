@@ -137,7 +137,7 @@ GAResults GeneticAlgorithm::run(bool verbose) {
             if(population[0]->fitness > bestFitnessValue){
                 bestFitnessValue = population[0]->fitness;
                 bestChromosome->clone(*population[0]);
-                std::cout << "New best fitness: " << bestFitnessValue << " at generation " << currentGeneration << std::endl;
+                if(verbose) std::cout << "New best fitness: " << bestFitnessValue << " at generation " << currentGeneration << std::endl;
             } 
         }
 

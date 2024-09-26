@@ -13,7 +13,7 @@
 
 int main(int argc, char **argv) {
     
-    srand(time(NULL));
+    srand(time(nullptr));
 
     Instance *l = 0;
     uint maxIters = 1e5;
