@@ -85,13 +85,14 @@ class GeneticAlgorithm {
 
         inline Chromosome* getChromosome(int index) { return population[index]; }
 
-        GAResults run(bool verbose = false);
+        GAResults run();
 
         void print();
     
     private:
         GAConfig config;
         std::vector<Chromosome*> population;
+        Uniform uniform;
 
         void sortPopulation();
         void evaluation();

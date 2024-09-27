@@ -42,6 +42,40 @@ struct OptimizationResults {
     bool feasible; // Feasible solution
     double uf; // Max. utilization factor of solution
     TunningParameters tp; // alpha, beta, gamma
+
+    void print(int detailLevel = 0) {
+        switch (detailLevel)
+        {
+            case 0:
+                std::cout << "Cost=" << cost << (feasible ? " (Feasible)" : " (Unfeasible)");
+                if(feasible){
+                    std::cout << ", (GW=" << gwUsed
+                            << ",E=" << energy 
+                            << ",U=" << uf
+                            << ")" << std::endl;
+                    std::cout << "Total execution time = " << execTime << " ms" << std::endl;
+                }
+                break;
+            case 1:
+                std::cout << "Results:" << std::endl;
+                std::cout << "  Instance: " << instanceName << std::endl;
+                std::cout << "  Solver: " << solverName << std::endl;
+                std::cout << "  Execution time: " << execTime << " ms" << std::endl;
+                std::cout << "  Cost: " << cost << std::endl;
+                std::cout << "  GW used: " << gwUsed << std::endl;
+                std::cout << "  Energy: " << energy << std::endl;
+                std::cout << "  Feasible: " << (feasible ? "Yes" : "No") << std::endl;
+                std::cout << "  Max UF: " << uf << std::endl;
+                std::cout << "  Tunning parameters:" << std::endl;
+                std::cout << "    Alpha: " << tp.alpha << std::endl;
+                std::cout << "    Beta: " << tp.beta << std::endl;
+                std::cout << "    Gamma: " << tp.gamma << std::endl;
+                break;
+            default:
+                std::cerr << "Result printing error: Unknown detail level." << std::endl;
+                break;
+        }
+    }
 };
 
 struct EvalResults {

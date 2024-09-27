@@ -10,7 +10,7 @@
 int main(int argc, char **argv);
 
 
-class EdGene : public Gene { // End device: has a GW and a SF
+class EdGene : public Gene { // End device: has a GW and a SF. Needs to know its index in the network
     public:
         EdGene(Objective* o, unsigned int index) : Gene() {
             this->o = o;
@@ -21,12 +21,14 @@ class EdGene : public Gene { // End device: has a GW and a SF
         inline void randomize() override {
             Instance *l = o->getInstance();
             std::vector<uint> gwList = l->getGWList(index); // Valid gw for this ed
-            const unsigned int gwIndex = rand() % gwList.size();
-            gw = gwList[gwIndex]; // Pick random gw
+            // Pick random gw
+            const unsigned int gwIndex = uniform(gwList.size());
+            gw = gwList[gwIndex]; 
             // Pick random SF from valid range
             const uint minSF = l->getMinSF(index, gw);
             const uint maxSF = l->getMaxSF(index);
-            sf = minSF + rand() % (maxSF - minSF + 1);
+            //sf = minSF + rand() % (maxSF - minSF + 1);
+            sf = uniform(minSF, maxSF);
         }
 
         inline void print() const override {
@@ -53,7 +55,7 @@ class EdGene : public Gene { // End device: has a GW and a SF
         unsigned int index;
 };
 
-class AllocationChromosome : public Chromosome { // Network allocation
+class AllocationChromosome : public Chromosome { // Network allocation (GW and SF for each ED)
     public:
         AllocationChromosome(Objective* o) : Chromosome(o->getInstance()->edCount) {
             this->o = o;
@@ -157,7 +159,6 @@ class NetworkFitness : public Fitness { // Cost fitness function
         }
 
         Chromosome* generateChromosome() const override {
-            const unsigned int edCount = o->getInstance()->edCount;
             AllocationChromosome* ch = new AllocationChromosome(o);
             ch->fitness = evaluate(ch);
             return ch;
@@ -169,8 +170,6 @@ class NetworkFitness : public Fitness { // Cost fitness function
 
 
 int main(int argc, char **argv) {
-
-    srand(time(nullptr));
 
     #ifdef VERBOSE
         std::cout << std::endl << "Step 0 -- Load instance and optimization parameters" << std::endl;
@@ -316,8 +315,6 @@ int main(int argc, char **argv) {
 
     GeneticAlgorithm *ga = new GeneticAlgorithm(config);
     GAResults results = ga->run();
-    results.best->printPhenotype();
-    std::cout << "Total execution time = " << results.elapsed << " ms" << std::endl;
 
 
     // Log results to summary file
@@ -332,18 +329,33 @@ int main(int argc, char **argv) {
     bestChromosome->getPhenotype(oResults.cost, oResults.gwUsed, oResults.energy, oResults.uf, oResults.feasible);
     logResultsToCSV(oResults, LOGFILE);
 
+
+    // Extract gw and sf arrays
+    std::vector<Gene*> genes = bestChromosome->getGenes();
+    unsigned int edCount = genes.size();
+    uint* gw = new uint[edCount];
+    uint* sf = new uint[edCount];
+    for (unsigned int i = 0; i < edCount; i++) {
+        EdGene* gene = (EdGene*) genes[i];
+        gw[i] = gene->getGW();
+        sf[i] = gene->getSF();
+    }
+
     if(xml){
         std::ofstream xmlOS(xmlFileName);
-        std::vector<Gene*> genes = bestChromosome->getGenes();
-        unsigned int edCount = genes.size();
-        uint* gw = new uint[edCount];
-        uint* sf = new uint[edCount];
-        for (unsigned int i = 0; i < edCount; i++) {
-            EdGene* gene = (EdGene*) genes[i];
-            gw[i] = gene->getGW();
-            sf[i] = gene->getSF();
-        }
         o->exportWST(gw, sf, xmlOS);
+    }
+
+    if(output){
+        Allocation allocation(l);
+        for(unsigned int i = 0; i < edCount; i++)
+            allocation.checkUFAndConnect(i, gw[i], sf[i]);
+        EvalResults bestRes = o->eval(allocation);
+        std::ofstream outputOS(outputFileName);
+        o->printSolution(allocation, bestRes, false, false, false, outputOS);
+    }else{
+        results.best->printPhenotype();
+        std::cout << "Total execution time = " << results.elapsed << " ms" << std::endl;
     }
 
     return 0;

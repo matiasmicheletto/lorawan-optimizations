@@ -265,6 +265,7 @@ int main(int argc, char **argv) {
     
     if(results.ready) {
         results.instanceName = l->getInstanceFileName();
+        results.print();
         logResultsToCSV(results, LOGFILE);
     }
     
