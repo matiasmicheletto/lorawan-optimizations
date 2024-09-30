@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <math.h>
+#include <cstring>
 #include "fitness.h"
 
 struct GAConfig { // Configuration parameters for the Genetic Algorithm
@@ -18,27 +19,34 @@ struct GAConfig { // Configuration parameters for the Genetic Algorithm
     double crossoverRate;
     double elitismRate;
     unsigned int timeout;
-    double stagnationThreshold;
+    double stagnationWindow;
+    int printLevel;
 
     void print() {
-        std::cout << "Fitness function: " << fitnessFunction->getName() << std::endl;
-        std::cout << "GA Configuration: " << std::endl;
-        std::cout << "Population size: " << populationSize << std::endl;
-        std::cout << "Max generations: " << maxGenerations << std::endl;
-        std::cout << "Mutation rate: " << mutationRate << std::endl;
-        std::cout << "Crossover rate: " << crossoverRate << std::endl;
-        std::cout << "Elitism rate: " << elitismRate << std::endl << std::endl;
+        std::cout << std::endl << "Genetic Algorithm Configuration" << std::endl;
+        if(fitnessFunction == nullptr)
+            std::cout << "  - Fitness function: not set" << std::endl;
+        else
+            std::cout << "  - Fitness function: " << fitnessFunction->getName() << std::endl;
+        std::cout << "  - Population size: " << populationSize << std::endl;
+        std::cout << "  - Max generations: " << maxGenerations << std::endl;
+        std::cout << "  - Timeout: " << timeout << " seconds." << std::endl;
+        std::cout << "  - Stagnation window: " << stagnationWindow*100 << "%" << std::endl;
+        std::cout << "  - Mutation rate: " << mutationRate << std::endl;
+        std::cout << "  - Crossover rate: " << crossoverRate << std::endl;
+        std::cout << "  - Elitism rate: " << elitismRate << std::endl << std::endl;
     }
 
     GAConfig() : 
         fitnessFunction(nullptr),
         populationSize(100), 
-        maxGenerations(1000), 
-        mutationRate(0.01), 
+        maxGenerations(100), 
+        mutationRate(0.05), 
         crossoverRate(0.8), 
-        elitismRate(0.1),
+        elitismRate(0.02),
         timeout(360),
-        stagnationThreshold(1.0E-6) {}
+        stagnationWindow(0.7),
+        printLevel(0) {}
 };
 
 enum STOP_CONDITION { // Stop condition for the Genetic Algorithm
@@ -51,6 +59,7 @@ struct GAResults { // Results of the Genetic Algorithm
     Chromosome *best;
     double bestFitnessValue;
     unsigned int generations;
+    unsigned int stagnatedGenerations;
     STOP_CONDITION stop_condition;
     int elapsed;
 
@@ -80,10 +89,16 @@ struct GAResults { // Results of the Genetic Algorithm
 
 class GeneticAlgorithm {
     public:
-        GeneticAlgorithm(GAConfig config);
+        GeneticAlgorithm();
+        GeneticAlgorithm(Fitness *fitnessFunction, GAConfig config = GAConfig());
+        
         ~GeneticAlgorithm();
 
         inline Chromosome* getChromosome(int index) { return population[index]; }
+
+        void setConfig(GAConfig config);
+        void setConfig(int argc, char **argv);
+        void setFitnessFunction(Fitness *fitnessFunction);
 
         GAResults run();
 
@@ -92,9 +107,12 @@ class GeneticAlgorithm {
     private:
         GAConfig config;
         std::vector<Chromosome*> population;
-        Uniform uniform;
+        Uniform2 uniform;
 
         void sortPopulation();
+        void initPopulation();
+        void clearPopulation();
+        
         void evaluation();
         void selection();
         void crossover();

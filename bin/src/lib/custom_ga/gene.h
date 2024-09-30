@@ -2,7 +2,7 @@
 #define GENE_H
 
 #include <iostream>
-#include "../misc/uniform.h"
+#include "uniform.h"
 
 class Gene { // Abstract class that models a gene
     public:
@@ -12,7 +12,7 @@ class Gene { // Abstract class that models a gene
 
     protected:
         Gene() = default;
-        Uniform uniform;
+        Uniform2 uniform; //RANDOM
 };
 
 #endif // GENE_H

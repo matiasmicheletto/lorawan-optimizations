@@ -2,6 +2,7 @@
 #define LOGFILE "summary.csv"
 
 #include "lib/util/util.h"
+#include "lib/custom_ga/uniform.h"
 #include "lib/model/instance.h"
 #include "lib/model/objective.h"
 #include "lib/custom_ga/ga.h"
@@ -22,13 +23,13 @@ class EdGene : public Gene { // End device: has a GW and a SF. Needs to know its
             Instance *l = o->getInstance();
             std::vector<uint> gwList = l->getGWList(index); // Valid gw for this ed
             // Pick random gw
-            const unsigned int gwIndex = uniform(gwList.size());
+            const unsigned int gwIndex = uniform.random(gwList.size());
             gw = gwList[gwIndex]; 
             // Pick random SF from valid range
             const uint minSF = l->getMinSF(index, gw);
             const uint maxSF = l->getMaxSF(index);
             //sf = minSF + rand() % (maxSF - minSF + 1);
-            sf = uniform(minSF, maxSF);
+            sf = uniform.random(minSF, maxSF);
         }
 
         inline void print() const override {
@@ -63,6 +64,10 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
             for (unsigned int i = 0; i < edCount; i++) {
                 genes.push_back(new EdGene(o, i));
             }
+        }
+
+        std::string getName() const override {
+            return "Allocation array";
         }
 
         void printGenotype() const override {
@@ -108,8 +113,8 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
                 << ")" << std::endl;
         }
 
-        void clone(const Chromosome& other) { // Copy the genes from another chromosome
-            std::vector<Gene*> otherGenes = other.getGenes();
+        void clone(const Chromosome* other) { // Copy the genes from another chromosome
+            std::vector<Gene*> otherGenes = other->getGenes();
             std::vector<Gene*> thisGenes = getGenes();
             for (unsigned int i = 0; i < otherGenes.size(); i++) {
                 EdGene *thisGene = (EdGene*) thisGenes[i];
@@ -158,7 +163,7 @@ class NetworkFitness : public Fitness { // Cost fitness function
             return inverseCost;
         }
 
-        Chromosome* generateChromosome() const override {
+        AllocationChromosome* generateChromosome() const override {
             AllocationChromosome* ch = new AllocationChromosome(o);
             ch->fitness = evaluate(ch);
             return ch;
@@ -184,13 +189,13 @@ int main(int argc, char **argv) {
     char *outputFileName;
 
     GAConfig config;
-    config.populationSize = 100;
+    config.populationSize = 20;
     config.maxGenerations = 50;
-    config.mutationRate = 0.1;
+    config.mutationRate = 0.05;
     config.crossoverRate = 0.8; 
-    config.elitismRate = 0.05;
+    config.elitismRate = 0.1;
     config.timeout = 360;
-    config.stagnationThreshold = 0;
+    config.stagnationWindow = 0.7;
 
     
     // Program arguments
@@ -311,9 +316,10 @@ int main(int argc, char **argv) {
     #endif
 
     Objective *o = new Objective(l, tp);
-    config.fitnessFunction = new NetworkFitness(o);
+    NetworkFitness* fitnessFunction = new NetworkFitness(o);
 
-    GeneticAlgorithm *ga = new GeneticAlgorithm(config);
+    GeneticAlgorithm *ga = new GeneticAlgorithm(fitnessFunction, config);
+    //ga->print();
     GAResults results = ga->run();
 
 
