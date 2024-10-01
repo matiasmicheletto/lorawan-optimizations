@@ -435,7 +435,7 @@ int main(int argc, char **argv) {
     #endif
     OptimizationResults results; // For logging results
     results.instanceName = l->getInstanceFileName();
-    results.solverName = strdup("Greedy (./greedy)");
+    results.solverName = strdup("Greedy");
     results.tp = o->tp;
     results.execTime = getElapsedMs(start);
     results.feasible = tempRes.feasible;
