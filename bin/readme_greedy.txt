@@ -27,6 +27,7 @@ DESCRIPTION:
 
 OPTIONS:
    -h, --help     Display this help message.
+   -p, --print    Print solutions to use for GA warm start. Use number for solutions to print.
    -t, --timeout  Timeout in seconds. Default is 60.  
    -i, --iters    Max iterations to run in allocation phase.
    -s, --stall    Stagnation threshold (for 10 iterations).  
@@ -51,6 +52,9 @@ EXAMPLES:
    
    5. greedy -f input.dat -w solution.mst -o solution.sol
       - Run the Greedy method and export both the solution and wst file.  
+
+   6. greedy -f input.dat -e 10
+      - Run the Greedy method and print 10 solutions.
 
 AUTHORS
    Code was written by Dr. Matias J. Micheletto from CIT-GSJ (CONICET) and supervised by Dr. Rodrigo M. Santos from DIEC (UNS) - ICIC (CONICET) and Dr. Javier Marenco from UTDT.

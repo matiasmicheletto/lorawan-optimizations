@@ -63,6 +63,15 @@ void GeneticAlgorithm::setFitnessFunction(Fitness *fitnessFunction) {
     initPopulation();
 }
 
+void GeneticAlgorithm::setPopulation(std::vector<Chromosome*> population){
+    clearPopulation();
+    this->population = population;
+    sortPopulation();
+    for(unsigned int i = 0; i < population.size(); i++){
+        population[i]->fitness = config.fitnessFunction->evaluate(population[i]);
+    }
+}
+
 void GeneticAlgorithm::sortPopulation() {
     std::sort(population.begin(), population.end(), [](Chromosome* a, Chromosome* b) {
         return a->fitness > b->fitness; // Sort in descending order
@@ -93,14 +102,6 @@ void GeneticAlgorithm::evaluation() {
 }
 
 void GeneticAlgorithm::selection() { // Roulette wheel selection
-    
-    /*
-    std::cout << "Prev population" << std::endl;
-    for (unsigned int i = 0; i < config.populationSize; i++) {
-        std::cout << "Chromosome " << i << ": " << population[i]->fitness << std::endl;
-    }
-    */
-
     // Keep the best chromosomes
     unsigned int elite = config.elitismRate * (double) config.populationSize;
     std::vector<Chromosome*> newPopulation;
@@ -208,7 +209,7 @@ void GeneticAlgorithm::print() {
 
 
 GAResults GeneticAlgorithm::run() {
-    
+
     GAResults results;
 
     if(config.fitnessFunction == nullptr){

@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
     TunningParameters tp; // alpha, beta and gamma
     bool xml = false; // XML file export
     bool output = false; // Output to console
+    unsigned int gaWarmStart = 0; // Number of solutions to export
 
     char *xmlFileName;
     char *outputFileName;
@@ -59,6 +60,15 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
             }
+        }
+        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--print") == 0) {
+            if(i+1 < argc){
+                gaWarmStart = atoi(argv[i+1]);
+            }else{
+                std::cout << std::endl << "Error in argument -p (--print). Population number required" << std::endl;
+                printHelp(MANUAL);
+            }
+                
         }
         if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stall") == 0) {
             if(i+1 < argc) 
@@ -223,6 +233,7 @@ int main(int argc, char **argv) {
     double minimumCost = __DBL_MAX__;
     bool timedout = false;
     const Allocation essentials = bestAllocation;
+    uint printed = 0; // Form GA warm start
     for(uint s = 7; s <= 12; s++){
 
         std::vector<std::vector<uint>> cluster;
@@ -284,7 +295,18 @@ int main(int argc, char **argv) {
 
             // If all nodes connected, eval solution
             if(tempAlloc.connectedCount == l->edCount){ 
+
                 EvalResults res = o->eval(tempAlloc, false); // Use true to compute cost according to feasibility level
+
+
+                if(gaWarmStart > 0 && printed < gaWarmStart){ // Print allocation
+                    for(uint e = 0; e < l->edCount; e++)
+                        std::cout << tempAlloc.gw[e] << " " << tempAlloc.sf[e] << std::endl;
+                    std::cout << "--" << std::endl;
+                    printed++;
+                }
+
+
                 if(res.feasible && res.cost < minimumCost){ // New minimum found
                     if(i > 0){ // Compute const improvement after first iteration
                         const double diff = minimumCost - res.cost;
@@ -326,7 +348,6 @@ int main(int argc, char **argv) {
         std::cout << "Unfeasibility code: " << bestRes.unfeasibleCode << std::endl;
         exit(1);
     }
-
 
     #ifdef VERBOSE
         std::cout << std::endl << "Step 5 -- Reallocation -- elapsed = " << getElapsed(start) << " sec." << std::endl;
@@ -409,8 +430,6 @@ int main(int argc, char **argv) {
         #endif
     }
 
-
-
     #ifdef VERBOSE
         std::cout << std::endl << "Step 6 -- Print results -- elapsed = " << getElapsed(start) << " sec." << std::endl;
     #endif
@@ -437,8 +456,10 @@ int main(int argc, char **argv) {
         std::ofstream outputOS(outputFileName);
         o->printSolution(bestAllocation, bestRes, false, false, false, outputOS);
     }else{
-        o->printSolution(bestAllocation, bestRes, false, false, false);
-        std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
+        if(gaWarmStart == 0){
+            o->printSolution(bestAllocation, bestRes, false, false, false);
+            std::cout << "Total execution time = " << results.execTime << " ms" << std::endl;
+        }
     }
     
     delete o;

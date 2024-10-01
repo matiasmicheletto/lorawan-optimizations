@@ -91,6 +91,11 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
             cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
         }
 
+        void setGeneValue(uint index, uint gw, uint sf){
+            EdGene* gene = (EdGene*) genes[index];
+            gene->setValue(gw, sf);
+        }
+
         void printPhenotype() const override {
             double cost;
             uint gwCount;
@@ -130,9 +135,9 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
 };
 
 
-class NetworkFitness : public Fitness { // Cost fitness function
+class GAFitness : public Fitness { // Cost fitness function
     public:
-        NetworkFitness(Objective* o) : Fitness() {
+        GAFitness(Objective* o) : Fitness() {
             this->o = o;
         }
 
@@ -159,7 +164,7 @@ class NetworkFitness : public Fitness { // Cost fitness function
             bool feasible;
             double cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
             // Inverse cost for maximization
-            double inverseCost = feasible ? 1e4/cost : __DBL_MIN__;
+            double inverseCost = feasible ? 1e3/cost : __DBL_MIN__;
             return inverseCost;
         }
 
@@ -197,8 +202,10 @@ int main(int argc, char **argv) {
     config.timeout = 360;
     config.stagnationWindow = 0.7;
 
+    bool warmStart = false;
+
     
-    // Program arguments
+    // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p)
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
@@ -209,6 +216,10 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
             }
+        }
+        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--pop") == 0) {
+            // Read precomputed population
+            warmStart = true;
         }
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
             if(i+1 < argc) 
@@ -316,9 +327,43 @@ int main(int argc, char **argv) {
     #endif
 
     Objective *o = new Objective(l, tp);
-    NetworkFitness* fitnessFunction = new NetworkFitness(o);
+    GAFitness* gaFitness = new GAFitness(o);
+    GeneticAlgorithm *ga = new GeneticAlgorithm(gaFitness, config);
 
-    GeneticAlgorithm *ga = new GeneticAlgorithm(fitnessFunction, config);
+    if(warmStart){ // Read precomputed population
+        struct Ed { // ED gene simplified
+            unsigned int gw;
+            unsigned int sf;
+        };
+        std::vector<Ed> network; // List of nodes
+        std::vector<std::vector<Ed>> pop; // List of network configurations
+        std::string input;
+        while(std::cin >> input) {
+            if(input != "--"){
+                unsigned int gw = std::stoi(input);
+                unsigned int sf;
+                std::cin >> sf;
+                Ed ed = {gw, sf};
+                network.push_back(ed);
+            }else{
+                pop.push_back(network);
+                network.clear();
+            }
+        }
+
+        // Build population
+        std::vector<Chromosome*> population;
+        for(uint k = 0; k < pop.size(); k++){ // For each network config (chromosome)
+            AllocationChromosome* ch = new AllocationChromosome(o);
+            for(uint j = 0; j < pop[k].size(); j++){ // For each node (gene)
+                ch->setGeneValue(j, pop[k][j].gw, pop[k][j].sf);
+            }
+            population.push_back(ch);
+        }
+
+        ga->setPopulation(population);
+    }
+
     //ga->print();
     GAResults results = ga->run();
 
@@ -326,7 +371,10 @@ int main(int argc, char **argv) {
     // Log results to summary file
     OptimizationResults oResults; // For logging results
     oResults.instanceName = l->getInstanceFileName();
-    oResults.solverName = strdup("GA (./ga)");
+    if(warmStart)
+        oResults.solverName = strdup("GA - Warm start");
+    else
+        oResults.solverName = strdup("GA");
     oResults.tp = o->tp;
     oResults.execTime = results.elapsed;
     oResults.cost = results.bestFitnessValue;
