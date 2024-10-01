@@ -444,8 +444,9 @@ int main(int argc, char **argv) {
     results.energy = tempRes.energy;
     results.uf = tempRes.uf;
     results.ready = true;
-    logResultsToCSV(results, LOGFILE);
-
+    if(gaWarmStart == 0){
+        logResultsToCSV(results, LOGFILE);
+    }
     
     if(xml) {
         std::ofstream xmlOS(xmlFileName);

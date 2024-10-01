@@ -194,11 +194,11 @@ int main(int argc, char **argv) {
     char *outputFileName;
 
     GAConfig config;
-    config.populationSize = 20;
+    config.populationSize = 50;
     config.maxGenerations = 50;
     config.mutationRate = 0.05;
     config.crossoverRate = 0.8; 
-    config.elitismRate = 0.1;
+    config.elitismRate = 0.2;
     config.timeout = 360;
     config.stagnationWindow = 0.7;
 

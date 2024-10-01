@@ -152,12 +152,35 @@ void GeneticAlgorithm::selection() { // Roulette wheel selection
 }
 
 void GeneticAlgorithm::crossover() {
-    for (unsigned int i = 0; i < config.populationSize; i++) {
+    unsigned int elite = config.elitismRate * (double) config.populationSize;
+    for (unsigned int i = elite; i < config.populationSize; i++) {
         if (uniform.random() < config.crossoverRate) {
             unsigned int parent1 = uniform.random(config.populationSize);
             population[i]->crossover(population[parent1]);
         }
     }
+
+   /*
+    Chromosome* child1 = config.fitnessFunction->generateChromosome();
+    Chromosome* child2 = config.fitnessFunction->generateChromosome();
+    for (unsigned int i = 0; i < config.populationSize; i++) {
+        if (uniform.random() < config.crossoverRate) {
+            Chromosome* parent1 = population[i];
+            Chromosome* parent2 = population[uniform.random(config.populationSize)];
+            child1->clone(parent1);
+            child1->crossover(parent2);
+            child2->clone(parent2);
+            child2->crossover(parent1);
+        }
+    }
+    population.push_back(child1);
+    population.push_back(child2);
+    sortPopulation();
+    while(population.size() > config.populationSize){
+        delete population[population.size()-1];
+        population.pop_back();
+    }
+    */
 }
 
 void GeneticAlgorithm::mutation() {
