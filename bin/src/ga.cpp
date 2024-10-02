@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
     config.crossoverRate = 0.8; 
     config.elitismRate = 0.2;
     config.timeout = 360;
-    config.stagnationWindow = 0.7;
+    config.stagnationWindow = 0.3;
 
     bool warmStart = false;
 
@@ -235,6 +235,22 @@ int main(int argc, char **argv) {
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stag") == 0) {
+            if(i+1 < argc) 
+                config.stagnationWindow = atoi(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -s (--stag)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--qpop") == 0) {
+            if(i+1 < argc) 
+                config.populationSize = atoi(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -q (--qpop)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--alpha") == 0){
