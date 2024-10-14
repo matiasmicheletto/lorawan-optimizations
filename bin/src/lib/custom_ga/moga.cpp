@@ -125,7 +125,7 @@ void MultiObjectiveGA::print() {
     }
 }
 
-GAResults MultiObjectiveGA::run() { // Try to avoid overriding this method
+GAResults MultiObjectiveGA::run(const bool verbose) { // Try to avoid overriding this method
     GAResults results;
 
     if (config.fitnessFunction == nullptr) {
@@ -158,14 +158,18 @@ GAResults MultiObjectiveGA::run() { // Try to avoid overriding this method
 
         auto elapsed = std::chrono::high_resolution_clock::now() - start; // Time in milliseconds
         if (std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() > config.timeout) {
-            std::cout << "Timeout reached (" << config.timeout << "s)" << std::endl;
+            if(verbose){
+                std::cout << "Timeout reached (" << config.timeout << "s)" << std::endl;
+            }
             status = TIMEOUT;
             break;
         }
 
         currentGeneration++;
         if(currentGeneration >= config.maxGenerations){
-            std::cout << "Max generations reached (" << config.maxGenerations << ")" << std::endl;
+            if(verbose){
+                std::cout << "Max generations reached (" << config.maxGenerations << ")" << std::endl;
+            }
             status = MAX_GENERATIONS;
             break;
         }

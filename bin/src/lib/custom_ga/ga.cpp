@@ -241,7 +241,7 @@ void GeneticAlgorithm::print() {
 }
 
 
-GAResults GeneticAlgorithm::run() {
+GAResults GeneticAlgorithm::run(const bool verbose) {
     
     GAResults results;
 
@@ -277,20 +277,26 @@ GAResults GeneticAlgorithm::run() {
 
         auto elapsed = std::chrono::high_resolution_clock::now() - start; // Time in milliseconds
         if (std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() > config.timeout) {
-            std::cout << "Timeout reached (" << config.timeout << "s)" << std::endl;
+            if(verbose){
+                std::cout << "Timeout reached (" << config.timeout << "s)" << std::endl;
+            }
             status = TIMEOUT;
             break;
         }
 
         if(stagnatedGenerations > maxStagationGenerations){
-            std::cout << "Stagnation reached: " << stagnatedGenerations << " generations out of " << config.maxGenerations << " stipulated." << std::endl;
+            if(verbose){
+                std::cout << "Stagnation reached: " << stagnatedGenerations << " generations out of " << config.maxGenerations << " stipulated." << std::endl;
+            }
             status = STAGNATED;
             break;
         }
 
         currentGeneration++;
         if(currentGeneration >= config.maxGenerations){
-            std::cout << "Max generations reached (" << config.maxGenerations << ")" << std::endl;
+            if(verbose){
+                std::cout << "Max generations reached (" << config.maxGenerations << ")" << std::endl;
+            }
             status = MAX_GENERATIONS;
             break;
         }

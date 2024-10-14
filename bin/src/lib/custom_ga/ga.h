@@ -187,7 +187,7 @@ class GeneticAlgorithm {
         void setFitnessFunction(Fitness *fitnessFunction);
         void setPopulation(std::vector<Chromosome*> population);
 
-        virtual GAResults run();
+        virtual GAResults run(const bool verbose = false);
 
         virtual void print();
     

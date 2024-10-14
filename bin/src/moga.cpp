@@ -208,9 +208,10 @@ int main(int argc, char **argv) {
         moga->setPopulation(population);
     }
 
-    moga->print();
+    //moga->print();
     GAResults results = moga->run();
     results.printCSV();
+    results.printSVG();
 
     return 0;
 }

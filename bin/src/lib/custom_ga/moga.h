@@ -9,7 +9,7 @@ class MultiObjectiveGA : public GeneticAlgorithm {
         MultiObjectiveGA(Fitness *fitnessFunction) : GeneticAlgorithm(fitnessFunction) {}
         MultiObjectiveGA() : GeneticAlgorithm() {}
 
-        GAResults run() override;
+        GAResults run(const bool verbose = false) override;
 
         void print() override;
 
