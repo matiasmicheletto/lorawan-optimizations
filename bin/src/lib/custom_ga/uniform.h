@@ -3,19 +3,21 @@
 
 #include <random>
 
-class Uniform2 {
-    public:
-        Uniform2();
-        ~Uniform2();
-        double random();
-        double random(double to);
-        double random(double from, double to);
+namespace custom_ga {
+    class Uniform {
+        public:
+            Uniform();
+            ~Uniform();
+            double random();
+            double random(double to);
+            double random(double from, double to);
 
-    private:
-        std::random_device rd;
-        std::mt19937 gen;
-        std::uniform_real_distribution<> dis;
-};
+        private:
+            std::random_device rd;
+            std::mt19937 gen;
+            std::uniform_real_distribution<> dis;
+    };
+}
 
 
 #endif // UNIFORM2_H

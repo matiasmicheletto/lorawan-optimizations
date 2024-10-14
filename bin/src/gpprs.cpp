@@ -7,7 +7,7 @@
 #include "lib/model/objective.h"
 #include "lib/optimization/random.h"
 #include "lib/optimization/greedy.h"
-#include "lib/optimization/ga.h"
+//#include "lib/optimization/openga/ga.h"
 #include "lib/optimization/siman.h"
 
 
@@ -148,20 +148,24 @@ int main(int argc, char **argv) {
             break;
         }
         case 2: {
+            /*
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
             gaconfig.timeout = timeout;
             results = ga(l, o, gaconfig, verbose, wst);
             results.solverName = strdup("Genetic Algorithm");
             break;
+            */
         }
         case 3: {
+            /*
             GAConfig gaconfig;
             gaconfig.maxgen = maxIters/gaconfig.popsize;
             gaconfig.timeout = timeout;
             results = nsga(l, o, gaconfig, verbose, wst);
             results.solverName = strdup("Nondominated Sorting Genetic Algorithm");
             break;
+            */
         }
         case 4: {
             results = siman(l, o, maxIters, verbose, wst);

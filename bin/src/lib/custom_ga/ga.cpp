@@ -1,16 +1,18 @@
 #include "ga.h"
 
+using namespace custom_ga;
+
 GeneticAlgorithm::GeneticAlgorithm() { 
     // Initialize with default configuration
     config = GAConfig();
-    // Cannot initialize population without a fitness function
+    // Cannot initialize with default constructor
 }
 
 GeneticAlgorithm::GeneticAlgorithm(Fitness *fitnessFunction, GAConfig config) {
     // Initialize with a fitness function and configuration
     config.fitnessFunction = fitnessFunction;
     this->config = config;
-    initPopulation();
+    initialize();
 }
 
 GeneticAlgorithm::~GeneticAlgorithm() {
@@ -26,7 +28,7 @@ void GeneticAlgorithm::setConfig(GAConfig config) {
     if(config.fitnessFunction == nullptr)
         std::cerr << "Warning: configuration updated without fitness function" << std::endl;
 
-    initPopulation();
+    initialize();
 }
 
 void GeneticAlgorithm::setConfig(int argc, char **argv) {
@@ -49,27 +51,36 @@ void GeneticAlgorithm::setConfig(int argc, char **argv) {
             config.stagnationWindow = atof(argv[i + 1]);
         } else if (strcmp(argv[i], "-l") == 0) {
             config.printLevel = atoi(argv[i + 1]);
+        }else if(strcmp(argv[i], "-o") == 0) {
+            if(i+1 < argc){
+                if(std::strcmp(argv[i+1], "TXT") == 0)
+                    config.outputFormat = GA_OUTPUT_FORMAT::GTXT;
+                if(std::strcmp(argv[i+1], "CSV") == 0)
+                    config.outputFormat = GA_OUTPUT_FORMAT::CSV;
+                if(std::strcmp(argv[i+1], "SVG") == 0)
+                    config.outputFormat = GA_OUTPUT_FORMAT::GSVG;
+            }
         }
     }
 
     if(config.fitnessFunction == nullptr)
         std::cerr << "Warning: configuration updated without fitness function" << std::endl;
-
-    initPopulation();
+    else
+        initialize();
 }
 
 void GeneticAlgorithm::setFitnessFunction(Fitness *fitnessFunction) {
     config.fitnessFunction = fitnessFunction;
-    initPopulation();
+    initialize();
 }
 
-void GeneticAlgorithm::setPopulation(std::vector<Chromosome*> population){
+void GeneticAlgorithm::setPopulation(std::vector<Chromosome*> population) {
     clearPopulation();
     this->population = population;
-    sortPopulation();
     for(unsigned int i = 0; i < population.size(); i++){
-        population[i]->fitness = config.fitnessFunction->evaluate(population[i]);
+        config.fitnessFunction->evaluate(population[i]);
     }
+    sortPopulation();
 }
 
 void GeneticAlgorithm::sortPopulation() {
@@ -78,7 +89,12 @@ void GeneticAlgorithm::sortPopulation() {
     });
 }
 
-void GeneticAlgorithm::initPopulation(){
+void GeneticAlgorithm::clearPopulation() {
+    population.clear();
+}
+
+void GeneticAlgorithm::initialize(){
+
     if(config.fitnessFunction == nullptr){
         std::cerr << "Fitness function not set" << std::endl;
         return;
@@ -89,21 +105,38 @@ void GeneticAlgorithm::initPopulation(){
         population.push_back(ch);
     }
     sortPopulation(); // Sort the population by fitness best to worse
-}
 
-void GeneticAlgorithm::clearPopulation() {
-    population.clear();
+    // Calculate the number of elite individuals
+    elite = config.elitismRate * (double) config.populationSize;
+
+    // This is not a pointer to the best in the population, to avoid losing the best individual
+    // during the evolution
+    bestChromosome = config.fitnessFunction->generateChromosome();
+
+    status = IDLE;
 }
 
 void GeneticAlgorithm::evaluation() {
+    long int bestFitnessIndex = -1;
     for (unsigned int i = 0; i < config.populationSize; i++) {
-        population[i]->fitness = config.fitnessFunction->evaluate(population[i]);
+        config.fitnessFunction->evaluate(population[i]);
+        if(population[i]->fitness > bestFitnessValue){
+            std::cout << "New best fitness: " << population[i]->fitness << std::endl;
+            bestFitnessValue = population[i]->fitness;
+            bestFitnessIndex = i;
+        }
+    }
+    
+    if(bestFitnessIndex != -1){
+        bestChromosome->clone(population[bestFitnessIndex]);
+    }else{
+        stagnatedGenerations++;
     }
 }
 
 void GeneticAlgorithm::selection() { // Roulette wheel selection
+
     // Keep the best chromosomes
-    unsigned int elite = config.elitismRate * (double) config.populationSize;
     std::vector<Chromosome*> newPopulation;
     for (unsigned int i = 0; i < elite; i++) {
         newPopulation.push_back(population[i]);
@@ -152,35 +185,12 @@ void GeneticAlgorithm::selection() { // Roulette wheel selection
 }
 
 void GeneticAlgorithm::crossover() {
-    unsigned int elite = config.elitismRate * (double) config.populationSize;
-    for (unsigned int i = elite; i < config.populationSize; i++) {
+    for (unsigned int i = 0; i < config.populationSize; i++) {
         if (uniform.random() < config.crossoverRate) {
             unsigned int parent1 = uniform.random(config.populationSize);
             population[i]->crossover(population[parent1]);
         }
     }
-
-   /*
-    Chromosome* child1 = config.fitnessFunction->generateChromosome();
-    Chromosome* child2 = config.fitnessFunction->generateChromosome();
-    for (unsigned int i = 0; i < config.populationSize; i++) {
-        if (uniform.random() < config.crossoverRate) {
-            Chromosome* parent1 = population[i];
-            Chromosome* parent2 = population[uniform.random(config.populationSize)];
-            child1->clone(parent1);
-            child1->crossover(parent2);
-            child2->clone(parent2);
-            child2->crossover(parent1);
-        }
-    }
-    population.push_back(child1);
-    population.push_back(child2);
-    sortPopulation();
-    while(population.size() > config.populationSize){
-        delete population[population.size()-1];
-        population.pop_back();
-    }
-    */
 }
 
 void GeneticAlgorithm::mutation() {
@@ -232,7 +242,7 @@ void GeneticAlgorithm::print() {
 
 
 GAResults GeneticAlgorithm::run() {
-
+    
     GAResults results;
 
     if(config.fitnessFunction == nullptr){
@@ -243,80 +253,57 @@ GAResults GeneticAlgorithm::run() {
         std::cerr << "Population not initialized" << std::endl;
         return results;
     }
-
-    #ifdef DEBUG
-        std::cout << "Running Genetic Algorithm" << std::endl;
-    #endif
-
     
-    // Stagnation variables
-    unsigned int stagnatedGenerations = 0;
+    status = RUNNING;
+    bestFitnessValue = __DBL_MIN__;
+    currentGeneration = 0;
+    stagnatedGenerations = 0;
     unsigned int maxStagationGenerations = config.stagnationWindow*config.maxGenerations;
 
-    Chromosome *bestChromosome = config.fitnessFunction->generateChromosome();
-    double bestFitnessValue = __DBL_MIN__; // Maximization
-    
-    // Start chronometer
+    // Start timer
     auto start = std::chrono::high_resolution_clock::now();
 
-    // Run the algorithm for the specified number of generations
-    unsigned int currentGeneration = 0;
-    while (currentGeneration < config.maxGenerations) {
+    while (status == RUNNING){
         
         // GA steps
+        sortPopulation(); // Sort the population from best to worst fitness
         selection(); // Select the best individual by roulette wheel method
         crossover(); // Apply crossover using single point method
         mutation(); // Perform mutation (all individuals are evaluated here)
         evaluation(); // Evaluate the new population
-        sortPopulation(); // Sort the population from best to worst fitness
 
-        auto elapsed = std::chrono::high_resolution_clock::now() - start; // Time in milliseconds
-
-        /*
-        std::cout << "Generation " 
-            << currentGeneration << " - Current best: " << population[0]->fitness 
-            << "\t Last best: " << bestFitnessValue
-            << "\t Elapsed time: " << std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() << "s" 
-            << "\t Relative error: " << er << std::endl;
-        */
 
         ///// Check stop conditions ///////
 
+        auto elapsed = std::chrono::high_resolution_clock::now() - start; // Time in milliseconds
         if (std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() > config.timeout) {
             std::cout << "Timeout reached (" << config.timeout << "s)" << std::endl;
-            results.stop_condition = TIMEOUT;
+            status = TIMEOUT;
             break;
         }
 
-        if(population[0]->fitness > bestFitnessValue){ // Improvement
-            bestFitnessValue = population[0]->fitness;
-            bestChromosome->clone(population[0]);
-            std::cout << "New best fitness: " << bestFitnessValue << " at generation " << currentGeneration << std::endl;
-            stagnatedGenerations = 0;
-        }else{
-            stagnatedGenerations++;
-            if(stagnatedGenerations > maxStagationGenerations){
-                std::cout << "Stagnation reached: " << stagnatedGenerations << " generations of " << config.maxGenerations << " stipulated." << std::endl;
-                results.stop_condition = STAGNATION;
-                break;
-            }
-        } 
+        if(stagnatedGenerations > maxStagationGenerations){
+            std::cout << "Stagnation reached: " << stagnatedGenerations << " generations out of " << config.maxGenerations << " stipulated." << std::endl;
+            status = STAGNATED;
+            break;
+        }
 
         currentGeneration++;
-    }
-
-    if (currentGeneration >= config.maxGenerations) {
-        std::cout << "Max generations reached (" << config.maxGenerations << ")" << std::endl;
-        results.stop_condition = MAX_GENERATIONS;
+        if(currentGeneration >= config.maxGenerations){
+            std::cout << "Max generations reached (" << config.maxGenerations << ")" << std::endl;
+            status = MAX_GENERATIONS;
+            break;
+        }
     }
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start); // Convert to milliseconds
 
+    // Export results
+    results.status = status;
     results.best = bestChromosome;
-    results.bestFitnessValue = bestFitnessValue;
+    results.bestFitnessValue = bestChromosome->fitness;
     results.generations = currentGeneration;
-    results.stagnatedGenerations = stagnatedGenerations;
     results.elapsed = static_cast<int>(duration.count());
 
     return results;

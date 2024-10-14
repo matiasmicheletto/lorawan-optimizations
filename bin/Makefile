@@ -5,17 +5,19 @@ SRCDIR   = src
 OBJDIR   = obj
 LIBDIR   = $(SRCDIR)/lib
 
-TARGETS         = datgen gpprs greedy ga
+TARGETS         = datgen gpprs greedy ga moga
 
 DATGEN_SOURCES  = $(wildcard $(SRCDIR)/datgen.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GPPRS_SOURCES   = $(wildcard $(SRCDIR)/gpprs.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GREEDY_SOURCES  = $(wildcard $(SRCDIR)/greedy.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GA_SOURCES  = $(wildcard $(SRCDIR)/ga.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
+MOGA_SOURCES  = $(wildcard $(SRCDIR)/moga.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 
 GPPRS_OBJECTS   = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GPPRS_SOURCES))
 DATGEN_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(DATGEN_SOURCES))
 GREEDY_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GREEDY_SOURCES))
 GA_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GA_SOURCES))
+MOGA_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(MOGA_SOURCES))
 
 HEADERS         = $(wildcard $(LIBDIR)/**/*.h)
 
@@ -46,6 +48,11 @@ ga: $(GA_OBJECTS)
 	@echo "Compiling ga..."
 	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 	@echo "ga compiled"
+
+moga: $(MOGA_OBJECTS)
+	@echo "Compiling moga..."
+	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
+	@echo "moga compiled"
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	@mkdir -p $(@D)

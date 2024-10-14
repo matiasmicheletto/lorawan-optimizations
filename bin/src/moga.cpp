@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
     Objective *o = new Objective(l, tp);
     GAFitness* gaFitness = new GAFitness(o);
-    GeneticAlgorithm *ga = new GeneticAlgorithm(gaFitness, config);
+    MultiObjectiveGA *moga = new MultiObjectiveGA(gaFitness, config);
 
     if(warmStart){ // Read precomputed population
         struct Ed { // ED gene simplified
@@ -205,56 +205,12 @@ int main(int argc, char **argv) {
             population.push_back(ch);
         }
 
-        ga->setPopulation(population);
+        moga->setPopulation(population);
     }
 
-    //ga->print();
-    GAResults results = ga->run();
-
-
-    // Log results to summary file
-    OptimizationResults oResults; // For logging results
-    oResults.instanceName = l->getInstanceFileName();
-    if(warmStart)
-        oResults.solverName = strdup("GA - Warm start");
-    else
-        oResults.solverName = strdup("GA");
-    oResults.tp = o->tp;
-    oResults.execTime = results.elapsed;
-    oResults.cost = results.bestFitnessValue;
-    oResults.ready = true;
-    AllocationChromosome* bestChromosome = (AllocationChromosome*) results.best;
-    bestChromosome->getPhenotype(oResults.cost, oResults.gwUsed, oResults.energy, oResults.uf, oResults.feasible);
-    logResultsToCSV(oResults, LOGFILE);
-
-
-    // Extract gw and sf arrays
-    std::vector<Gene*> genes = bestChromosome->getGenes();
-    unsigned int edCount = genes.size();
-    uint* gw = new uint[edCount];
-    uint* sf = new uint[edCount];
-    for (unsigned int i = 0; i < edCount; i++) {
-        EdGene* gene = (EdGene*) genes[i];
-        gw[i] = gene->getGW();
-        sf[i] = gene->getSF();
-    }
-
-    if(xml){
-        std::ofstream xmlOS(xmlFileName);
-        o->exportWST(gw, sf, xmlOS);
-    }
-
-    if(output){
-        Allocation allocation(l);
-        for(unsigned int i = 0; i < edCount; i++)
-            allocation.checkUFAndConnect(i, gw[i], sf[i]);
-        EvalResults bestRes = o->eval(allocation);
-        std::ofstream outputOS(outputFileName);
-        o->printSolution(allocation, bestRes, false, false, false, outputOS);
-    }else{
-        results.best->printPhenotype();
-        std::cout << "Total execution time = " << results.elapsed << " ms" << std::endl;
-    }
+    moga->print();
+    GAResults results = moga->run();
+    results.printCSV();
 
     return 0;
 }

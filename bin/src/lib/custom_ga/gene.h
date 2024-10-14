@@ -2,7 +2,10 @@
 #define GENE_H
 
 #include <iostream>
-#include "uniform.h"
+#include "./uniform.h" //RANDOM
+//#include "../misc/custom_random.h"
+
+using namespace custom_ga;
 
 class Gene { // Abstract class that models a gene
     public:
@@ -12,7 +15,7 @@ class Gene { // Abstract class that models a gene
 
     protected:
         Gene() = default;
-        Uniform2 uniform; //RANDOM
+        custom_ga::Uniform uniform; //RANDOM
 };
 
 #endif // GENE_H
