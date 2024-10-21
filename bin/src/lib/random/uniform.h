@@ -3,9 +3,6 @@
 
 #include "random.h"
 
-// Uniform uniform = Uniform(0, 1);
-// double rnd = uniform.random(); // rnd is a random number between 0 and 1
-
 class Uniform : public Random {
     public:
         Uniform(double min, double max);

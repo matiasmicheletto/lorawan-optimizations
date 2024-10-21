@@ -56,6 +56,9 @@ EXAMPLES:
    6. greedy -f input.dat -e 10
       - Run the Greedy method and print 10 solutions.
 
+   7. greedy -f input.dat -g 10
+      - Run the Greedy method and print 10 solutions to be used as warmsart for other programs.
+
 AUTHORS
    Code was written by Dr. Matias J. Micheletto from CIT-GSJ (CONICET) and supervised by Dr. Rodrigo M. Santos from DIEC (UNS) - ICIC (CONICET) and Dr. Javier Marenco from UTDT.
 

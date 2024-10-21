@@ -14,6 +14,7 @@
 #include <unordered_set>
 
 #include "uf.h"
+
 #include "../util/util.h"
 #include "../random/random.h"
 #include "../random/uniform.h"
@@ -25,7 +26,7 @@
 
 enum POSDIST {UNIFORM, NORMAL, CLOUDS}; 
 enum PERIODIST {SOFT, MEDIUM, HARD, FIXED}; 
-enum OUTPUTFORMAT {NONE, TXT, HTML, SVG, ALL};
+enum INSTANCE_OUT_FORMAT {NONE, TXT, HTML, SVG, ALL};
 
 struct InstanceConfig { // This is for instance generation
     uint mapSize; // Map size
@@ -34,7 +35,7 @@ struct InstanceConfig { // This is for instance generation
     bool scaled; // Use alternate function to compute SF from distance
     PERIODIST timeRequirement; // PDF for ED periods
     POSDIST posDistribution; // Distribution of positions
-    OUTPUTFORMAT outputFormat; // Format of output file  
+    INSTANCE_OUT_FORMAT outputFormat; // Format of output file  
     uint fixedPeriod; // Fixed period (if PERIODIST == FIXED)
 
     InstanceConfig(  // Default configuration parameters
@@ -44,7 +45,7 @@ struct InstanceConfig { // This is for instance generation
         bool scaled = false,
         PERIODIST timeRequirement = SOFT,
         POSDIST posDistribution = UNIFORM,
-        OUTPUTFORMAT outputFormat = NONE,
+        INSTANCE_OUT_FORMAT outputFormat = INSTANCE_OUT_FORMAT::NONE,
         uint fixedPeriod = 3200
     ) : 
         mapSize(mapSize),
@@ -98,7 +99,7 @@ class Instance { // Provides attributes and funcions related to problem formulat
         std::vector<EndDevice> eds; 
         std::vector<Position> gws; 
         char* instanceFileName;
-        OUTPUTFORMAT outputFormat;
+        INSTANCE_OUT_FORMAT outputFormat;
         static const uint pw[6];
 
         uint _getMaxSF(uint period);

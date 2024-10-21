@@ -21,13 +21,13 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--format") == 0) {
             if(i+1 < argc){
                 if(std::strcmp(argv[i+1], "HTML") == 0)
-                    config.outputFormat = OUTPUTFORMAT::HTML;
+                    config.outputFormat = INSTANCE_OUT_FORMAT::HTML;
                 if(std::strcmp(argv[i+1], "TXT") == 0)
-                    config.outputFormat = OUTPUTFORMAT::TXT;
+                    config.outputFormat = INSTANCE_OUT_FORMAT::TXT;
                 if(std::strcmp(argv[i+1], "SVG") == 0)
-                    config.outputFormat = OUTPUTFORMAT::SVG;
+                    config.outputFormat = INSTANCE_OUT_FORMAT::SVG;
                 if(std::strcmp(argv[i+1], "ALL") == 0)
-                    config.outputFormat = OUTPUTFORMAT::ALL;
+                    config.outputFormat = INSTANCE_OUT_FORMAT::ALL;
             }else
                 printHelp(MANUAL);
         }
@@ -85,28 +85,28 @@ int main(int argc, char **argv) {
 
     switch (config.outputFormat)
     {
-    case OUTPUTFORMAT::NONE:
+    case INSTANCE_OUT_FORMAT::NONE:
         l->printRawData();
         break;
-    case OUTPUTFORMAT::TXT:
+    case INSTANCE_OUT_FORMAT::TXT:
         if(fileNameConfigured)
             l->exportRawData(outputFileName);
         else
             std::cerr << "File name not set for TXT output format. Use -o filename" << std::endl;
         break;
-    case OUTPUTFORMAT::HTML:
+    case INSTANCE_OUT_FORMAT::HTML:
         if(fileNameConfigured)
             l->generateHtmlPlot(outputFileName);
         else
             std::cerr << "File name not set for HTML output format. Use -o filename" << std::endl;
         break;
-    case OUTPUTFORMAT::SVG:
+    case INSTANCE_OUT_FORMAT::SVG:
         if(fileNameConfigured)
             l->generateSvgPlot(outputFileName);
         else
             std::cerr << "File name not set for SVG output format. Use -o filename" << std::endl;
         break;
-    case OUTPUTFORMAT::ALL:
+    case INSTANCE_OUT_FORMAT::ALL:
         if(fileNameConfigured){
             l->exportRawData(outputFileName);
             l->generateHtmlPlot(outputFileName);

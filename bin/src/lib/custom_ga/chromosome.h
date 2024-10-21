@@ -39,7 +39,7 @@ class Chromosome { // Abstract class that models a chromosome (list of genes wit
 
         std::vector<Gene*> genes; 
         double mutProb;
-        custom_ga::Uniform uniform;
+        custom_ga::Uniform uniform; // NAMESPACE
 };
 
 #endif // CHROMOSOME_H

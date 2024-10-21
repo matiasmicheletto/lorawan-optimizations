@@ -21,19 +21,19 @@ int main(int argc, char **argv) {
     char *xmlFileName;
     char *outputFileName;
 
-    GAConfig config;
-    config.populationSize = 50;
-    config.maxGenerations = 50;
-    config.mutationRate = 0.05;
-    config.crossoverRate = 0.8; 
-    config.elitismRate = 0.2;
-    config.timeout = 360;
-    config.stagnationWindow = 0.3;
+    GAConfig *config = new GAConfig();
+    config->populationSize = 50;
+    config->maxGenerations = 50;
+    config->mutationRate = 0.05;
+    config->crossoverRate = 0.8; 
+    config->elitismRate = 0.2;
+    config->timeout = 360;
+    config->stagnationWindow = 0.3;
 
     bool warmStart = false;
 
     
-    // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p)
+    // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p, q, x)
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
             if(i+1 < argc) 
-                config.timeout = atoi(argv[i+1]);
+                config->timeout = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -t (--timeout)" << std::endl;
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iters") == 0) {
             if(i+1 < argc) 
-                config.maxGenerations = atoi(argv[i+1]);
+                config->maxGenerations = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stag") == 0) {
             if(i+1 < argc) 
-                config.stagnationWindow = atoi(argv[i+1]);
+                config->stagnationWindow = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -s (--stag)" << std::endl;
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--qpop") == 0) {
             if(i+1 < argc) 
-                config.populationSize = atoi(argv[i+1]);
+                config->populationSize = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -q (--qpop)" << std::endl;
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mut") == 0){
             if(i+1 < argc)
-                config.mutationRate = atof(argv[i+1]);
+                config->mutationRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -m (--mut)" << std::endl;
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--cross") == 0){
             if(i+1 < argc)
-                config.crossoverRate = atof(argv[i+1]);
+                config->crossoverRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -c (--cross)" << std::endl;
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--elite") == 0){
             if(i+1 < argc)
-                config.elitismRate = atof(argv[i+1]);
+                config->elitismRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -e (--elit)" << std::endl;
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
     Objective *o = new Objective(l, tp);
     GAFitness* gaFitness = new GAFitness(o);
-    GeneticAlgorithm *ga = new GeneticAlgorithm(gaFitness, config);
+    GeneticAlgorithm *ga = new GeneticAlgorithm(gaFitness, config); // Init without config
 
     if(warmStart){ // Read precomputed population
         struct Ed { // ED gene simplified

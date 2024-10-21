@@ -21,16 +21,18 @@ int main(int argc, char **argv) {
     char *xmlFileName;
     char *outputFileName;
 
-    GAConfig config;
-    config.populationSize = 50;
-    config.maxGenerations = 50;
-    config.mutationRate = 0.05;
-    config.crossoverRate = 0.8; 
-    config.elitismRate = 0.2;
-    config.timeout = 360;
-    config.stagnationWindow = 0.3;
+    GAConfig *config = new GAConfig();
+    config->populationSize = 50;
+    config->maxGenerations = 50;
+    config->mutationRate = 0.05;
+    config->crossoverRate = 0.8; 
+    config->elitismRate = 0.2;
+    config->timeout = 360;
+    config->stagnationWindow = 0.3;
 
     bool warmStart = false;
+
+    OUTPUTFORMAT outputFormat = OUTPUTFORMAT::TXT;
 
     
     // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p)
@@ -51,7 +53,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
             if(i+1 < argc) 
-                config.timeout = atoi(argv[i+1]);
+                config->timeout = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -t (--timeout)" << std::endl;
@@ -59,7 +61,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iters") == 0) {
             if(i+1 < argc) 
-                config.maxGenerations = atoi(argv[i+1]);
+                config->maxGenerations = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
@@ -67,7 +69,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stag") == 0) {
             if(i+1 < argc) 
-                config.stagnationWindow = atoi(argv[i+1]);
+                config->stagnationWindow = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -s (--stag)" << std::endl;
@@ -75,7 +77,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--qpop") == 0) {
             if(i+1 < argc) 
-                config.populationSize = atoi(argv[i+1]);
+                config->populationSize = atoi(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -q (--qpop)" << std::endl;
@@ -107,7 +109,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mut") == 0){
             if(i+1 < argc)
-                config.mutationRate = atof(argv[i+1]);
+                config->mutationRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -m (--mut)" << std::endl;
@@ -115,7 +117,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--cross") == 0){
             if(i+1 < argc)
-                config.crossoverRate = atof(argv[i+1]);
+                config->crossoverRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -c (--cross)" << std::endl;
@@ -123,7 +125,7 @@ int main(int argc, char **argv) {
         }
         if(strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--elite") == 0){
             if(i+1 < argc)
-                config.elitismRate = atof(argv[i+1]);
+                config->elitismRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -e (--elit)" << std::endl;
@@ -147,6 +149,19 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -o (--output)" << std::endl;
             }
+        }
+        if(strcmp(argv[i], "-x") == 0 || strcmp(argv[i], "--xformat") == 0){
+            if(i+1 < argc){
+                if(std::strcmp(argv[i+1], "HTML") == 0)
+                    outputFormat = OUTPUTFORMAT::HTML;
+                if(std::strcmp(argv[i+1], "TXT") == 0)
+                    outputFormat = OUTPUTFORMAT::TXT;
+                if(std::strcmp(argv[i+1], "SVG") == 0)
+                    outputFormat = OUTPUTFORMAT::SVG;
+                if(std::strcmp(argv[i+1], "CSV") == 0)
+                    outputFormat = OUTPUTFORMAT::CSV;
+            }else
+                printHelp(MANUAL);
         }
     }
 
@@ -210,8 +225,9 @@ int main(int argc, char **argv) {
 
     //moga->print();
     GAResults results = moga->run();
-    results.printCSV();
-    results.printSVG();
+
+    results.outputFormat = outputFormat;
+    results.print();
 
     return 0;
 }
