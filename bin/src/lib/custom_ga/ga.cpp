@@ -24,17 +24,18 @@ void GeneticAlgorithm::setConfig(GAConfig *config) {
     initialize();
 }
 
-void GeneticAlgorithm::setPopulation(std::vector<Chromosome*> population) {
+void GeneticAlgorithm::setPopulation(std::vector<Chromosome*> pop) {
     clearPopulation();
 
-    this->population = population;
+    this->population = pop;
     
-    sortPopulation();
-    
-    config->populationSize = population.size();
+    config->populationSize = pop.size();
     
     elite = config->elitismRate * (double) config->populationSize;
     bestChromosome = fitnessFunction->generateChromosome();
+
+    evaluation();
+    sortPopulation();
 
     status = STATUS::IDLE;
 }
@@ -92,30 +93,21 @@ void GeneticAlgorithm::evaluation() {
 
 void GeneticAlgorithm::selection() { // Roulette wheel selection
 
-    // Keep the best chromosomes
     std::vector<Chromosome*> newPopulation;
-    for (unsigned int i = 0; i < elite; i++) {
-        newPopulation.push_back(population[i]);
-    }
 
     // Selection requires the fitness values to be positive
-    // Calculate the sum of the shifted fitness values
-    double minFitness = population[population.size() - 1]->fitness;
-    double offset = std::abs(minFitness);
-    double scaledFitness[config->populationSize];
     double fitnessSum = 0.0;
-    for (unsigned int j = elite; j < config->populationSize; j++) {
-        scaledFitness[j] = population[j]->fitness + offset + 1.0; // Scaling to positive values
-        fitnessSum += scaledFitness[j];
+    for (unsigned int j = 0; j < config->populationSize; j++) {
+        fitnessSum += population[j]->fitness;
     }
 
     // Select the best individuals between the rest of the population
-    unsigned int tries = 0; // Avoid infinite loop (should never happen)
+    //unsigned int tries = 0; // Avoid infinite loop (should never happen)
     while(newPopulation.size() < config->populationSize){
         const double r = uniform.random(fitnessSum);
         double sum = 0.0;
-        for (unsigned int j = elite; j < config->populationSize; j++) {
-            sum += scaledFitness[j];
+        for (unsigned int j = 0; j < config->populationSize; j++) {
+            sum += population[j]->fitness;
             if (sum >= r) {
                 // Create new chromosome (already evaluated)
                 Chromosome *ch = fitnessFunction->generateChromosome();
@@ -124,33 +116,26 @@ void GeneticAlgorithm::selection() { // Roulette wheel selection
                 break;
             }
         }
-        tries++;
-        if(tries > 200){
-            std::cerr << "Selection error" << std::endl;
-            std::cout << "Fitness sum: " << fitnessSum << std::endl;
-            std::cout << "r = " << r << std::endl;
-            std::cout << "Sum: " << sum << std::endl;
-            exit(1);
-        }
     }
 
-    for(unsigned int i = elite; i < config->populationSize; i++){
+    for(unsigned int i = 0; i < config->populationSize; i++){
         delete population[i];
         population[i] = newPopulation[i];
     }
 }
 
 void GeneticAlgorithm::crossover() {
-    for (unsigned int i = 0; i < config->populationSize; i++) {
+    // At this point, the population is sorted, so elite individuals are not included in the crossover
+    for (unsigned int i = elite; i < config->populationSize; i++) {
         if (uniform.random() < config->crossoverRate) {
-            unsigned int parent1 = uniform.random(config->populationSize);
+            unsigned int parent1 = uniform.random(config->populationSize - elite) + elite;
             population[i]->crossover(population[parent1]);
         }
     }
 }
 
 void GeneticAlgorithm::mutation() {
-    for (unsigned int i = 0; i < config->populationSize; i++) {
+    for (unsigned int i = elite; i < config->populationSize; i++) {
         if (uniform.random() < config->mutationRate) {
             population[i]->mutate();
         }
@@ -221,14 +206,12 @@ GAResults GeneticAlgorithm::run() {
     auto start = std::chrono::high_resolution_clock::now();
 
     while (status == STATUS::RUNNING){
-        
         // GA steps
-        sortPopulation(); // Sort the population from best to worst fitness
         selection(); // Select the best individual by roulette wheel method
+        sortPopulation(); // Sort the population from best to worst fitness
         crossover(); // Apply crossover using single point method
         mutation(); // Perform mutation (all individuals are evaluated here)
         evaluation(); // Evaluate the new population
-
 
         ///// Check stop conditions ///////
 
@@ -263,5 +246,14 @@ GAResults GeneticAlgorithm::run() {
     results.generations = currentGeneration;
     results.elapsed = static_cast<int>(duration.count());
 
+    /*
+    for (unsigned int i = 0; i < config->populationSize; i++) {
+        std::cout << "Chromosome " << i << ": ";
+        std::cout << " GW: " << population[i]->objectives[0] << ", ";
+        std::cout << " E: " << population[i]->objectives[1] << ", ";
+        std::cout << " U: " << population[i]->objectives[2] << " --> Fitness: ";
+        std::cout << population[i]->fitness << std::endl;
+    }
+    */
     return results;
 }

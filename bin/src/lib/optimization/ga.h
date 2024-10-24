@@ -160,7 +160,7 @@ class GAFitness : public Fitness { // Cost fitness function
             bool feasible;
             double cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
             // Inverse cost for maximization
-            double inverseCost = feasible ? 1e3/cost : __DBL_MIN__;
+            double inverseCost = feasible ? 1e3/cost : 0;
             chromosome->fitness = inverseCost;
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }

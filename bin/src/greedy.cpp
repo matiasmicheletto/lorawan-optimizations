@@ -306,7 +306,6 @@ int main(int argc, char **argv) {
                     printed++;
                 }
 
-
                 if(res.feasible && res.cost < minimumCost){ // New minimum found
                     if(i > 0){ // Compute const improvement after first iteration
                         const double diff = minimumCost - res.cost;

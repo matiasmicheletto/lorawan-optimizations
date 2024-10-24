@@ -32,7 +32,8 @@ int main(int argc, char **argv) {
 
     bool warmStart = false;
 
-    
+    OUTPUTFORMAT outputFormat = OUTPUTFORMAT::TXT;
+
     // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p, q, x)
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
@@ -148,6 +149,19 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -o (--output)" << std::endl;
             }
         }
+        if(strcmp(argv[i], "-x") == 0 || strcmp(argv[i], "--xformat") == 0){
+            if(i+1 < argc){
+                if(std::strcmp(argv[i+1], "HTML") == 0)
+                    outputFormat = OUTPUTFORMAT::HTML;
+                if(std::strcmp(argv[i+1], "TXT") == 0)
+                    outputFormat = OUTPUTFORMAT::TXT;
+                if(std::strcmp(argv[i+1], "SVG") == 0)
+                    outputFormat = OUTPUTFORMAT::SVG;
+                if(std::strcmp(argv[i+1], "CSV") == 0)
+                    outputFormat = OUTPUTFORMAT::CSV;
+            }else
+                printHelp(MANUAL);
+        }
     }
 
     if(l == nullptr){
@@ -182,6 +196,8 @@ int main(int argc, char **argv) {
         std::vector<Ed> network; // List of nodes
         std::vector<std::vector<Ed>> pop; // List of network configurations
         std::string input;
+        std::cout << "Reading population..." << std::endl;
+        unsigned int popsize = 0;
         while(std::cin >> input) {
             if(input != "--"){
                 unsigned int gw = std::stoi(input);
@@ -190,10 +206,12 @@ int main(int argc, char **argv) {
                 Ed ed = {gw, sf};
                 network.push_back(ed);
             }else{
+                popsize++;
                 pop.push_back(network);
                 network.clear();
             }
         }
+        std::cout << "Population read. Size: " << popsize << std::endl;
 
         // Build population
         std::vector<Chromosome*> population;
@@ -208,7 +226,6 @@ int main(int argc, char **argv) {
         ga->setPopulation(population);
     }
 
-    //ga->print();
     GAResults results = ga->run();
 
 

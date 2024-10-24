@@ -158,8 +158,8 @@ GAResults MultiObjectiveGA::run() { // Try to avoid overriding this method
     while(status == STATUS::RUNNING) {
 
         // GA steps
-        sortPopulation();
         selection();
+        sortPopulation();
         crossover();
         mutation();
         evaluation();

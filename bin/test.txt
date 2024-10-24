@@ -1,0 +1,17 @@
+Reading population...
+Population read. Size: 2
+Warm start initialization
+Chromosome 0:  GW: 7,  E: 1286,  U: 0.0692822 --> Fitness: 7.34536
+Chromosome 1:  GW: 8,  E: 1280,  U: 0.0772963 --> Fitness: 7.32049
+
+Genetic Algorithm Configuration
+  - Population size: 2
+  - Max generations: 50
+  - Timeout: 360 seconds.
+  - Stagnation window: 30%
+  - Mutation rate: 0.05
+  - Crossover rate: 0.8
+  - Elitism rate: 0.2
+
+Cost=136.603 (Feasible), (GW=8,E=1280,U=0.0772963)
+Total execution time = 73 ms
