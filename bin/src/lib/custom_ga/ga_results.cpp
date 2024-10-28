@@ -68,10 +68,19 @@ void GAResults::printPareto() {
 }
 
 void GAResults::printCSV() {
-    for (unsigned int i = 0; i < paretoFront.size(); i++) {
-        for (unsigned int j = 0; j < paretoFront[i]->objectives.size(); j++) {
-            *outputStream << paretoFront[i]->objectives[j];
-            if (j < paretoFront[i]->objectives.size() - 1)
+    if(type == OBJTYPE::MULTI){
+        for (unsigned int i = 0; i < paretoFront.size(); i++) {
+            for (unsigned int j = 0; j < paretoFront[i]->objectives.size(); j++) {
+                *outputStream << paretoFront[i]->objectives[j];
+                if (j < paretoFront[i]->objectives.size() - 1)
+                    *outputStream << ",";
+            }
+            *outputStream << std::endl;
+        }
+    }else{
+        for(unsigned int i = 0; i < best->objectives.size(); i++){
+            *outputStream << best->objectives[i];
+            if(i < best->objectives.size() - 1)
                 *outputStream << ",";
         }
         *outputStream << std::endl;
@@ -138,10 +147,7 @@ void GAResults::print() {
                 printPareto();
             break;
         case OUTPUTFORMAT::CSV:
-            if(type == OBJTYPE::MULTI)
-                printCSV();
-            else
-                *outputStream << "CSV output is only available for multi-objective problems" << std::endl;
+            printCSV();
             break;
         case OUTPUTFORMAT::SVG:
             if(type == OBJTYPE::MULTI)

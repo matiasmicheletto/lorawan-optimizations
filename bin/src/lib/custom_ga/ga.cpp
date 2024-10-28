@@ -78,7 +78,7 @@ void GeneticAlgorithm::evaluation() {
     for (unsigned int i = 0; i < config->populationSize; i++) {
         fitnessFunction->evaluate(population[i]);
         if(population[i]->fitness > bestFitnessValue){
-            std::cout << "New best fitness: " << population[i]->fitness << std::endl;
+            //std::cout << "New best fitness: " << population[i]->fitness << std::endl;
             bestFitnessValue = population[i]->fitness;
             bestFitnessIndex = i;
         }

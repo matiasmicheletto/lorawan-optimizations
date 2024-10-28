@@ -42,6 +42,8 @@ OPTIONS:
    -s, --stag     Stagnation coef. Default is 0.3 (30% of generations).
    -t, --timeout  Timeout in seconds. Default is 60.  
    -w, --wst      Export mst file. 
+   -x, --xformat  Print format: TXT, HTML, SVG, CSV.
+   -z, --zobj     Object to minimize: GW, E, UF.
    
    
 EXAMPLES:

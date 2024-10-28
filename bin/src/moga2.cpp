@@ -15,11 +15,7 @@ int main(int argc, char **argv) {
 
     Instance *l = nullptr;
     TunningParameters tp; // alpha, beta and gamma
-    bool xml = false; // XML file export
     bool output = false; // Output to console
-
-    char *xmlFileName;
-    char *outputFileName;
 
     GAConfig *config = new GAConfig();
     config->populationSize = 50;
@@ -34,14 +30,19 @@ int main(int argc, char **argv) {
 
     OUTPUTFORMAT outputFormat = OUTPUTFORMAT::TXT;
 
+    int objective = -1;
+
+    char *filename = nullptr;
+
     // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p, q, x)
     for(int i = 0; i < argc; i++) {    
         if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
             printHelp(MANUAL);
         if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
-            if(i+1 < argc)
+            if(i+1 < argc){
+                filename = argv[i + 1];
                 l = new Instance(argv[i + 1]);
-            else{
+            }else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
             }
@@ -130,25 +131,6 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -e (--elit)" << std::endl;
             }
         }
-        //xml = strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0;
-        if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0){
-            if(i+1 < argc){
-                xmlFileName = argv[i+1];
-                xml = true;
-            }else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -w (--xml)" << std::endl;
-            }
-        }
-        if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0){
-            if(i+1 < argc){
-                outputFileName = argv[i+1];
-                output = true;
-            }else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -o (--output)" << std::endl;
-            }
-        }
         if(strcmp(argv[i], "-x") == 0 || strcmp(argv[i], "--xformat") == 0){
             if(i+1 < argc){
                 if(std::strcmp(argv[i+1], "HTML") == 0)
@@ -159,6 +141,17 @@ int main(int argc, char **argv) {
                     outputFormat = OUTPUTFORMAT::SVG;
                 if(std::strcmp(argv[i+1], "CSV") == 0)
                     outputFormat = OUTPUTFORMAT::CSV;
+            }else
+                printHelp(MANUAL);
+        }
+        if(strcmp(argv[i], "-z") == 0 || strcmp(argv[i], "--zobj") == 0){
+            if(i+1 < argc){
+                if(std::strcmp(argv[i+1], "GW") == 0)
+                    objective = 0;
+                if(std::strcmp(argv[i+1], "E") == 0)
+                    objective = 1;
+                if(std::strcmp(argv[i+1], "UF") == 0)
+                    objective = 2;
             }else
                 printHelp(MANUAL);
         }
@@ -185,9 +178,33 @@ int main(int argc, char **argv) {
     #endif
 
     Objective *o = new Objective(l, tp);
-    GAFitness* gaFitness = new GAFitness(o);
-    GeneticAlgorithm *ga = new GeneticAlgorithm(gaFitness, config); // Init without config
+    GAFitnessGW* gaFitnessGW = new GAFitnessGW(o);
+    GAFitnessE* gaFitnessE = new GAFitnessE(o);
+    GAFitnessUF* gaFitnessUF = new GAFitnessUF(o);
 
+    GeneticAlgorithm *ga;
+
+    // Print file name
+    std::cout << extractFileName(filename) << ",";
+
+    switch(objective){
+        case -1:
+            std::cerr << "Error: No objective function specified." << std::endl;
+            exit(1);
+        case 0:
+            std::cout << "GW,";
+            ga = new GeneticAlgorithm(gaFitnessGW, config); // Init without config
+            break;
+        case 1:
+            std::cout << "E,";
+            ga = new GeneticAlgorithm(gaFitnessE, config); // Init without config
+            break;
+        case 2:
+            std::cout << "UF,";
+            ga = new GeneticAlgorithm(gaFitnessUF, config); // Init without config
+            break;
+    }
+    
     if(warmStart){ // Read precomputed population
         struct Ed { // ED gene simplified
             unsigned int gw;
@@ -227,52 +244,8 @@ int main(int argc, char **argv) {
     }
 
     GAResults results = ga->run();
+    results.outputFormat = outputFormat;
     results.print();
-
-
-    // Log results to summary file
-    OptimizationResults oResults; // For logging results
-    oResults.instanceName = l->getInstanceFileName();
-    if(warmStart)
-        oResults.solverName = strdup("GA - Warm start");
-    else
-        oResults.solverName = strdup("GA");
-    oResults.tp = o->tp;
-    oResults.execTime = results.elapsed;
-    oResults.cost = results.bestFitnessValue;
-    oResults.ready = true;
-    AllocationChromosome* bestChromosome = (AllocationChromosome*) results.best;
-    bestChromosome->getPhenotype(oResults.cost, oResults.gwUsed, oResults.energy, oResults.uf, oResults.feasible);
-    logResultsToCSV(oResults, LOGFILE);
-
-
-    // Extract gw and sf arrays
-    std::vector<Gene*> genes = bestChromosome->getGenes();
-    unsigned int edCount = genes.size();
-    uint* gw = new uint[edCount];
-    uint* sf = new uint[edCount];
-    for (unsigned int i = 0; i < edCount; i++) {
-        EdGene* gene = (EdGene*) genes[i];
-        gw[i] = gene->getGW();
-        sf[i] = gene->getSF();
-    }
-
-    if(xml){
-        std::ofstream xmlOS(xmlFileName);
-        o->exportWST(gw, sf, xmlOS);
-    }
-
-    if(output){
-        Allocation allocation(l);
-        for(unsigned int i = 0; i < edCount; i++)
-            allocation.checkUFAndConnect(i, gw[i], sf[i]);
-        EvalResults bestRes = o->eval(allocation);
-        std::ofstream outputOS(outputFileName);
-        o->printSolution(allocation, bestRes, false, false, false, outputOS);
-    }else{
-        results.best->printPhenotype();
-        std::cout << "Total execution time = " << results.elapsed << " ms" << std::endl;
-    }
 
     return 0;
 }
