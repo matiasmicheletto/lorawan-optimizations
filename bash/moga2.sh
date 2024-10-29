@@ -1,31 +1,40 @@
 #!/bin/bash
 
 # Instances:
-files=(
-"../dat/imu_1000_20_100_2.dat"
-"../dat/imu_100_10_100_5.dat"
-)
+inputfile="../dat/imu_100_10_100_5.dat"
+
+# Result file
+resultfile="moga2.csv"
 
 # Objective parameter to optimize
 o_values=("GW" "E" "UF")
 
 # Repetitions
-reps=5
+reps=3
 
-# Create file if not exists
-touch moga2.csv
+# Create file if not exists and clear
+touch $resultfile
 # Clear file
-> moga2.csv
+> $resultfile
 
 # Run MOGA2
 for i in "${!o_values[@]}"; do
-    for j in "${!files[@]}"; do
-        for k in $(seq 1 $reps); do
-            ../bin/moga2 -f "${files[j]}" -z "${o_values[i]}" -i 10 -q 25 -s 1 -x CSV >> ../dat/moga2.sol &
-            echo "Solving ${files[j]} for objective ${o_values[i]}"
-            pid=$!
-            wait "$pid"
-        done
+    for k in $(seq 1 $reps); do
+        # Run optimizer for inputfile using (GW, E, UF) as objective and export results to resultfile
+        ../bin/moga2 -f $inputfile -z "${o_values[i]}" -i 50 -q 20 -s 1 -x CSV >> $resultfile &
+        echo "Solving $inputfile for objective ${o_values[i]}"
+        pid=$!
+        wait "$pid"
     done
 done
-echo "Done"
+echo "Results saved in ${resultfile}"
+
+
+# Activate virtual environment
+source ../python/venv/bin/activate
+
+# Run python script to plot the results
+python3 ../python/pareto-plotter.py $resultfile
+
+# Deactivate virtual environment
+deactivate

@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 data = []
 
 # Open data from csv file
-with open('trabajo_overleaf.csv') as f:
+with open('moga_so.csv') as f:
     data = f.read()
 
 # Split the CSV data into a matrix of rows and columns
