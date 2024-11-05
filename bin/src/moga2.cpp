@@ -15,7 +15,6 @@ int main(int argc, char **argv) {
 
     Instance *l = nullptr;
     TunningParameters tp; // alpha, beta and gamma
-    bool output = false; // Output to console
 
     GAConfig *config = new GAConfig();
     config->populationSize = 50;
@@ -185,6 +184,10 @@ int main(int argc, char **argv) {
     GeneticAlgorithm *ga;
 
     // Print file name
+    if(warmStart)
+        std::cout << "MOGA2WS,";
+    else
+        std::cout << "MOGA2,";
     std::cout << extractFileName(filename) << ",";
 
     switch(objective){
@@ -213,7 +216,8 @@ int main(int argc, char **argv) {
         std::vector<Ed> network; // List of nodes
         std::vector<std::vector<Ed>> pop; // List of network configurations
         std::string input;
-        std::cout << "Reading population..." << std::endl;
+        if(outputFormat != OUTPUTFORMAT::CSV)
+            std::cout << "Reading population..." << std::endl;
         unsigned int popsize = 0;
         while(std::cin >> input) {
             if(input != "--"){
@@ -228,7 +232,8 @@ int main(int argc, char **argv) {
                 network.clear();
             }
         }
-        std::cout << "Population read. Size: " << popsize << std::endl;
+        if(outputFormat != OUTPUTFORMAT::CSV)
+            std::cout << "Population read. Size: " << popsize << std::endl;
 
         // Build population
         std::vector<Chromosome*> population;

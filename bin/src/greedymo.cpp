@@ -460,7 +460,7 @@ int main(int argc, char **argv) {
         std::ofstream outputOS(outputFileName);
         o->printSolution(bestAllocation, bestRes, false, false, false, outputOS);
     }else if(printCsv){
-        std::cout << "Greedy," << results.instanceName  << ",-," << tempRes.gwUsed << "," << tempRes.energy << "," << tempRes.uf << std::endl;
+        std::cout << "GreedyMO," << results.instanceName  << ",-," << tempRes.gwUsed << "," << tempRes.energy << "," << tempRes.uf << std::endl;
     } else {
         if(gaWarmStart == 0){
             o->printSolution(bestAllocation, bestRes, false, false, false);

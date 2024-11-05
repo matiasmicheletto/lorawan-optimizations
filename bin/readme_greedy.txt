@@ -27,7 +27,7 @@ DESCRIPTION:
 
 OPTIONS:
    -h, --help     Display this help message.
-   -p, --print    Print solutions to use for GA warm start. Use number for solutions to print.
+   -p, --print    Print solutions to use for GA warm start. Use number of solutions to print.
    -t, --timeout  Timeout in seconds. Default is 60.  
    -i, --iters    Max iterations to run in allocation phase.
    -s, --stall    Stagnation threshold (for 10 iterations).  
@@ -35,6 +35,7 @@ OPTIONS:
    -b, --beta     Beta tunning parameter. Default is 0.01.  
    -g, --gamma    Gamma tunning parameter. Default is 7.8.  
    -w, --wst      Export mst file. 
+   -x, --wcsv     Use csv format for output (gw,e,u);
    -o, --output   Save results to ouput file.
 
 EXAMPLES:

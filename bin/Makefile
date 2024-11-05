@@ -5,11 +5,12 @@ SRCDIR   = src
 OBJDIR   = obj
 LIBDIR   = $(SRCDIR)/lib
 
-TARGETS         = datgen gpprs greedy ga moga moga2
+TARGETS         = datgen gpprs greedy greedymo ga moga moga2
 
 DATGEN_SOURCES  = $(wildcard $(SRCDIR)/datgen.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GPPRS_SOURCES   = $(wildcard $(SRCDIR)/gpprs.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GREEDY_SOURCES  = $(wildcard $(SRCDIR)/greedy.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
+GREEDYMO_SOURCES  = $(wildcard $(SRCDIR)/greedymo.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GA_SOURCES  = $(wildcard $(SRCDIR)/ga.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 MOGA_SOURCES  = $(wildcard $(SRCDIR)/moga.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 MOGA2_SOURCES  = $(wildcard $(SRCDIR)/moga2.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
@@ -17,6 +18,7 @@ MOGA2_SOURCES  = $(wildcard $(SRCDIR)/moga2.cpp) $(wildcard $(LIBDIR)/**/*.cpp)
 GPPRS_OBJECTS   = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GPPRS_SOURCES))
 DATGEN_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(DATGEN_SOURCES))
 GREEDY_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GREEDY_SOURCES))
+GREEDYMO_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GREEDYMO_SOURCES))
 GA_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(GA_SOURCES))
 MOGA_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(MOGA_SOURCES))
 MOGA2_OBJECTS  = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(MOGA2_SOURCES))
@@ -46,6 +48,11 @@ greedy: $(GREEDY_OBJECTS)
 	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 	@echo "greedy compiled"
 
+greedymo: $(GREEDYMO_OBJECTS)
+	@echo "Compiling greedymo..."
+	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
+	@echo "greedymo compiled"
+
 ga: $(GA_OBJECTS)
 	@echo "Compiling ga..."
 	$(CPP) $(CFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
@@ -67,6 +74,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	$(CPP) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LDFLAGS)
 
 clean:
-	rm -rf $(OBJDIR) ./gpprs ./greedy ./datgen ./ga ./moga ./moga2
+	rm -rf $(OBJDIR) ./gpprs ./greedy ./greedymo ./datgen ./ga ./moga ./moga2
 
 .PHONY: all clean
