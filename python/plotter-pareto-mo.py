@@ -5,7 +5,7 @@ import matplotlib as mpl
 
 # This program takes a CSV file as input and plots 3D and 2D graphs.
 # Usage:
-# python data-plotter-3d-2d.py data.csv
+# python3 plotter-pareto-mo.py data.csv
 
 # Adjust font for latex rendering
 mpl.rcParams['mathtext.fontset'] = 'stix'  
@@ -56,7 +56,7 @@ def getPareto(vector):
 
 def plotdata(axs, data, pareto, col1, col2, title, xlabel, ylabel):
     #axs.scatter(opt_data[col1], opt_data[col2], c=colors[opt], alpha=0.7, label=opt)
-    #axs.scatter(data[col1], data[col2], alpha=0.7, label=alpha)
+    axs.scatter(data[col1], data[col2], alpha=0.7)
     for i in range(len(pareto) - 1):
         axs.plot([pareto[i][0], pareto[i+1][0]], [pareto[i][1], pareto[i+1][1]], color='red')
         axs.scatter(pareto[i][0], pareto[i][1], color='red')

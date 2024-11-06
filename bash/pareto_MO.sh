@@ -28,7 +28,7 @@ for a in $(LC_NUMERIC="en_US.UTF-8" seq 0 0.5 1); do
             echo "Running instance for $a,$b,$g ..."  
             for i in "${!o_values[@]}"; do
                 echo -n "$a,$b,$g," >> $resultfile
-                ../bin/greedy -f $inputfile -i 10 -p 30 | ../bin/moga2 -f $inputfile -z "${o_values[i]}" -i 100 -p -s 1 -x CSV >> $resultfile
+                ../bin/greedy -a $a -b $b -g $g -f $inputfile -i 100 -p 30 | ../bin/moga2 -f $inputfile -z "${o_values[i]}" -i 100 -p -s 1 -x CSV >> $resultfile
             done
         done
     done
