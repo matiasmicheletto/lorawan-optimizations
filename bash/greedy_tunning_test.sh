@@ -35,7 +35,7 @@ echo "Results saved in $resultfile"
 source ../python/venv/bin/activate
 
 # Run python script to plot the results
-python3 ../python/pareto-plotter2.py $resultfile
+python3 ../python/plotter-greedy-tunning.py $resultfile
 
 # Deactivate virtual environment
 deactivate
