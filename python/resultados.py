@@ -37,48 +37,77 @@ moga = [
     [15,2504,0.05]
 ]
 
+mogaWSE = [
+    [1108,17],
+    [1122,14],
+    [1128,5],
+    [1210,4]
+]
+
+mogaWSU=[
+    [0.0130573,26],
+    [0.0160623,25],
+    [0.0311135,19],
+    [0.0311396,18],
+    [0.0321245,8],
+    [0.0391396,7],
+    [0.0501787,5]
+]
+
 """
 Figuras a y b
 """
 
 def e_vs_g(axs, col):    
-    # Plot E vs GW for cplex
+    # Cplex
     for i in range(len(cplex) - 1):
-        axs.plot([cplex[i][col], cplex[i+1][col]], [cplex[i][0], cplex[i+1][0]], color='red')
-        axs.scatter(cplex[i][col], cplex[i][0], color='red')
-    axs.scatter(cplex[-1][col], cplex[-1][0], color='red')
-    axs.annotate('CPLEX', (cplex[0][col], cplex[0][0]), textcoords="offset points", xytext=(5,5), ha='center', color='red')
+        axs.plot([cplex[i][col], cplex[i+1][col]], [cplex[i][0], cplex[i+1][0]], color='maroon')
+        axs.scatter(cplex[i][col], cplex[i][0], color='maroon')
+    axs.scatter(cplex[-1][col], cplex[-1][0], color='maroon')
+    axs.annotate('CPLEX', (cplex[0][col], cplex[0][0]), textcoords="offset points", xytext=(5,5), ha='center', color='maroon')
 
-    # Plot E vs GW for greedy
+    # Greedy
     for i in range(len(greedy) - 1):
         axs.plot([greedy[i][col], greedy[i+1][col]], [greedy[i][0], greedy[i+1][0]], color='blue')
         axs.scatter(greedy[i][col], greedy[i][0], color='blue')
     axs.scatter(greedy[-1][col], greedy[-1][0], color='blue')
     axs.annotate('Greedy', (greedy[0][col], greedy[0][0]), textcoords="offset points", xytext=(5,5), ha='center', color='blue')
 
-    # Plot E vs GW for moga
+    # MOGA
     for i in range(len(moga) - 1):
         axs.plot([moga[i][col], moga[i+1][col]], [moga[i][0], moga[i+1][0]], color='black')
         axs.scatter(moga[i][col], moga[i][0], color='black')
     axs.scatter(moga[-1][col], moga[-1][0], color='black')
     axs.annotate('MOGA', (moga[0][col], moga[0][0]), textcoords="offset points", xytext=(5,5), ha='center', color='black')
 
+    ws = mogaWSE if col == 1 else mogaWSU
+    for i in range(len(ws) - 1):
+        axs.plot([ws[i][0], ws[i+1][0]], [ws[i][1], ws[i+1][1]], color='darkgreen')
+        axs.scatter(ws[i][0], ws[i][1], color='darkgreen')
+    axs.scatter(ws[-1][0], ws[-1][1], color='darkgreen')
+    axs.annotate('MOGA-WS', (ws[-1][0], ws[0 if col == 1 else -1][1]), textcoords="offset points", xytext=(5,5), ha='center', color='darkolivegreen')
 
-fig, axs = plt.subplots(1, 1, figsize=(6, 6))
+
+fig, axs = plt.subplots(1, 1, figsize=(10, 6))
 e_vs_g(axs,1)
 axs.set_xlabel("Energy")
 axs.set_ylabel("Gateway")
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+#plt.show()
+plt.savefig('Figure_1.png', bbox_inches='tight')
 
-fig, axs2 = plt.subplots(1, 1, figsize=(6, 6))
+fig, axs2 = plt.subplots(1, 1, figsize=(10, 6))
 e_vs_g(axs2,2)
 axs2.set_xlabel("Utilization")
 axs2.set_ylabel("Gateway")
 plt.grid(True)
 plt.tight_layout()
-plt.show()
+#plt.show()
+plt.savefig('Figure_2.png', bbox_inches='tight')
+
+
+
 
 """
 Figura c
@@ -118,39 +147,20 @@ def plotdata(axs, X, Y, color, label):
     axs.annotate(label, (X[-1], Y[-1]), textcoords="offset points", xytext=(5,5), ha='center', color=color)
 
 
-fig, axs = plt.subplots(1, 1, figsize=(6, 6))    
-plotdata(axs, U1, E1, 'red', 'G=1')
+fig, axs = plt.subplots(1, 1, figsize=(10, 6))    
+plotdata(axs, U1, E1, 'maroon', 'G=1')
 plotdata(axs, U2, E2, 'blue', 'G=2')
-plotdata(axs, U3, E3, 'brown', 'G=3')
+plotdata(axs, U3, E3, 'darkslategray', 'G=3')
 plotdata(axs, U4, E4, 'black', 'G=4')
 plotdata(axs, U5, E5, 'red', 'G=5')
 plotdata(axs, U6, E6, 'blue', 'G=6')
-plotdata(axs, U8, E8, 'green', 'G=8')
+plotdata(axs, U8, E8, 'darkgreen', 'G=8')
 plotdata(axs, U10, E10, 'brown', 'G=10')
 plotdata(axs, U15, E15, 'black', 'G=15')
 axs.set_xlabel("Utilization")
 axs.set_ylabel("Energy")
 plt.grid(True)
 plt.tight_layout()
-plt.show()
-
-
-"""
-mogaWME = [
-    [1108,17]
-    [1122,14]
-    [1128,5]
-    [1210,4]
-]
-
-mogaWMU = [
-    [0.0130573,26
-    0.0160623,25
-    0.0311135,19
-    0.0311396,18
-    0.0321245,8
-    0.0391396,7
-    0.0501787,5]
-]
-"""
+#plt.show()
+plt.savefig('Figure_3.png', bbox_inches='tight')
 
