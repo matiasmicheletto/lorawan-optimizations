@@ -7,6 +7,11 @@
 #include "./output_stream.h"
 #include "fitness.h"
 
+enum CROSS_METHOD {
+    UNIFORM,
+    SINGLE_POINT,
+    DOUBLE_POINT
+};
 
 class GAConfig {
     
@@ -17,6 +22,7 @@ class GAConfig {
         unsigned int maxGenerations;
         double mutationRate;
         double crossoverRate;
+        CROSS_METHOD crossoverMethod;
         double elitismRate;
         unsigned int timeout;
         double stagnationWindow;

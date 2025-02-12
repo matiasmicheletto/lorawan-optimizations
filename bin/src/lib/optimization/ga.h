@@ -58,6 +58,7 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
             for (unsigned int i = 0; i < edCount; i++) {
                 genes.push_back(new EdGene(o, i));
             }
+            this->setCrossoverMethod(&Chromosome::singlePointCrossover); // Default crossover method
         }
 
         std::string getName() const override {

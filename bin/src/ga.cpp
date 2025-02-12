@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
     config->maxGenerations = 50;
     config->mutationRate = 0.05;
     config->crossoverRate = 0.8; 
+    config->crossoverMethod = CROSS_METHOD::SINGLE_POINT;
     config->elitismRate = 0.2;
     config->timeout = 360;
     config->stagnationWindow = 0.3;
@@ -34,54 +35,8 @@ int main(int argc, char **argv) {
 
     OUTPUTFORMAT outputFormat = OUTPUTFORMAT::TXT;
 
-    // Program arguments (h, f, t, i, a, b, g, m, c, e, w, o, p, q, x)
+
     for(int i = 0; i < argc; i++) {    
-        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
-            printHelp(MANUAL);
-        if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
-            if(i+1 < argc)
-                l = new Instance(argv[i + 1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
-            }
-        }
-        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--pop") == 0) {
-            // Read precomputed population
-            warmStart = true;
-        }
-        if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
-            if(i+1 < argc) 
-                config->timeout = atoi(argv[i+1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -t (--timeout)" << std::endl;
-            }
-        }
-        if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iters") == 0) {
-            if(i+1 < argc) 
-                config->maxGenerations = atoi(argv[i+1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
-            }
-        }
-        if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stag") == 0) {
-            if(i+1 < argc) 
-                config->stagnationWindow = atoi(argv[i+1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -s (--stag)" << std::endl;
-            }
-        }
-        if(strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--qpop") == 0) {
-            if(i+1 < argc) 
-                config->populationSize = atoi(argv[i+1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -q (--qpop)" << std::endl;
-            }
-        }
         if(strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--alpha") == 0){
             if(i+1 < argc)
                 tp.alpha = atof(argv[i+1]);
@@ -98,22 +53,6 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -b (--beta)" << std::endl;
             }
         }
-        if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gamma") == 0){
-            if(i+1 < argc)
-                tp.gamma = atof(argv[i+1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -g (--gamma)" << std::endl;
-            }
-        }
-        if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mut") == 0){
-            if(i+1 < argc)
-                config->mutationRate = atof(argv[i+1]);
-            else{
-                printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -m (--mut)" << std::endl;
-            }
-        }
         if(strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--cross") == 0){
             if(i+1 < argc)
                 config->crossoverRate = atof(argv[i+1]);
@@ -127,17 +66,54 @@ int main(int argc, char **argv) {
                 config->elitismRate = atof(argv[i+1]);
             else{
                 printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -e (--elit)" << std::endl;
+                std::cout << std::endl << "Error in argument -e (--elite)" << std::endl;
             }
         }
-        //xml = strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0;
-        if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0){
-            if(i+1 < argc){
-                xmlFileName = argv[i+1];
-                xml = true;
-            }else{
+        if(strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--file") == 0) {
+            if(i+1 < argc)
+                l = new Instance(argv[i + 1]);
+            else{
                 printHelp(MANUAL);
-                std::cout << std::endl << "Error in argument -w (--xml)" << std::endl;
+                std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-g") == 0 || strcmp(argv[i], "--gamma") == 0){
+            if(i+1 < argc)
+                tp.gamma = atof(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -g (--gamma)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0 || argc == 1)
+            printHelp(MANUAL);
+        if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iters") == 0) {
+            if(i+1 < argc) 
+                config->maxGenerations = atoi(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--crossmethod") == 0){
+            if(i+1 < argc)
+                if(std::strcmp(argv[i+1], "UNIFORM") == 0)
+                    config->crossoverMethod = CROSS_METHOD::UNIFORM;
+                if(std::strcmp(argv[i+1], "SINGLE_POINT") == 0)
+                    config->crossoverMethod = CROSS_METHOD::SINGLE_POINT;
+                if(std::strcmp(argv[i+1], "DOUBLE_POINT") == 0)
+                    config->crossoverMethod = CROSS_METHOD::DOUBLE_POINT;
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -l (--log)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mut") == 0){
+            if(i+1 < argc)
+                config->mutationRate = atof(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -m (--mut)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0){
@@ -147,6 +123,43 @@ int main(int argc, char **argv) {
             }else{
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -o (--output)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--pop") == 0) {
+            // Read precomputed population
+            warmStart = true;
+        }
+        if(strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--qpop") == 0) {
+            if(i+1 < argc) 
+                config->populationSize = atoi(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -q (--qpop)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stag") == 0) {
+            if(i+1 < argc) 
+                config->stagnationWindow = atoi(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -s (--stag)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--timeout") == 0) {
+            if(i+1 < argc) 
+                config->timeout = atoi(argv[i+1]);
+            else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -t (--timeout)" << std::endl;
+            }
+        }
+        if(strcmp(argv[i], "-w") == 0 || strcmp(argv[i], "--xml") == 0){
+            if(i+1 < argc){
+                xmlFileName = argv[i+1];
+                xml = true;
+            }else{
+                printHelp(MANUAL);
+                std::cout << std::endl << "Error in argument -w (--xml)" << std::endl;
             }
         }
         if(strcmp(argv[i], "-x") == 0 || strcmp(argv[i], "--xformat") == 0){

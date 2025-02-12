@@ -28,6 +28,14 @@ void GAConfig::setConfig(int argc, char **argv) {
             mutationRate = atof(argv[i + 1]);
         } else if (strcmp(argv[i], "-c") == 0) {
             crossoverRate = atof(argv[i + 1]);
+        } else if (strcmp(argv[i], "-x") == 0) {
+            if (strcmp(argv[i + 1], "UNIFORM") == 0) {
+                crossoverMethod = CROSS_METHOD::UNIFORM;
+            } else if (strcmp(argv[i + 1], "SINGLE_POINT") == 0) {
+                crossoverMethod = CROSS_METHOD::SINGLE_POINT;
+            } else if (strcmp(argv[i + 1], "DOUBLE_POINT") == 0) {
+                crossoverMethod = CROSS_METHOD::DOUBLE_POINT;
+            }
         } else if (strcmp(argv[i], "-e") == 0) {
             elitismRate = atof(argv[i + 1]);
         } else if (strcmp(argv[i], "-t") == 0) {
