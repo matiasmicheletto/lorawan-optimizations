@@ -27,23 +27,24 @@ DESCRIPTION:
 
 OPTIONS:
    
-   -a, --alpha    Alpha tunning parameter. Default is 1.  
-   -b, --beta     Beta tunning parameter. Default is 0.01.  
-   -c, --cross    Crossover rate.
-   -e, --elite    Elitism rate.
-   -f, --file     Input file.
-   -g, --gamma    Gamma tunning parameter. Default is 7.8.  
-   -h, --help     Display this help message.
-   -i, --iters    Max generations.
-   -m, --mut      Mutation rate.
-   -o, --output   Save results to ouput file.
-   -p, --pop      Read pre-computed population.
-   -q, --qpop     Population size.
-   -s, --stag     Stagnation coef. Default is 0.3 (30% of generations).
-   -t, --timeout  Timeout in seconds. Default is 60.  
-   -w, --wst      Export mst file. 
-   -x, --xformat  Print format: TXT, HTML, SVG, CSV.
-   -z, --zobj     Object to minimize: GW, E, UF.
+   -a, --alpha          Alpha tunning parameter. Default is 1.  
+   -b, --beta           Beta tunning parameter. Default is 0.01.  
+   -c, --cross          Crossover rate.
+   -e, --elite          Elitism rate.
+   -f, --file           Input file.
+   -g, --gamma          Gamma tunning parameter. Default is 7.8.  
+   -h, --help           Display this help message.
+   -i, --iters          Max generations.
+   -l, --crossmethod    Crossover method
+   -m, --mut            Mutation rate.
+   -o, --output         Save results to ouput file. // not in moga2
+   -p, --pop            Read pre-computed population.
+   -q, --qpop           Population size.
+   -s, --stag           Stagnation coef. Default is 0.3 (30% of generations).
+   -t, --timeout        Timeout in seconds. Default is 60.  
+   -w, --wst            Export mst file. // Not in moga2
+   -x, --xformat        Print format: TXT, HTML, SVG, CSV.
+   -z, --zobj           Object to minimize: GW, E, UF.
    
    
 EXAMPLES:

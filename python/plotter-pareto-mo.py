@@ -33,10 +33,15 @@ if data.shape[1] < 8:
 alpha = data.columns[0]
 beta = data.columns[1]
 gamma = data.columns[2]
+cross_rate = data.columns[3]
+mut_rate = data.columns[4]
+opt_name = data.columns[5]
+instance name = data.columns[6]
+objective = data.columns[7]
 """
-col1 = data.columns[6] # GW
-col2 = data.columns[7] # E
-col3 = data.columns[8] # UF
+col1 = data.columns[8] # GW
+col2 = data.columns[9] # E
+col3 = data.columns[10] # UF
 
 # Function to check if a dominates b
 def dominates(a, b):

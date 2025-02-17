@@ -1,7 +1,16 @@
 #!/bin/bash
 
-# Instances:
-inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat"
+
+#inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat" # Instance
+inputfile="../dat/imu_100_10_100_1.dat" # Instance
+
+resultfile="pareto_MO.csv" # Result file
+
+# Crossover methods: "UNIFORM" "SINGLE_POINT" "DOUBLE_POINT"
+cr_method="SINGLE_POINT"
+
+greedy_iters=10 # Number of iterations for Greedy
+moga2_iters=10 # Number of iterations for MOGA2
 
 # check if file exists
 if [ ! -f $inputfile ]; then
@@ -9,30 +18,32 @@ if [ ! -f $inputfile ]; then
     exit 1
 fi
 
-# Result file
-resultfile="pareto_MO.csv"
-
-# Objective parameter to optimize for MOGA2
-o_values=("GW" "E" "UF")
-
 # Create file if not exists and clear
 touch $resultfile
 
 # Clear file
 > $resultfile
 
+o_values=("GW" "E" "UF") # Objective parameter to optimize for MOGA2
+
 # Run all
-for a in $(LC_NUMERIC="en_US.UTF-8" seq 0 0.5 1); do
-    for b in $(LC_NUMERIC="en_US.UTF-8" seq 0 0.5 1); do
-        for g in $(LC_NUMERIC="en_US.UTF-8" seq 0 0.5 1); do
-            echo "Running instance for $a,$b,$g ..."  
-            for i in "${!o_values[@]}"; do
-                echo -n "$a,$b,$g," >> $resultfile
-                ../bin/greedy -a $a -b $b -g $g -f $inputfile -i 100 -p 30 | ../bin/moga2 -f $inputfile -z "${o_values[i]}" -i 100 -p -s 1 -x CSV >> $resultfile
+for a in 0.0 0.5 1; do
+    for b in 0.0 0.5 1; do
+        for g in 0.0 0.5 1; do
+            echo "Running instance for tunning: alpha=$a, beta=$b, gamma=$g ..."  
+            for c in 0.2 0.4 0.6 0.8; do
+                for m in 0.2 0.4 0.6 0.8; do
+                    for i in "${!o_values[@]}"; do
+                        echo "Param values: cr=$c, mut=$m, obj=${o_values[i]}"
+                        echo -n "$a,$b,$g,$c,$m," >> $resultfile
+                        ../bin/greedy -a $a -b $b -g $g -f $inputfile -i $greedy_iters -p 30 | ../bin/moga2 -a $a -b $b -g $g -f $inputfile -l $cr_method -z "${o_values[i]}" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV >> $resultfile
+                    done
+                done 
             done
         done
     done
 done
+
     
 echo "Results saved in $resultfile"
 

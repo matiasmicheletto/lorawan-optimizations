@@ -262,6 +262,20 @@ int main(int argc, char **argv) {
         ga->setPopulation(population);
     }
 
+    // Print configuration parameters
+    /*
+    std::cout << std::endl << "Program parameters: ";
+    std::cout << config->populationSize << ",";
+    std::cout << config->maxGenerations << ",";
+    std::cout << config->mutationRate << ",";
+    std::cout << config->crossoverRate << ",";
+    std::cout << config->elitismRate << ",";
+    std::cout << config->crossoverMethod << ",";
+    std::cout << config->timeout << ",";
+    std::cout << config->stagnationWindow << ",";
+    std::cout << std::endl;
+    */
+
     GAResults results = ga->run();
     results.outputFormat = outputFormat;
     results.print();
