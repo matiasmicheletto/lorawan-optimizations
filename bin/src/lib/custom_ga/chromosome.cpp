@@ -2,6 +2,8 @@
 
 Chromosome::Chromosome(const Chromosome& ch) : genes(ch.genes) {
     mutProb = ch.mutProb;
+    // set default crossover method
+    setCrossoverMethod(&Chromosome::singlePointCrossover);
 }
 
 Chromosome::~Chromosome() {

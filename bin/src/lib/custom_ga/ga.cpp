@@ -32,7 +32,7 @@ void GeneticAlgorithm::setPopulation(std::vector<Chromosome*> pop) {
     config->populationSize = pop.size();
     
     elite = config->elitismRate * (double) config->populationSize;
-    bestChromosome = fitnessFunction->generateChromosome();
+    bestChromosome = fitnessFunction->generateChromosome(this->config->crossoverMethod);
 
     evaluation();
     sortPopulation();
@@ -54,7 +54,7 @@ void GeneticAlgorithm::initialize(){
     }
     clearPopulation();
     for (unsigned int i = 0; i < config->populationSize; i++) {
-        Chromosome *ch = fitnessFunction->generateChromosome();
+        Chromosome *ch = fitnessFunction->generateChromosome(this->config->crossoverMethod);
         population.push_back(ch);
     }
     sortPopulation(); // Sort the population by fitness best to worse
@@ -64,7 +64,7 @@ void GeneticAlgorithm::initialize(){
 
     // This is not a pointer to the best in the population, to avoid losing the best individual
     // during the evolution
-    bestChromosome = fitnessFunction->generateChromosome();
+    bestChromosome = fitnessFunction->generateChromosome(this->config->crossoverMethod);
 
     status = STATUS::IDLE;
 }
@@ -110,7 +110,7 @@ void GeneticAlgorithm::selection() { // Roulette wheel selection
             sum += population[j]->fitness;
             if (sum >= r) {
                 // Create new chromosome (already evaluated)
-                Chromosome *ch = fitnessFunction->generateChromosome();
+                Chromosome *ch = fitnessFunction->generateChromosome(this->config->crossoverMethod);
                 ch->clone(population[j]);
                 newPopulation.push_back(ch);
                 break;

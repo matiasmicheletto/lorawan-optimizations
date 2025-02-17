@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--crossmethod") == 0){
             if(i+1 < argc)
                 if(std::strcmp(argv[i+1], "UNIFORM") == 0)
-                    config->crossoverMethod = CROSS_METHOD::UNIFORM;
+                    config->crossoverMethod = CROSS_METHOD::C_UNIFORM;
                 if(std::strcmp(argv[i+1], "SINGLE_POINT") == 0)
                     config->crossoverMethod = CROSS_METHOD::SINGLE_POINT;
                 if(std::strcmp(argv[i+1], "DOUBLE_POINT") == 0)

@@ -9,6 +9,7 @@ GAConfig::GAConfig() :
                 elitismRate(0.1),
                 timeout(360),
                 stagnationWindow(0.7),
+                crossoverMethod(CROSS_METHOD::SINGLE_POINT),
                 printLevel(0){
 
     OutputStream os(STREAM::CONSOLE);
@@ -30,7 +31,7 @@ void GAConfig::setConfig(int argc, char **argv) {
             crossoverRate = atof(argv[i + 1]);
         } else if (strcmp(argv[i], "-x") == 0) {
             if (strcmp(argv[i + 1], "UNIFORM") == 0) {
-                crossoverMethod = CROSS_METHOD::UNIFORM;
+                crossoverMethod = CROSS_METHOD::C_UNIFORM;
             } else if (strcmp(argv[i + 1], "SINGLE_POINT") == 0) {
                 crossoverMethod = CROSS_METHOD::SINGLE_POINT;
             } else if (strcmp(argv[i + 1], "DOUBLE_POINT") == 0) {

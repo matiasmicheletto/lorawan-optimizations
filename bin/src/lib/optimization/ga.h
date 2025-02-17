@@ -58,7 +58,6 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
             for (unsigned int i = 0; i < edCount; i++) {
                 genes.push_back(new EdGene(o, i));
             }
-            this->setCrossoverMethod(&Chromosome::singlePointCrossover); // Default crossover method
         }
 
         std::string getName() const override {
@@ -166,8 +165,19 @@ class GAFitness : public Fitness { // Cost fitness function
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
-        AllocationChromosome* generateChromosome() const override {
+        AllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
             AllocationChromosome* ch = new AllocationChromosome(o);
+            switch (cm) {
+                case CROSS_METHOD::SINGLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::singlePointCrossover);
+                    break;
+                case CROSS_METHOD::DOUBLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::doublePointCrossover);
+                    break;
+                case CROSS_METHOD::C_UNIFORM:
+                    ch->setCrossoverMethod(&Chromosome::uniformCrossover);
+                    break;
+            }
             evaluate(ch);
             return ch;
         }
@@ -210,8 +220,19 @@ class GAFitnessGW : public Fitness { // Cost fitness function
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
-        AllocationChromosome* generateChromosome() const override {
+        AllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
             AllocationChromosome* ch = new AllocationChromosome(o);
+            switch (cm) {
+                case CROSS_METHOD::SINGLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::singlePointCrossover);
+                    break;
+                case CROSS_METHOD::DOUBLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::doublePointCrossover);
+                    break;
+                case CROSS_METHOD::C_UNIFORM:
+                    ch->setCrossoverMethod(&Chromosome::uniformCrossover);
+                    break;
+            }
             evaluate(ch);
             return ch;
         }
@@ -254,8 +275,19 @@ class GAFitnessE : public Fitness { // Cost fitness function
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
-        AllocationChromosome* generateChromosome() const override {
+        AllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
             AllocationChromosome* ch = new AllocationChromosome(o);
+            switch (cm) {
+                case CROSS_METHOD::SINGLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::singlePointCrossover);
+                    break;
+                case CROSS_METHOD::DOUBLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::doublePointCrossover);
+                    break;
+                case CROSS_METHOD::C_UNIFORM:
+                    ch->setCrossoverMethod(&Chromosome::uniformCrossover);
+                    break;
+            }
             evaluate(ch);
             return ch;
         }
@@ -297,8 +329,19 @@ class GAFitnessUF : public Fitness { // Cost fitness function
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
-        AllocationChromosome* generateChromosome() const override {
+        AllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
             AllocationChromosome* ch = new AllocationChromosome(o);
+            switch (cm) {
+                case CROSS_METHOD::SINGLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::singlePointCrossover);
+                    break;
+                case CROSS_METHOD::DOUBLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::doublePointCrossover);
+                    break;
+                case CROSS_METHOD::C_UNIFORM:
+                    ch->setCrossoverMethod(&Chromosome::uniformCrossover);
+                    break;
+            }
             evaluate(ch);
             return ch;
         }

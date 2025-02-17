@@ -7,12 +7,6 @@
 #include "./output_stream.h"
 #include "fitness.h"
 
-enum CROSS_METHOD {
-    UNIFORM,
-    SINGLE_POINT,
-    DOUBLE_POINT
-};
-
 class GAConfig {
     
     public:
