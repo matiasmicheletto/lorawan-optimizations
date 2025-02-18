@@ -36,7 +36,7 @@ for a in 0.0 0.5 1; do
                 for m in 0.2 0.4 0.6 0.8; do
                     for i in "${!o_values[@]}"; do
                         echo "Param values: cr=$c, mut=$m, obj=${o_values[i]}"
-                        echo -n "$a,$b,$g,$c,$m," >> $resultfile
+                        echo -n "$a,$b,$g,$c,$m," >> $resultfile.csv
                         ../bin/greedy -a $a -b $b -g $g -f $inputfile -i $greedy_iters -p $moga2_pop | ../bin/moga2 -a $a -b $b -g $g -f $inputfile -l $cr_method -z "${o_values[i]}" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV >> $resultfile.csv
                     done
                 done 
@@ -46,7 +46,7 @@ for a in 0.0 0.5 1; do
 done
 
     
-echo "Results saved in $resultfile"
+echo "Results saved in $resultfile.csv"
 
 # Activate virtual environment
 source ../python/venv/bin/activate

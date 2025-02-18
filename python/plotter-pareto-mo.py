@@ -25,8 +25,8 @@ data = pd.read_csv(file_path)
 #remove duplicates rows
 data = data.drop_duplicates()
 
-if data.shape[1] < 8:
-    raise ValueError("CSV file must have at least 8 columns")
+if data.shape[1] < 11:
+    raise ValueError("CSV file must have at least 11 columns")
 
 # Extract columns for plotting
 """
