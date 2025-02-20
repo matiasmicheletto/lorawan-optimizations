@@ -2,7 +2,13 @@ bin/obj/
 bin/gpprs 
 bin/datgen 
 bin/greedy 
+bin/moga2
 bin/summary.csv 
+bash/nohup.out
+bash/pareto_MO.csv
+bash/pareto_MO.txt
+bash/pareto_MO.png
+bash/summary.csv
 dat/ 
 doc/ 
 python/venv/ 

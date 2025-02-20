@@ -236,11 +236,11 @@ int main(int argc, char **argv) {
         case 2:
             std::cout << "UF,";
             if(specialChromosome){
-                GAFitnessUF* gaFitnessUF = new GAFitnessUF(o);
-                ga = new GeneticAlgorithm(gaFitnessUF, config);
-            }else{
                 GWGAFitnessUF* gwgaFitnessUF = new GWGAFitnessUF(o);
                 ga = new GeneticAlgorithm(gwgaFitnessUF, config);
+            }else{
+                GAFitnessUF* gaFitnessUF = new GAFitnessUF(o);
+                ga = new GeneticAlgorithm(gaFitnessUF, config);
             }
             break;
     }
@@ -277,7 +277,14 @@ int main(int argc, char **argv) {
         for(uint k = 0; k < pop.size(); k++){ // For each network config (chromosome)
             if(specialChromosome){
                 GWAllocationChromosome* ch = new GWAllocationChromosome(o);
-                // TODO: Set genes
+                
+                for(uint ed = 0; ed < pop[k].size(); ed++){ // For each node (gene)
+                    const uint gw = pop[k][ed].gw; 
+                    const uint sf = pop[k][ed].sf;
+                    const EdSf edSf = {ed, sf};
+                    ch->pushElToGene(gw, edSf);
+                }
+
                 population.push_back(ch);
             }else{
                 AllocationChromosome* ch = new AllocationChromosome(o);

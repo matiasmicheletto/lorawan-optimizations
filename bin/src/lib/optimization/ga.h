@@ -98,13 +98,6 @@ class AllocationChromosome : public Chromosome { // Network allocation (GW and S
             double totalUF;
             bool feasible;
             getPhenotype(cost, gwCount, energy, totalUF, feasible);
-            /*
-            std::cout << "  Cost: " << cost << std::endl;
-            std::cout << "  GW used: " << gwCount << std::endl;
-            std::cout << "  Energy: " << energy << std::endl;
-            std::cout << "  Total UF: " << totalUF << std::endl;
-            std::cout << "  Feasible: " << (feasible ? "Yes" : "No");
-            */
             std::cout << "Cost=" << cost
                 << (feasible ? " (Feasible)" : " (Unfeasible)")
                 << ", (GW=" << gwCount 
