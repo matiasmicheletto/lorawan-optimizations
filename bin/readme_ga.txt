@@ -35,8 +35,9 @@ OPTIONS:
    -g, --gamma          Gamma tunning parameter. Default is 7.8.  
    -h, --help           Display this help message.
    -i, --iters          Max generations.
-   -l, --crossmethod    Crossover method
+   -l, --crossfunction  Crossover function: single point, double point, uniform.
    -m, --mut            Mutation rate.
+   -n, --crossmethod    Special crossover method.  
    -o, --output         Save results to ouput file. // not in moga2
    -p, --pop            Read pre-computed population.
    -q, --qpop           Population size.

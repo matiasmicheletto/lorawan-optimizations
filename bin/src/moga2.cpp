@@ -5,6 +5,7 @@
 #include "lib/model/instance.h"
 #include "lib/model/objective.h"
 #include "lib/optimization/ga.h"
+#include "lib/optimization/ga2.h"
 #include "lib/optimization/fitness/ga_fitness_gw.h"
 #include "lib/optimization/fitness/ga_fitness_e.h"
 #include "lib/optimization/fitness/ga_fitness_uf.h"
@@ -33,6 +34,7 @@ int main(int argc, char **argv) {
     OUTPUTFORMAT outputFormat = OUTPUTFORMAT::TXT;
 
     int objective = -1;
+    bool specialChromosome = false; // Another model for chromosome
 
     char *filename = nullptr;
 
@@ -97,7 +99,7 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -i (--iters)" << std::endl;
             }
         }
-        if(strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--crossmethod") == 0){
+        if(strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--crossfunction") == 0){
             if(i+1 < argc){
                 if(std::strcmp(argv[i+1], "UNIFORM") == 0)
                     config->crossoverMethod = CROSS_METHOD::C_UNIFORM;
@@ -117,6 +119,9 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
                 std::cout << std::endl << "Error in argument -m (--mut)" << std::endl;
             }
+        }
+        if(strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--crossmethod") == 0) {
+            specialChromosome = true;
         }
         if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--pop") == 0) {
             // Read precomputed population
@@ -193,9 +198,7 @@ int main(int argc, char **argv) {
     #endif
 
     Objective *o = new Objective(l, tp);
-    GAFitnessGW* gaFitnessGW = new GAFitnessGW(o);
-    GAFitnessE* gaFitnessE = new GAFitnessE(o);
-    GAFitnessUF* gaFitnessUF = new GAFitnessUF(o);
+    
 
     GeneticAlgorithm *ga;
 
@@ -212,15 +215,33 @@ int main(int argc, char **argv) {
             exit(1);
         case 0:
             std::cout << "GW,";
-            ga = new GeneticAlgorithm(gaFitnessGW, config); // Init without config
+            if(specialChromosome){
+                GWGAFitnessGW* gwgaFitnessGW = new GWGAFitnessGW(o);
+                ga = new GeneticAlgorithm(gwgaFitnessGW, config);
+            }else {
+                GAFitnessGW* gaFitnessGW = new GAFitnessGW(o);
+                ga = new GeneticAlgorithm(gaFitnessGW, config);
+            }
             break;
         case 1:
             std::cout << "E,";
-            ga = new GeneticAlgorithm(gaFitnessE, config); // Init without config
+            if(specialChromosome){
+                GWGAFitnessE* gwgaFitnessE = new GWGAFitnessE(o);
+                ga = new GeneticAlgorithm(gwgaFitnessE, config);
+            }else{
+                GAFitnessE* gaFitnessE = new GAFitnessE(o);
+                ga = new GeneticAlgorithm(gaFitnessE, config);
+            }
             break;
         case 2:
             std::cout << "UF,";
-            ga = new GeneticAlgorithm(gaFitnessUF, config); // Init without config
+            if(specialChromosome){
+                GAFitnessUF* gaFitnessUF = new GAFitnessUF(o);
+                ga = new GeneticAlgorithm(gaFitnessUF, config);
+            }else{
+                GWGAFitnessUF* gwgaFitnessUF = new GWGAFitnessUF(o);
+                ga = new GeneticAlgorithm(gwgaFitnessUF, config);
+            }
             break;
     }
     
@@ -254,13 +275,18 @@ int main(int argc, char **argv) {
         // Build population
         std::vector<Chromosome*> population;
         for(uint k = 0; k < pop.size(); k++){ // For each network config (chromosome)
-            AllocationChromosome* ch = new AllocationChromosome(o);
-            for(uint j = 0; j < pop[k].size(); j++){ // For each node (gene)
-                ch->setGeneValue(j, pop[k][j].gw, pop[k][j].sf);
+            if(specialChromosome){
+                GWAllocationChromosome* ch = new GWAllocationChromosome(o);
+                // TODO: Set genes
+                population.push_back(ch);
+            }else{
+                AllocationChromosome* ch = new AllocationChromosome(o);
+                for(uint j = 0; j < pop[k].size(); j++){ // For each node (gene)
+                    ch->setGeneValue(j, pop[k][j].gw, pop[k][j].sf);
+                }
+                population.push_back(ch);
             }
-            population.push_back(ch);
         }
-
         ga->setPopulation(population);
     }
 

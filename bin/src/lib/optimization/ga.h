@@ -3,6 +3,7 @@
 #include "../custom_ga/ga.h"
 #include "../custom_ga/moga.h"
 
+
 using namespace custom_ga;
 
 class EdGene : public Gene { // End device: has a GW and a SF. Needs to know its index in the network

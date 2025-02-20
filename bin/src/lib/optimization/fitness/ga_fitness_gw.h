@@ -2,7 +2,6 @@
 #include "../../model/objective.h"
 #include "../../custom_ga/ga.h"
 #include "../../custom_ga/moga.h"
-#include "../ga.h"
 
 
 class GAFitnessGW : public Fitness { // Cost fitness function
@@ -40,6 +39,42 @@ class GAFitnessGW : public Fitness { // Cost fitness function
 
         AllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
             AllocationChromosome* ch = new AllocationChromosome(o);
+            switch (cm) {
+                case CROSS_METHOD::SINGLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::singlePointCrossover);
+                    break;
+                case CROSS_METHOD::DOUBLE_POINT:
+                    ch->setCrossoverMethod(&Chromosome::doublePointCrossover);
+                    break;
+                case CROSS_METHOD::C_UNIFORM:
+                    ch->setCrossoverMethod(&Chromosome::uniformCrossover);
+                    break;
+            }
+            evaluate(ch);
+            return ch;
+        }
+
+    private:
+        Objective* o;
+};
+
+class GWGAFitnessGW : public Fitness { // Cost fitness function
+    public:
+        GWGAFitnessGW(Objective* o) : Fitness() {
+            this->o = o;
+        }
+
+        std::string getName() const override {
+            return "Network Fitness";
+        }
+
+        void evaluate(Chromosome *chromosome) const override {
+            //chromosome->fitness = feasible ? 1e3/totalUF : 0;
+            //chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
+        }
+
+        GWAllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
+            GWAllocationChromosome* ch = new GWAllocationChromosome(o);
             switch (cm) {
                 case CROSS_METHOD::SINGLE_POINT:
                     ch->setCrossoverMethod(&Chromosome::singlePointCrossover);
