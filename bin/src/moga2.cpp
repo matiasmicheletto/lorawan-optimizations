@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     OUTPUTFORMAT outputFormat = OUTPUTFORMAT::TXT;
 
     int objective = -1;
-    bool specialChromosome = false; // Another model for chromosome
+    bool customChromosome = false; // Another model for chromosome
 
     char *filename = nullptr;
 
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
             }
         }
         if(strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--crossmethod") == 0) {
-            specialChromosome = true;
+            customChromosome = true;
         }
         if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--pop") == 0) {
             // Read precomputed population
@@ -215,7 +215,8 @@ int main(int argc, char **argv) {
             exit(1);
         case 0:
             std::cout << "GW,";
-            if(specialChromosome){
+            if(customChromosome){
+                std::cout << "Using custom chromosome model" << std::endl;
                 GWGAFitnessGW* gwgaFitnessGW = new GWGAFitnessGW(o);
                 ga = new GeneticAlgorithm(gwgaFitnessGW, config);
             }else {
@@ -225,7 +226,7 @@ int main(int argc, char **argv) {
             break;
         case 1:
             std::cout << "E,";
-            if(specialChromosome){
+            if(customChromosome){
                 GWGAFitnessE* gwgaFitnessE = new GWGAFitnessE(o);
                 ga = new GeneticAlgorithm(gwgaFitnessE, config);
             }else{
@@ -235,7 +236,7 @@ int main(int argc, char **argv) {
             break;
         case 2:
             std::cout << "UF,";
-            if(specialChromosome){
+            if(customChromosome){
                 GWGAFitnessUF* gwgaFitnessUF = new GWGAFitnessUF(o);
                 ga = new GeneticAlgorithm(gwgaFitnessUF, config);
             }else{
@@ -275,7 +276,7 @@ int main(int argc, char **argv) {
         // Build population
         std::vector<Chromosome*> population;
         for(uint k = 0; k < pop.size(); k++){ // For each network config (chromosome)
-            if(specialChromosome){
+            if(customChromosome){
                 GWAllocationChromosome* ch = new GWAllocationChromosome(o);
                 
                 for(uint ed = 0; ed < pop[k].size(); ed++){ // For each node (gene)

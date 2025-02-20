@@ -61,6 +61,7 @@ class GAFitnessGW : public Fitness { // Cost fitness function
 class GWGAFitnessGW : public Fitness { // Cost fitness function
     public:
         GWGAFitnessGW(Objective* o) : Fitness() {
+            std::cout << "Building GWGAFitnessGW..." << std::endl;
             this->o = o;
         }
 
@@ -69,8 +70,20 @@ class GWGAFitnessGW : public Fitness { // Cost fitness function
         }
 
         void evaluate(Chromosome *chromosome) const override {
-            //chromosome->fitness = feasible ? 1e3/totalUF : 0;
-            //chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
+            const unsigned int edCount = o->getInstance()->edCount;
+            uint* gw = new uint[edCount];
+            uint* sf = new uint[edCount];
+
+            GWAllocationChromosome* ch = (GWAllocationChromosome*) chromosome;
+
+            uint gwCount;
+            uint energy;
+            double totalUF;
+            bool feasible;
+            double cost;
+            ch->getPhenotype(cost, gwCount, energy, totalUF, feasible);
+            chromosome->fitness = feasible ? 1e3/gwCount : 0;
+            chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
         GWAllocationChromosome* generateChromosome(CROSS_METHOD cm) const override {
