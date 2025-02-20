@@ -22,10 +22,12 @@ if [ ! -f $inputfile ]; then
 fi
 
 # Create file if not exists and clear
-touch $resultfile
+touch $resultfile.csv
+touch $resultfile.txt
 
-# Clear file
-> $resultfile
+# Clear files
+> $resultfile.csv
+> $resultfile.txt
 
 o_values=("GW" "E" "UF") # Objective parameter to optimize for MOGA2
 
@@ -37,13 +39,29 @@ for a in 0.0 0.5 1; do
             for c in 0.2 0.4 0.6 0.8; do
                 for m in 0.2 0.4 0.6 0.8; do
                     for i in "${!o_values[@]}"; do
-                        echo "Param values: cr=$c, mut=$m, obj=${o_values[i]}, no custom crossover"
-                        echo -n "$a,$b,$g,$c,$m,no_custom_c," >> $resultfile.csv
-                        ../bin/greedy -a $a -b $b -g $g -f $inputfile -i $greedy_iters -p $moga2_pop | ../bin/moga2 -a $a -b $b -g $g -f $inputfile -l $cr_method -z "${o_values[i]}" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV >> $resultfile.csv
 
-                        # echo "Param values: cr=$c, mut=$m, obj=${o_values[i]}, using custom crossover"
-                        #echo -n "$a,$b,$g,$c,$m,custom_c" >> $resultfile.csv
-                        #../bin/greedy -a $a -b $b -g $g -f $inputfile -i $greedy_iters -p $moga2_pop | ../bin/moga2 -a $a -b $b -g $g -f $inputfile -l $cr_method -z "${o_values[i]}" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV >> $resultfile.csv
+                        # Run and save execution output for generic crossover
+                        echo "Param values: cr=$c, mut=$m, obj=${o_values[i]}, generic crossover"
+                        output1=../bin/greedy -a $a -b $b -g $g -f $inputfile -i $greedy_iters -p $moga2_pop | ../bin/moga2 -a $a -b $b -g $g -f $inputfile -l $cr_method -z "${o_values[i]}" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null
+                        exit_status1=$? # Error of last command
+
+                        # Run and save execution output for custom crossover
+                        #echo "Param values: cr=$c, mut=$m, obj=${o_values[i]}, custom crossover"
+                        #output2=../bin/greedy -a $a -b $b -g $g -f $inputfile -i $greedy_iters -p $moga2_pop | ../bin/moga2 -a $a -b $b -g $g -f $inputfile -l $cr_method -z "${o_values[i]}" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV >> $resultfile.csv
+                        #exit_status2=$? # Error of last command
+
+                        if [ $exit_status1 -eq 0 ]; then
+                            echo -n "$a,$b,$g,$c,$m,generic_cross," >> $resultfile.csv
+                            echo $output1 >> $resultfile.csv
+                        else
+                            echo "Execution failed for $a,$b,$g,$c,$m,generic crossover"
+                        fi
+
+                        #if [ $exit_status2 -eq 0 ]; then
+                        #    echo -n "$a,$b,$g,$c,$m,$o_values[i],custom_cross" >> $resultfile.csv
+                        #    echo $output2 >> $resultfile.csv
+                        #else
+                        #    echo "Execution failed for $a,$b,$g,$c,$m,custom crossover"
                     done
                 done 
             done
