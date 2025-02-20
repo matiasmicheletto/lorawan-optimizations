@@ -6,9 +6,9 @@
 #include "lib/model/objective.h"
 #include "lib/optimization/ga.h"
 #include "lib/optimization/ga2.h"
-#include "lib/optimization/fitness/ga_fitness_gw.h"
-#include "lib/optimization/fitness/ga_fitness_e.h"
-#include "lib/optimization/fitness/ga_fitness_uf.h"
+#include "lib/optimization/ga_fitness_gw.h"
+#include "lib/optimization/ga_fitness_e.h"
+#include "lib/optimization/ga_fitness_uf.h"
 
 int main(int argc, char **argv) {
 

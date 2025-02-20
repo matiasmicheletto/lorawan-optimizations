@@ -1,7 +1,7 @@
-#include "../custom_ga/uniform.h"
 #include "../model/objective.h"
 #include "../custom_ga/ga.h"
 #include "../custom_ga/moga.h"
+#include "../custom_ga/uniform.h"
 
 
 using namespace custom_ga;
@@ -97,8 +97,9 @@ class GWAllocationChromosome : public Chromosome { // Network allocation (GW and
         }
 
         void mutate() override {
-            /*
             std::cout << "Mutating..." << std::endl;
+            /*
+            
             // Move an ED from one GW to another
             unsigned int gw1 = (unsigned int) floor(uniform.random(gwList.size()));
             unsigned int gw2 = (unsigned int) floor(uniform.random(gwList.size()));
@@ -112,8 +113,9 @@ class GWAllocationChromosome : public Chromosome { // Network allocation (GW and
         }
 
         void singlePointCrossover(Chromosome* other) override {
-            /*
             std::cout << "Crossover..." << std::endl;
+            /*
+            
 
             GWAllocationChromosome* ot = (GWAllocationChromosome*) other;
             Instance *l = o->getInstance();

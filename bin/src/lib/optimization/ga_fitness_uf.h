@@ -1,7 +1,7 @@
-#include "../../custom_ga/uniform.h"
-#include "../../model/objective.h"
-#include "../../custom_ga/ga.h"
-#include "../../custom_ga/moga.h"
+#include "../custom_ga/uniform.h"
+#include "../model/objective.h"
+#include "../custom_ga/ga.h"
+#include "../custom_ga/moga.h"
 
 
 class GAFitnessUF : public Fitness { // Cost fitness function

@@ -1,12 +1,12 @@
-#include "../../custom_ga/uniform.h"
-#include "../../model/objective.h"
-#include "../../custom_ga/ga.h"
-#include "../../custom_ga/moga.h"
+#include "../custom_ga/uniform.h"
+#include "../model/objective.h"
+#include "../custom_ga/ga.h"
+#include "../custom_ga/moga.h"
 
 
-class GAFitnessE : public Fitness { // Cost fitness function
+class GAFitnessGW : public Fitness { // Cost fitness function
     public:
-        GAFitnessE(Objective* o) : Fitness() {
+        GAFitnessGW(Objective* o) : Fitness() {
             this->o = o;
         }
 
@@ -33,7 +33,7 @@ class GAFitnessE : public Fitness { // Cost fitness function
             bool feasible;
             o->eval(gw, sf, gwCount, energy, totalUF, feasible);
             // Inverse cost for maximization
-            chromosome->fitness = feasible ? 1e3/energy : 0;
+            chromosome->fitness = feasible ? 1e3/gwCount : 0;
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
@@ -58,10 +58,10 @@ class GAFitnessE : public Fitness { // Cost fitness function
         Objective* o;
 };
 
-class GWGAFitnessE : public Fitness { // Cost fitness function
+class GWGAFitnessGW : public Fitness { // Cost fitness function
     public:
-        GWGAFitnessE(Objective* o) : Fitness() {
-            std::cout << "Building GWGAFitnessE..." << std::endl;
+        GWGAFitnessGW(Objective* o) : Fitness() {
+            std::cout << "Building GWGAFitnessGW..." << std::endl;
             this->o = o;
         }
 
@@ -82,7 +82,7 @@ class GWGAFitnessE : public Fitness { // Cost fitness function
             bool feasible;
             double cost;
             ch->getPhenotype(cost, gwCount, energy, totalUF, feasible);
-            chromosome->fitness = feasible ? 1e3/energy : 0;
+            chromosome->fitness = feasible ? 1e3/gwCount : 0;
             chromosome->objectives = {(double) gwCount, (double) energy, totalUF};
         }
 
