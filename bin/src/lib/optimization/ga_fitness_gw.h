@@ -61,7 +61,6 @@ class GAFitnessGW : public Fitness { // Cost fitness function
 class GWGAFitnessGW : public Fitness { // Cost fitness function
     public:
         GWGAFitnessGW(Objective* o) : Fitness() {
-            std::cout << "Building GWGAFitnessGW..." << std::endl;
             this->o = o;
         }
 

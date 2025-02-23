@@ -1,14 +1,14 @@
 #include "../model/objective.h"
 #include "../custom_ga/ga.h"
 #include "../custom_ga/moga.h"
-#include "../custom_ga/uniform.h"
+#include <thread>
 
 
 using namespace custom_ga;
 
 struct EdSf { // End device and SF
-    unsigned int ed; // ED index
-    unsigned int sf; // Values from 7 to 12
+    uint ed; // ED index
+    uint sf; // Values from 7 to 12
 };
 
 
@@ -27,8 +27,8 @@ class GWAllocationChromosome : public Chromosome { // Network allocation (GW and
                     exit(1);
                 }
                 // Choose a random gw from the list of reachable gws
-                const unsigned int gwIndex = uniform.random(reachableGWs.size());
-                const unsigned int gw = reachableGWs[gwIndex];
+                const uint randgw = uniform.random(reachableGWs.size());
+                const uint gw = reachableGWs[randgw];
                 const uint minSF = l->getMinSF(ed, gw);
                 const uint maxSF = l->getMaxSF(ed);
                 // Put the ed in the gw
@@ -44,7 +44,7 @@ class GWAllocationChromosome : public Chromosome { // Network allocation (GW and
 
         void printGenotype() const override {
             std::cout << "Genotype: ";
-            for (unsigned int i = 0; i < gwList.size(); i++) {
+            for (uint i = 0; i < gwList.size(); i++) {
                 std::cout << "GW " << i << ": ";
                 for (EdSf edSf : gwList[i]) {
                     std::cout << edSf.ed << "[" << edSf.sf << "] ";
@@ -57,25 +57,38 @@ class GWAllocationChromosome : public Chromosome { // Network allocation (GW and
             //std::cout << "Evaluating phenotype" << std::endl;
 
             // Evaluate cost and objectives
-            unsigned int edCount = o->getInstance()->edCount;
+            uint edCount = o->getInstance()->edCount;
             uint* gw = new uint[edCount];
             uint* sf = new uint[edCount];
-            for (unsigned int i = 0; i < edCount; i++) {
+            for (uint i = 0; i < edCount; i++) {
                 gw[i] = -1;
                 sf[i] = -1;
             }
-            for (unsigned int i = 0; i < gwList.size(); i++) {
-                for (EdSf edSf : gwList[i]) {
-                    gw[edSf.ed] = i;
+            for (uint g = 0; g < gwList.size(); g++) {
+                for (EdSf edSf : gwList[g]) {
+                    gw[edSf.ed] = g;
                     sf[edSf.ed] = edSf.sf;
                 }
             }
-            cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
 
-            //std::cout << "Cost=" << cost << ", GW=" << gwCount << ", E=" << energy << ", U=" << totalUF << std::endl;
+            Instance *l = o->getInstance();
+            for (uint e = 0; e < edCount; e++) {
+                if(gw[e] == -1) {
+                    std::vector<uint> glist = l->getGWList(e); // Valid gws for this ed
+                    const uint randgw = rand() % glist.size();
+                    const uint minSF = l->getMinSF(e, glist[randgw]);
+                    const uint maxSF = l->getMaxSF(e);
+                    const uint randsf = minSF + rand() % (maxSF - minSF + 1);
+                    gw[e] = randgw;
+                    sf[e] = randsf;
+                    std::this_thread::sleep_for(std::chrono::nanoseconds(50));
+                }
+            }
+
+            cost = o->eval(gw, sf, gwCount, energy, totalUF, feasible);
         }
 
-        void pushElToGene(unsigned int gw, EdSf edSf) { // Add an ED to a GW
+        void pushElToGene(uint gw, EdSf edSf) { // Add an ED to a GW
             if (gw <= gwList.size()) {
                 gwList[gw].push_back(edSf);   
             }
@@ -97,46 +110,35 @@ class GWAllocationChromosome : public Chromosome { // Network allocation (GW and
         }
 
         void mutate() override {
-            std::cout << "Mutating..." << std::endl;
             /*
             
             // Move an ED from one GW to another
-            unsigned int gw1 = (unsigned int) floor(uniform.random(gwList.size()));
-            unsigned int gw2 = (unsigned int) floor(uniform.random(gwList.size()));
-            unsigned int ed = (unsigned int) floor(uniform.random(gwList[gw1].size()));
+            uint gw1 = (uint) floor(uniform.random(gwList.size()));
+            uint gw2 = (uint) floor(uniform.random(gwList.size()));
+            uint ed = (uint) floor(uniform.random(gwList[gw1].size()));
             if(ed > 0){
                 EdSf edSf = gwList[gw1][ed];
                 gwList[gw1].erase(gwList[gw1].begin() + ed);
                 gwList[gw2].push_back(edSf);
             }
+                
             */
         }
 
         void singlePointCrossover(Chromosome* other) override {
-            std::cout << "Crossover..." << std::endl;
-            /*
-            
-
             GWAllocationChromosome* ot = (GWAllocationChromosome*) other;
-            Instance *l = o->getInstance();
-            unsigned int pivot = (unsigned int) floor(uniform.random(gwList.size()));
-
-            for(unsigned int gw = 0; gw < pivot; gw++){
-                std::vector<EdSf> temp = gwList[gw];
-                gwList[gw] = ot->gwList[gw];
-                ot->gwList[gw] = temp;
+            uint pivot = (uint) floor(uniform.random(gwList.size()));
+            for(uint gw = 0; gw < pivot; gw++){
+                std::swap(gwList[gw], ot->gwList[gw]);
             }
-            
-            std::cout << "Crossover done." << std::endl;
-            */
         }
 
         void doublePointCrossover(Chromosome* other) override {
-            
+            this->singlePointCrossover(other);
         }
 
         void uniformCrossover(Chromosome* other) override {
-            
+            this->singlePointCrossover(other);
         }
 
         void clone(const Chromosome* other) { // Copy the genes from another chromosome

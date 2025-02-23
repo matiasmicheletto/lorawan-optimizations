@@ -25,8 +25,11 @@ fi
 # Create file if not exists and clear
 touch $resultfile.csv
 
-# Clear files
+# Clear file
 > $resultfile.csv
+
+# Add header
+echo "crossover,mutation,crossover type,optimizer,instance file,free objective,gw,e,uf" >> $resultfile.csv
 
 o_values=("GW" "E" "UF") # Objective parameter to optimize for MOGA2
 
@@ -34,6 +37,7 @@ o_values=("GW" "E" "UF") # Objective parameter to optimize for MOGA2
 ../bin/greedy -f "$inputfile" -i $greedy_iters -p $moga2_pop > greedysol.sol
 
 # Run MOGA2 with different parameters
+loopctr=0
 for c in 0.3 0.5 0.7; do
     for m in 0.05 0.1 0.15 0.2; do
         for param in "${!o_values[@]}"; do
@@ -41,7 +45,12 @@ for c in 0.3 0.5 0.7; do
             obj_value="${o_values[param]}" # GW, E, UF
 
             # Run and save execution output for generic crossover
-            echo "Param values: cr=$c, mut=$m, obj=$obj_value, generic crossover"
+            #echo "Param values: cr=$c, mut=$m, obj=$obj_value, generic crossover"
+
+            # Print progress percentage
+            loopctr=$((loopctr+1))
+            progrr=$((loopctr*100/36))
+            echo "Progress: $progrr%"
 
             output1=$(cat greedysol.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
             exit_status1=$? # Error of last command
@@ -57,14 +66,15 @@ for c in 0.3 0.5 0.7; do
             # Run and save execution output for custom crossover
             #echo "Param values: cr=$c, mut=$m, obj=$obj_value, custom crossover"
             
-            #output2=$(cat greedy.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
-            #exit_status2=$? # Error of last command
+            output2=$(cat greedysol.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
+            exit_status2=$? # Error of last command
             
-            #if [[ $exit_status2 -eq 0 ]]; then
-            #    echo -n "$c,$m,$o_values[i],custom_cross" >> $resultfile.csv
-            #    echo $output2 >> $resultfile.csv
-            #else
-            #    echo "Execution failed for: cr=$c, mut=$m, obj=$obj_value, custom crossover"
+            if [[ $exit_status2 -eq 0 ]]; then
+                echo -n "$c,$m,custom_cross," >> $resultfile.csv
+                echo $output2 >> $resultfile.csv
+            else
+                echo "Execution failed for: cr=$c, mut=$m, obj=$obj_value, custom crossover"
+            fi
         done
     done 
 done

@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
         case 0:
             std::cout << "GW,";
             if(customChromosome){
-                std::cout << "Using custom chromosome model" << std::endl;
+                //std::cout << "Using custom chromosome model" << std::endl;
                 GWGAFitnessGW* gwgaFitnessGW = new GWGAFitnessGW(o);
                 ga = new GeneticAlgorithm(gwgaFitnessGW, config);
             }else {
@@ -310,6 +310,12 @@ int main(int argc, char **argv) {
     std::cout << config->timeout << ",";
     std::cout << config->stagnationWindow << ",";
     std::cout << std::endl;
+    */
+
+    /*
+    config->printLevel = 3; // Print all
+    ga->print();
+    return 0;
     */
 
     GAResults results = ga->run();
