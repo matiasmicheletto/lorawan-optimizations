@@ -1,49 +1,12 @@
 import pandas as pd
-import argparse
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-# This program takes a CSV file as input and plots 3D and 2D graphs.
-# Usage:
-# python3 plotter-pareto-mo.py data.csv
-
-# Adjust font for latex rendering
 mpl.rcParams['mathtext.fontset'] = 'stix'  
 mpl.rcParams['font.family'] = 'STIXGeneral'  
-mpl.rcParams['font.size'] = 12
+mpl.rcParams['font.size'] = 16
 
-# Parse command line arguments to get filename
-parser = argparse.ArgumentParser(description='Plot 3D and 2D graphs from CSV file')
-parser.add_argument('filename', type=str, help='CSV file to plot')
-args = parser.parse_args()
-file_path = args.filename
-print(f"Plotting data from {file_path}...")
 
-# Read the CSV file
-data = pd.read_csv(file_path)
-
-#remove duplicates rows
-data = data.drop_duplicates()
-
-if data.shape[1] < 11:
-    raise ValueError("CSV file must have at least 11 columns")
-
-# Extract columns for plotting
-"""
-alpha = data.columns[0]
-beta = data.columns[1]
-gamma = data.columns[2]
-cross_rate = data.columns[3]
-mut_rate = data.columns[4]
-opt_name = data.columns[5]
-instance name = data.columns[6]
-objective = data.columns[7]
-"""
-col1 = data.columns[8] # GW
-col2 = data.columns[9] # E
-col3 = data.columns[10] # UF
-
-# Function to check if a dominates b
 def dominates(a, b):
     return all(x >= y for x, y in zip(a, b)) and any(x > y for x, y in zip(a, b))
 
@@ -59,55 +22,75 @@ def getPareto(vector):
     pareto_front.sort(key=lambda x: x[0])
     return pareto_front
 
-def plotdata(axs, data, pareto, col1, col2, title, xlabel, ylabel):
-    #axs.scatter(opt_data[col1], opt_data[col2], c=colors[opt], alpha=0.7, label=opt)
-    axs.scatter(data[col1], data[col2], alpha=0.7)
-    for i in range(len(pareto) - 1):
-        axs.plot([pareto[i][0], pareto[i+1][0]], [pareto[i][1], pareto[i+1][1]], color='red')
-        axs.scatter(pareto[i][0], pareto[i][1], color='red')
-    axs.scatter(pareto[-1][0], pareto[-1][1], color='red')
+def plotdata(ax, pareto, xlabel, ylabel, color, label, legend=True):
+    x_vals, y_vals = zip(*pareto)  # Extract points
+    ax.plot(x_vals, y_vals, color=color, linestyle='-', marker='o', label=label)  # Plot line with markers
+    ax.scatter(x_vals, y_vals, color=color)  # Ensure points are highlighted       
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.grid(True)
+    if legend:
+        ax.legend() 
+    else: 
+        #ax.text(x_vals[0]*1.1, y_vals[0], label, fontsize=12, color=color, verticalalignment='bottom', horizontalalignment='right')
+        ax.annotate(
+            label,
+            (x_vals[0], y_vals[0]),  # Data coordinates
+            textcoords="offset points",  # Move relative to the data point
+            xytext=(10, 0),  # Move 10 points to the right
+            fontsize=12,
+            color=color,
+            verticalalignment='bottom',
+            horizontalalignment='left'  # Adjusted to match the new position
+        )
 
-    axs.set_title(title)
-    axs.set_xlabel(xlabel)
-    axs.set_ylabel(ylabel)
-    #axs.legend()
-    axs.grid(True)
+file_path = "MOGA_tunning_server.csv"
+
+data = pd.read_csv(file_path)
 
 
-# Discard dominated solutions
-#pareto_GW_E = getPareto(data[[col1, col2]].values)
-pareto_E_GW = getPareto(data[[col2, col1]].values)
-#pareto_E_UF = getPareto(data[[col2, col3]].values)
-#pareto_GW_UF = getPareto(data[[col1, col3]].values)
-pareto_UF_GW = getPareto(data[[col3, col1]].values)
+
+# Generic crossover data
+data_generic_xo = data[data['crossover type'] == 'generic_cross']
+pareto_generic_E_GW = getPareto(data_generic_xo[['e', 'gw']].values)
+pareto_generic_UF_GW = getPareto(data_generic_xo[['uf', 'gw']].values)
 
 
-# Plot the data
-fig, axs = plt.subplots(1, 2, figsize=(15, 5)) # Create the figure and axes for the three plots
+# print data points csv format
+print(pareto_generic_E_GW)
+print(pareto_generic_UF_GW)
 
-#plotdata(axs[0], data, pareto_GW_E, col1, col2, 'GW vs E', 'GW', 'E')
-plotdata(axs[0], data, pareto_E_GW, col2, col1, '', 'E', 'GW')
-#plotdata(axs[1], data, pareto_E_UF, col2, col3, 'E vs UF', 'E', 'UF')
-#plotdata(axs[2], data, pareto_GW_UF, col1, col3, 'GW vs UF', 'GW', 'UF')
-plotdata(axs[1], data, pareto_UF_GW, col3, col1, '', 'UF', 'GW')
+for i in pareto_generic_E_GW:
+    print(f'{i[0]},{i[1]}')
+print()
+for i in pareto_generic_UF_GW:
+    print(f'{i[0]},{i[1]}')
 
-# Adjust layout and save figure
+
+# Custom crossover data
+data_custom_xo = data[data['crossover type'] == 'custom_cross']
+pareto_custom_E_GW = getPareto(data_custom_xo[['e', 'gw']].values)
+pareto_custom_UF_GW = getPareto(data_custom_xo[['uf', 'gw']].values)
+
+
+
+# Plots
+
+fig, ax = plt.subplots(figsize=(10, 6))
+plotdata(ax, pareto_generic_UF_GW, 'Utilization', 'Gateway', 'red', 'Original', False)
+plotdata(ax, pareto_custom_UF_GW, 'Utilization', 'Gateway', 'blue', 'Variant', False)
 plt.tight_layout()
 #plt.show()
-plt.savefig(file_path.replace('.csv', '.png'))
+plt.savefig("MOGA_original_vs_variant_energy.png")
 
+#fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
-# Print the Pareto front in pair of values:
-print("Pareto front for E vs GW:")
-for p in pareto_E_GW:
-    print(p)
+#plotdata(axs[0], pareto_generic_E_GW, 'Energy [W-slot]', 'Gateway', 'red', 'Original', False)
+#plotdata(axs[1], pareto_generic_UF_GW, 'Utilization', 'Gateway', 'red', 'Original', False)
 
-#print("Pareto front for E vs UF:")
-#for p in pareto_E_UF:
-#    print(p)
+#plotdata(axs[0], pareto_custom_E_GW, 'Energy [W-slot]', 'Gateway', 'blue', 'Variant', False)
+#plotdata(axs[1], pareto_custom_UF_GW, 'Utilization', 'Gateway', 'blue', 'Variant', False)
 
-print("Pareto front for UF vs GW:")
-for p in pareto_UF_GW:
-    print(p)
-
-print("Done!")
+#plt.tight_layout()
+#plt.show()
+#plt.savefig(file_path.replace('.csv', '.png'))
