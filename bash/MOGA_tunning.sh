@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
-#inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat" # Instance
+inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat" # Instance
 #inputfile="../dat/generada.dat" # Instance
 #inputfile="../dat/imu_100_10_100_1.dat" # Instance
-inputfile="../dat/instancia.dat" # Instance
+#inputfile="../dat/instancia.dat" # Instance
 
 
 resultfile="MOGA_tunning" # Result file
@@ -12,9 +12,9 @@ resultfile="MOGA_tunning" # Result file
 # Crossover methods: "UNIFORM" "SINGLE_POINT" "DOUBLE_POINT"
 cr_method="SINGLE_POINT"
 
-greedy_iters=10 # Number of iterations for Greedy
-moga2_iters=10 # Number of iterations for MOGA2
-moga2_pop=20 # GA population
+greedy_iters=100 # Number of iterations for Greedy
+moga2_iters=100 # Number of iterations for MOGA2
+moga2_pop=50 # GA population
 
 # check if file exists
 if [ ! -f "$inputfile" ]; then

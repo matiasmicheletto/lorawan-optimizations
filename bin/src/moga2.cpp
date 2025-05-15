@@ -295,6 +295,26 @@ int main(int argc, char **argv) {
                 population.push_back(ch);
             }
         }
+
+        for(uint i = 0; i < population.size(); i++){
+            Chromosome *chr = population[i];
+            // Evaluate fitness
+            ga->getFitnessFunction()->evaluate(chr);
+
+            // print chr->objectives (comma separated std::vector<double> values)
+            std::ofstream myfile;
+            myfile.open("greedy_sols_objectives.txt", std::ios::app);
+            for (uint j = 0; j < chr->objectives.size(); j++) {
+                myfile << chr->objectives[j];
+                if (j < chr->objectives.size() - 1) {
+                    myfile << ",";
+                }
+            }
+            myfile << std::endl << std::endl;
+            myfile.close();
+
+
+        }        
         ga->setPopulation(population);
     }
 

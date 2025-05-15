@@ -31,6 +31,8 @@ class GeneticAlgorithm {
 
         void setPopulation(std::vector<Chromosome*> population);
 
+        Fitness* getFitnessFunction() { return fitnessFunction; }
+
         virtual GAResults run();
 
         virtual void print();
