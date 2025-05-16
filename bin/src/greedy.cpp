@@ -75,19 +75,19 @@ int main(int argc, char **argv) {
             }
                 
         }
-        if(strcmp(argv[i], "-me") == 0) {
+        if(strcmp(argv[i], "--me") == 0) {
             if(i+1 < argc)
                 maxen = atoi(argv[i+1]);
             else
                 std::cout << std::endl << "Error in argument -me, value required" << std::endl;    
         }
-        if(strcmp(argv[i], "-mg") == 0) {
+        if(strcmp(argv[i], "--mg") == 0) {
             if(i+1 < argc)
                 maxgw = atoi(argv[i+1]);
             else
                 std::cout << std::endl << "Error in argument -mg, value required" << std::endl;    
         }
-        if(strcmp(argv[i], "-mu") == 0) {
+        if(strcmp(argv[i], "--mu") == 0) {
             if(i+1 < argc)
                 maxuf = atoi(argv[i+1]);
             else

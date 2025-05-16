@@ -12,7 +12,7 @@ resultfile="resultados_tabla10_ver3" # Result file
 # Crossover methods: "UNIFORM" "SINGLE_POINT" "DOUBLE_POINT"
 cr_method="SINGLE_POINT"
 
-greedy_iters=100 # Number of iterations for Greedy
+greedy_iters=1000 # Number of iterations for Greedy
 moga2_iters=100 # Number of iterations for MOGA2
 moga2_pop=50 # GA population
 
@@ -34,7 +34,7 @@ echo "crossover,mutation,crossover type,optimizer,instance file,free objective,g
 #o_values=("GW" "E" "UF") # Objective parameter to optimize for MOGA2
 
 # Run greedy algorithm and save solution
-../bin/greedy -f "$inputfile" -i $greedy_iters -p $moga2_pop > greedysol.sol
+../bin/greedy -f "$inputfile" -i $greedy_iters -p $moga2_pop --me 1000 > greedysol.sol
 
 # Run MOGA2 with different parameters
 loopctr=0
