@@ -49,6 +49,10 @@ int main(int argc, char **argv) {
     char *xmlFileName;
     char *outputFileName;
 
+    // Clamp objective values (for gaWarmStart > 0)
+    int maxen = 0;
+    int maxgw = 0;
+    int maxuf = 0;
     
     // Program arguments
     for(int i = 0; i < argc; i++) {    
@@ -62,7 +66,7 @@ int main(int argc, char **argv) {
                 std::cout << std::endl << "Error in argument -f (--file)" << std::endl;
             }
         }
-        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--print") == 0) {
+        if(strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--print") == 0) { // For warm starting
             if(i+1 < argc){
                 gaWarmStart = atoi(argv[i+1]);
             }else{
@@ -70,6 +74,24 @@ int main(int argc, char **argv) {
                 printHelp(MANUAL);
             }
                 
+        }
+        if(strcmp(argv[i], "-me") == 0) {
+            if(i+1 < argc)
+                maxen = atoi(argv[i+1]);
+            else
+                std::cout << std::endl << "Error in argument -me, value required" << std::endl;    
+        }
+        if(strcmp(argv[i], "-mg") == 0) {
+            if(i+1 < argc)
+                maxgw = atoi(argv[i+1]);
+            else
+                std::cout << std::endl << "Error in argument -mg, value required" << std::endl;    
+        }
+        if(strcmp(argv[i], "-mu") == 0) {
+            if(i+1 < argc)
+                maxuf = atoi(argv[i+1]);
+            else
+                std::cout << std::endl << "Error in argument -mu, value required" << std::endl;    
         }
         if(strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--stall") == 0) {
             if(i+1 < argc) 
@@ -302,8 +324,10 @@ int main(int argc, char **argv) {
 
                 EvalResults res = o->eval(tempAlloc, false); // Use true to compute cost according to feasibility level
 
-
                 if(gaWarmStart > 0 && printed < gaWarmStart){ // Print allocation
+                    if(maxen > 0 && res.energy > maxen) continue; // Skip if energy > maxen
+                    if(maxgw > 0 && res.gwUsed > maxgw) continue; // Skip if gw > maxgw
+                    if(maxuf > 0 && res.uf > maxuf) continue; // Skip if uf > maxuf
                     for(uint e = 0; e < l->edCount; e++)
                         std::cout << tempAlloc.gw[e] << " " << tempAlloc.sf[e] << std::endl;
                     std::cout << "--" << std::endl;
