@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-#inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat" # Instance
+inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat" # Instance
 #inputfile="../dat/imu_100_10_100_1.dat" # Instance
-inputfile="../dat/instancia.dat" # Instance
+#inputfile="../dat/instancia.dat" # Instance
 outputfile="promediar.csv" # Result file
 
 # check if file exists
@@ -27,3 +27,7 @@ for ((i=1; i<=100; i++)); do
 done
 
 echo "Execution completed. Results saved in $outputfile"
+echo "Computing averages..."
+
+cp "$outputfile" ../python/
+python3 ../python/averages_greedy.py
