@@ -34,7 +34,7 @@ echo "crossover,mutation,crossover type,optimizer,instance file,free objective,g
 #o_values=("GW" "E" "UF") # Objective parameter to optimize for MOGA2
 
 # Run greedy algorithm and save solution
-../bin/greedy -f "$inputfile" -i $greedy_iters -p $moga2_pop --me 1000 > greedysol.sol
+../bin/greedy -f "$inputfile" -i $greedy_iters -a 0.1 -b 1 -g 0 -p $moga2_pop > greedy.sol
 
 # Run MOGA2 with different parameters
 loopctr=0
@@ -51,7 +51,7 @@ for c in 0.3 0.5 0.7; do
         progrr=$((loopctr*100/12))
         echo "Progress: $progrr%"
 
-        output1=$(cat greedysol.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
+        output1=$(cat greedy.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
         exit_status1=$? # Error of last command
 
         if [[ $exit_status1 -eq 0 ]]; then
@@ -65,15 +65,15 @@ for c in 0.3 0.5 0.7; do
         # Run and save execution output for custom crossover
         #echo "Param values: cr=$c, mut=$m, obj=$obj_value, custom crossover"
         
-        output2=$(cat greedysol.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
-        exit_status2=$? # Error of last command
+        #output2=$(cat greedy.sol | ../bin/moga2 -f "$inputfile" -l "$cr_method" -z "$obj_value" -c $c -m $m -i $moga2_iters -p -s 1 -x CSV 2>/dev/null)
+        #exit_status2=$? # Error of last command
         
-        if [[ $exit_status2 -eq 0 ]]; then
-            echo -n "$c,$m,custom_cross," >> $resultfile.csv
-            echo $output2 >> $resultfile.csv
-        else
-            echo "Execution failed for: cr=$c, mut=$m, obj=$obj_value, custom crossover"
-        fi
+        #if [[ $exit_status2 -eq 0 ]]; then
+        #    echo -n "$c,$m,custom_cross," >> $resultfile.csv
+        #    echo $output2 >> $resultfile.csv
+        #else
+        #    echo "Execution failed for: cr=$c, mut=$m, obj=$obj_value, custom crossover"
+        #fi
     done 
 done
  
