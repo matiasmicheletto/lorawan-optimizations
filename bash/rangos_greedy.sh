@@ -5,6 +5,8 @@ inputfile="../dat/Revista/ComparacionModelosHeuristicaHard/generada.dat" # Insta
 #inputfile="../dat/instancia.dat" # Instance
 outputfile="promediar.csv" # Result file
 
+iters=1000 # Number of iterations
+
 # check if file exists
 if [ ! -f "$inputfile" ]; then
     echo "File $inputfile not found!"
@@ -14,7 +16,7 @@ fi
 > $outputfile
 
 # Run 1000 times
-for ((i=1; i<=100; i++)); do
+for ((i=1; i<=iters; i++)); do
     output=$(../bin/greedy -f "$inputfile" -i 1000 -x)
     exit_status=$?
     if [[ $exit_status -eq 0 ]]; then
@@ -23,11 +25,12 @@ for ((i=1; i<=100; i++)); do
         echo "Error executing greedy algorithm"
         exit 1
     fi
-    echo "Progress: $((i * 100 / 100))%"
+    
+    echo "Progress: $((i * 100 / iters))% ($i/$iters)"
+
 done
 
-echo "Execution completed. Results saved in $outputfile"
-echo "Computing averages..."
-
 cp "$outputfile" ../python/
-python3 ../python/averages_greedy.py
+#python3 ../python/averages_greedy.py
+
+echo "Execution completed. Results saved in $outputfile and copyed to ../python/."
